@@ -1,18 +1,21 @@
 Package: dplyover
-Title: What the Package Does (One Line, Title Case)
+Title: Functions to apply column transformations based on strings in 'dplyr'
 Version: 0.0.0.9000
 Authors@R: 
-    person(given = "First",
-           family = "Last",
+    person(given = "Tim",
+           family = "Tiefenbach",
            role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to
-    pick a license
+           email = "mailme@tim-tiefenbach.de",
+           comment = c(ORCID = "0000-0001-9443-2434"))
+Description: This package extends 'dplyr's functionality by allowing column
+    transformations based on character vectors in 'mutate' and 'summarise' calls,
+    using a syntax similar to the existing 'across' function.
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.0
 URL: https://github.com/TimTeaFan/dplyover
 BugReports: https://github.com/TimTeaFan/dplyover/issues
+Suggests: 
+    testthat
