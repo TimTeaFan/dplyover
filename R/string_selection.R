@@ -48,6 +48,7 @@ get_affix <- function(.pattern, .select, side = c("right", "left"), .vars = NULL
   }
 
   side <- match.arg(side)
+
   if (is.null(.select)) {
     .select <- .vars
   } else {

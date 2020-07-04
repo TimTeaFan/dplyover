@@ -6,7 +6,7 @@
                    env = rlang::caller_env())
 }
 
-over_setup <- function (strs, fns, names) {
+over_setup <- function(strs, fns, names) {
 
   if(!is.character(vars)) {
     abort(c("Problem with `over()` input `.strs`.",
@@ -17,7 +17,7 @@ over_setup <- function (strs, fns, names) {
 
   if (is.null(fns)) {
     abort(c("Problem with `over()` input `.fns`.",
-            i = "Input `.fns` must be a function or a list of functions"))
+            i = "Input `.fns` must be a function or a list of functions."))
 
   }
 
@@ -29,7 +29,8 @@ over_setup <- function (strs, fns, names) {
   }
 
   if (!is.list(fns)) {
-    abort(c("Problem with `over()` input `.fns`.", i = "Input `.fns` must be a function or a list of functions"))
+    abort(c("Problem with `over()` input `.fns`.",
+            i = "Input `.fns` must be a function or a list of functions"))
   }
 
   fns <- map(fns, rlang::as_function)
