@@ -72,6 +72,17 @@ get_values <- function(.var, .dat = NULL) {
     .dat <- across()
   }
 
-  as.character(unique(.dat[ensym(.var)]))
+  var <- rlang::as_string(rlang::ensym(.var))
+
+ unique(as.character(.dat[[var]]))
 
 }
+
+chr_sq <- function(from, to, by) {
+  as.character(seq.int(from, to, by = by))
+}
+
+num <- function(x) {
+  as.numeric(x)
+}
+
