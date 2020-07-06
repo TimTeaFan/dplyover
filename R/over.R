@@ -6,9 +6,37 @@
                    env = rlang::caller_env())
 }
 
+
+check_keep <- function() {
+
+  call_st <- sys.calls()
+
+  lapply(call_st, function(x) {
+
+    .x <- x[[1]]
+
+    if (any(grepl("^mutate", .x, perl = TRUE))) {
+
+      keep_arg <- grepl("^\\.keep$", names(as.list(x)), perl = TRUE)
+
+      if (any(keep_arg)) {
+        keep_val <- as.list(x)[keep_arg]
+
+        if (keep_val != "all") {
+          abort(c("Problem with `over()`.",
+                  i = "`over()` does not support `mutate()` calls setting the `.keep` argument to other values than the default `all`."))
+        }
+      }
+    }
+
+  })
+
+}
+
+
 over_setup <- function(strs, fns, names) {
 
-  if(!is.character(vars)) {
+  if(!is.character(strs)) {
     abort(c("Problem with `over()` input `.strs`.",
             i = "Input `.strs` must be character values or a function that evaluates to character values."))
   } else {
@@ -33,7 +61,7 @@ over_setup <- function(strs, fns, names) {
             i = "Input `.fns` must be a function or a list of functions"))
   }
 
-  fns <- map(fns, rlang::as_function)
+  fns <- purrr::map(fns, rlang::as_function)
 
   if (is.null(names(fns))) {
     names_fns <- seq_along(fns)
@@ -57,6 +85,8 @@ over_setup <- function(strs, fns, names) {
 
 over <- function(.strs, .fns = NULL, ..., .names = NULL){
 
+  # search_calling_fn("^mutate|^summarise")
+
   setup <- over_setup({
     {
       .strs
@@ -69,7 +99,14 @@ over <- function(.strs, .fns = NULL, ..., .names = NULL){
   fns <- setup$fns
   names <- setup$names
 
-  data <-  across()
+  data <- tryCatch({
+    dplyr::across()
+  }, error = function(e) {
+    rlang::abort("`over()` must only be used inside dplyr verbs")
+  })
+
+
+  check_keep()
 
   n_strs <- length(vars)
   n_fns <- length(fns)
