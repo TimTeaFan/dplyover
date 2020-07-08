@@ -107,7 +107,7 @@ over <- function(.strs, .fns = NULL, ..., .names = NULL){
 over_setup <- function(strs, fns, names, cnames) {
 
   if(!is.character(strs)) {
-    abort(c("Problem with `over()` input `.strs`.",
+    rlang::abort(c("Problem with `over()` input `.strs`.",
             i = "Input `.strs` must be a character vector or a function that evaluates to a character vector"))
   } else {
     vars <- strs
@@ -116,7 +116,7 @@ over_setup <- function(strs, fns, names, cnames) {
     dnames <- cnames[cnames %in% vars]
     names_l <- ifelse(length(dnames) > 3, 3, length(dnames))
 
-    abort(c("Problem with `over()` input `.strs`.",
+    rlang::abort(c("Problem with `over()` input `.strs`.",
             i = paste0("Input `.strs` must not contain existing column names like ",
                        paste0(paste0("`", dnames[seq_along(1:names_l)], "`"), collapse = ", "),
                        ifelse(length(dnames) > 3, " etc. ", ".")
@@ -125,7 +125,7 @@ over_setup <- function(strs, fns, names, cnames) {
 
   }
   if (is.null(fns)) {
-    abort(c("Problem with `over()` input `.fns`.",
+    rlang::abort(c("Problem with `over()` input `.fns`.",
             i = "Input `.fns` must be a function or a list of functions.",
             "Try using `across(), if you want to return the data untransformed."))
 
@@ -139,7 +139,7 @@ over_setup <- function(strs, fns, names, cnames) {
   }
 
   if (!is.list(fns)) {
-    abort(c("Problem with `over()` input `.fns`.",
+    rlang::abort(c("Problem with `over()` input `.fns`.",
             i = "Input `.fns` must be a function or a list of functions"))
   }
 
