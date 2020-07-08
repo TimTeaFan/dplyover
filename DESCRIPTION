@@ -1,5 +1,5 @@
 Package: dplyover
-Title: Create Columns by looping over Strings in 'dplyr'
+Title: Apply Functions to a Character Vector in 'dplyr'
 Version: 0.0.0.9000
 Authors@R: 
     person(given = "Tim",
@@ -8,9 +8,9 @@ Authors@R:
            email = "mailme@tim-tiefenbach.de",
            comment = c(ORCID = "0000-0001-9443-2434"))
 Description: This package extends 'dplyr's functionality so that columns can be
-    created in 'mutate' and 'summarise' calls by looping a character vector 'over'
-    one or many functions, using a syntax similar to the existing 'across' function.
-    Helper functions are provided to easily select and evaluate strings. Refer to
+    created in 'mutate' and 'summarise' calls by applying a function (or a set of
+    functions) to a character vector using a syntax similar to the existing 'across'
+    function. Helper functions are provided to easily select and evaluate strings. Refer to
     the documentation for examples and more information.
 License: MIT + file LICENSE
 Encoding: UTF-8

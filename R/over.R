@@ -1,54 +1,139 @@
-`.` <- function(x) {
-  rlang::eval_tidy(rlang::sym(glue::glue(x,
-                                         .open = "{{",
-                                         .close = "}}",
-                                         .envir = parent.frame())),
-                   env = rlang::caller_env())
-}
+#' Apply a function (or a set of functions) to a character vector
+#'
+#' @description
+#' `over()` makes it easy to create new colums by applying a function (or a set of
+#' functions) to a character vector using a syntax similar to the existing [dplyr::across()].
+#' [mutate()]. `across()` supersedes the family of "scoped variants" like
+#' `summarise_at()`, `summarise_if()`, and `summarise_all()`. See
+#' `vignette("colwise")` for more details.
+#'
+#' @param .strs <[`tidy-select`][dplyr_tidy_select]> Columns to transform.
+#'   Because `across()` is used within functions like `summarise()` and
+#'   `mutate()`, you can't select or compute upon grouping variables.
+#' @param .fns Functions to apply to each of the selected columns.
+#'   Possible values are:
+#'
+#'   - A function, e.g. `mean`.
+#'   - A purrr-style lambda, e.g. `~ mean(.x, na.rm = TRUE)`
+#'   - A list of functions/lambdas, e.g.
+#'     `list(mean = mean, n_miss = ~ sum(is.na(.x))`
+#'
+#'   Within these functions you can use [cur_column()] and [cur_group()]
+#'   to access the current column and grouping keys respectively.
+#' @param ... Additional arguments for the function calls in `.fns`.
+#' @param .names A glue specification that describes how to name the output
+#'   columns. This can use `{str}` to stand for the selected string name, and
+#'   `{fn}` to stand for the name of the function being applied. The default
+#'   (`NULL`) is equivalent to `"{str}"` for the single function case and
+#'   `"{str}_{fn}"` for the case where a list is used for `.fns`.
+#'
+#' @returns
+#' A tibble with one column for each column in `.strs` and each function in `.fns`.
+#' @examples
+#' # over() -----------------------------------------------------------------
+#' iris %>%
+#'   group_by(Species) %>%
+#'   summarise(across(starts_with("Sepal"), mean))
+#' iris %>%
+#'   as_tibble() %>%
+#'   mutate(across(where(is.factor), as.character))
+#'
+#' # A purrr-style formula
+#' iris %>%
+#'   group_by(Species) %>%
+#'   summarise(across(starts_with("Sepal"), ~mean(.x, na.rm = TRUE)))
+#'
+#' # A named list of functions
+#' iris %>%
+#'   group_by(Species) %>%
+#'   summarise(across(starts_with("Sepal"), list(mean = mean, sd = sd)))
+#'
+#' # Use the .names argument to control the output names
+#' iris %>%
+#'   group_by(Species) %>%
+#'   summarise(across(starts_with("Sepal"), mean, .names = "mean_{col}"))
+#' iris %>%
+#'   group_by(Species) %>%
+#'   summarise(across(starts_with("Sepal"), list(mean = mean, sd = sd), .names = "{col}.{fn}"))
+#' iris %>%
+#'   group_by(Species) %>%
+#'   summarise(across(starts_with("Sepal"), list(mean, sd), .names = "{col}.fn{fn}"))
+#' @export
+over <- function(.strs, .fns = NULL, ..., .names = NULL){
 
-
-check_keep <- function() {
-
-  call_st <- sys.calls()
-
-  lapply(call_st, function(x) {
-
-    .x <- x[[1]]
-
-    if (any(grepl("^mutate", .x, perl = TRUE))) {
-
-      keep_arg <- grepl("^\\.keep$", names(as.list(x)), perl = TRUE)
-
-      if (any(keep_arg)) {
-        keep_val <- as.list(x)[keep_arg]
-
-        if (keep_val != "all") {
-          abort(c("Problem with `over()`.",
-                  i = "`over()` does not support `mutate()` calls setting the `.keep` argument to other values than the default `all`."))
-        }
-      }
-    }
-
+  data <- tryCatch({
+    dplyr::across()
+  }, error = function(e) {
+    rlang::abort("`over()` must only be used inside dplyr verbs")
   })
 
+  setup <- over_setup({{ .strs }},
+                      fns = .fns,
+                      names = .names,
+                      cnames = names(data))
+
+  vars <- setup$vars
+  if (length(vars) == 0L) {
+    return(tibble::new_tibble(list(), nrow = 1L))
+  }
+  fns <- setup$fns
+  names <- setup$names
+
+
+
+
+  check_keep()
+
+  n_strs <- length(vars)
+  n_fns <- length(fns)
+  seq_n_strs <- seq_len(n_strs)
+  seq_fns <- seq_len(n_fns)
+  k <- 1L
+  out <- vector("list", n_strs * n_fns)
+
+  for (i in seq_n_strs) {
+    var <- vars[[i]]
+    str <- vars[[i]]
+    for (j in seq_fns) {
+      fn <- fns[[j]]
+      out[[k]] <- fn(str, ...)
+      k <- k + 1L
+    }
+  }
+  size <- vctrs::vec_size_common(!!!out)
+  out <- vctrs::vec_recycle_common(!!!out, .size = size)
+  names(out) <- names
+  tibble::new_tibble(out, nrow = size)
 }
 
 
-over_setup <- function(strs, fns, names) {
+over_setup <- function(strs, fns, names, cnames) {
 
   if(!is.character(strs)) {
     abort(c("Problem with `over()` input `.strs`.",
-            i = "Input `.strs` must be character values or a function that evaluates to character values."))
+            i = "Input `.strs` must be a character vector or a function that evaluates to a character vector"))
   } else {
     vars <- strs
   }
+  if (any(vars %in% cnames)) {
+    dnames <- cnames[cnames %in% vars]
+    names_l <- ifelse(length(dnames) > 3, 3, length(dnames))
 
-  if (is.null(fns)) {
-    abort(c("Problem with `over()` input `.fns`.",
-            i = "Input `.fns` must be a function or a list of functions."))
+    abort(c("Problem with `over()` input `.strs`.",
+            i = paste0("Input `.strs` must not contain existing column names like ",
+                       paste0(paste0("`", dnames[seq_along(1:names_l)], "`"), collapse = ", "),
+                       ifelse(length(dnames) > 3, " etc. ", ".")
+                       ),
+            "If you want to transform existing columns try using `across()`."))
 
   }
+  if (is.null(fns)) {
+    abort(c("Problem with `over()` input `.fns`.",
+            i = "Input `.fns` must be a function or a list of functions.",
+            "Try using `across(), if you want to return the data untransformed."))
 
+  }
+  # account for named character vectors to overwrite .names argument
   if (is.function(fns) || is_formula(fns)) {
     names <- names %||% "{str}"
     fns <- list(`1` = fns)
@@ -78,54 +163,4 @@ over_setup <- function(strs, fns, names) {
                                repair = "check_unique")
   value <- list(vars = vars, fns = fns, names = names)
   value
-}
-
-
-
-
-over <- function(.strs, .fns = NULL, ..., .names = NULL){
-
-  # search_calling_fn("^mutate|^summarise")
-
-  setup <- over_setup({
-    {
-      .strs
-    }
-  }, fns = .fns, names = .names)
-  vars <- setup$vars
-  if (length(vars) == 0L) {
-    return(tibble::new_tibble(list(), nrow = 1L))
-  }
-  fns <- setup$fns
-  names <- setup$names
-
-  data <- tryCatch({
-    dplyr::across()
-  }, error = function(e) {
-    rlang::abort("`over()` must only be used inside dplyr verbs")
-  })
-
-
-  check_keep()
-
-  n_strs <- length(vars)
-  n_fns <- length(fns)
-  seq_n_strs <- seq_len(n_strs)
-  seq_fns <- seq_len(n_fns)
-  k <- 1L
-  out <- vector("list", n_strs * n_fns)
-
-  for (i in seq_n_strs) {
-    var <- vars[[i]]
-    str <- vars[[i]]
-    for (j in seq_fns) {
-      fn <- fns[[j]]
-      out[[k]] <- fn(str, ...)
-      k <- k + 1L
-    }
-  }
-  size <- vctrs::vec_size_common(!!!out)
-  out <- vctrs::vec_recycle_common(!!!out, .size = size)
-  names(out) <- names
-  tibble::new_tibble(out, nrow = size)
 }
