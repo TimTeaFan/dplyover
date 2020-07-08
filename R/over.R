@@ -1,26 +1,40 @@
-#' Apply a function (or a set of functions) to a character vector
+#' Apply one or several functions to a character vector in 'dplyr'
 #'
 #' @description
-#' `over()` makes it easy to create new colums by applying a function (or a set of
-#' functions) to a character vector using a syntax similar to the existing [dplyr::across()].
-#' [mutate()]. `across()` supersedes the family of "scoped variants" like
-#' `summarise_at()`, `summarise_if()`, and `summarise_all()`. See
-#' `vignette("colwise")` for more details.
+#' `over()` makes it easy to create new colums inside a [dplyr::mutate()] or
+#' [dplyr::summarise()] call by applying a function (or a set of functions) to
+#' a character vector using a syntax similar to the existing [dplyr::across()].
+#' The main difference is that [dplyr::across()] transforms or creates new
+#' columns based on existing ones, while `over()` creates new columns based on a
+#' character vector to which it will apply one or several functions. Whereas
+#' [dplyr::across()] allows `tidy-selection` helpers to select columns,
+#' `over()` provides its own helper functions to select strings based on either
+#' (1) column names or (2) values of specified columns. See `vignette("over")`
+#' and `vignette("string_selection_helpers")` for more details.
 #'
-#' @param .strs <[`tidy-select`][dplyr_tidy_select]> Columns to transform.
-#'   Because `across()` is used within functions like `summarise()` and
-#'   `mutate()`, you can't select or compute upon grouping variables.
-#' @param .fns Functions to apply to each of the selected columns.
+#' @param .strs A character vector to apply functions to. Instead of a character
+#'   vector a <[`string selection helper`][string_selection_helpers]> or any other function
+#'   that evaluates to a character vector can be used. Note that `over()` must
+#'   only be used to create 'new' columns and will throw an error if `.strs`
+#'   contains existing column names. To transform existing columns use [dplyr::across()].
+#'
+#' @param .fns Functions to apply to each of the selected strings. Note that for
+#'   functions that expect variable names as input, the selected strings need to
+#'   be turned into symbols and evaluated early using <[`rlang's forcing operators`][rlang::nse-force]>.
+#'
 #'   Possible values are:
 #'
-#'   - A function, e.g. `mean`.
-#'   - A purrr-style lambda, e.g. `~ mean(.x, na.rm = TRUE)`
-#'   - A list of functions/lambdas, e.g.
-#'     `list(mean = mean, n_miss = ~ sum(is.na(.x))`
+#'   - A function
+#'   - A purrr-style lambda
+#'   - A list of functions/lambdas
 #'
-#'   Within these functions you can use [cur_column()] and [cur_group()]
-#'   to access the current column and grouping keys respectively.
+#'   For examples see below.
+#'
+#'   Note that, unlike `across()`, `over()` does not accept `NULL` as a
+#'   value to `.fns``.
+#'
 #' @param ... Additional arguments for the function calls in `.fns`.
+#'
 #' @param .names A glue specification that describes how to name the output
 #'   columns. This can use `{str}` to stand for the selected string name, and
 #'   `{fn}` to stand for the name of the function being applied. The default
@@ -28,7 +42,7 @@
 #'   `"{str}_{fn}"` for the case where a list is used for `.fns`.
 #'
 #' @returns
-#' A tibble with one column for each column in `.strs` and each function in `.fns`.
+#' A tibble with one column for each string in `.strs` and each function in `.fns`.
 #' @examples
 #' # over() -----------------------------------------------------------------
 #' iris %>%
