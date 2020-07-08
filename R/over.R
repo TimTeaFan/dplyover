@@ -79,9 +79,6 @@ over <- function(.strs, .fns = NULL, ..., .names = NULL){
   fns <- setup$fns
   names <- setup$names
 
-
-
-
   check_keep()
 
   n_strs <- length(vars)
@@ -92,7 +89,7 @@ over <- function(.strs, .fns = NULL, ..., .names = NULL){
   out <- vector("list", n_strs * n_fns)
 
   for (i in seq_n_strs) {
-    var <- vars[[i]]
+    # var <- vars[[i]]
     str <- vars[[i]]
     for (j in seq_fns) {
       fn <- fns[[j]]
