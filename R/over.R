@@ -45,33 +45,35 @@
 #' A tibble with one column for each string in `.strs` and each function in `.fns`.
 #' @examples
 #' # over() -----------------------------------------------------------------
+#' # A purrr-style formula with special evaluation using `.()`
 #' iris %>%
-#'   group_by(Species) %>%
-#'   summarise(across(starts_with("Sepal"), mean))
-#' iris %>%
-#'   as_tibble() %>%
-#'   mutate(across(where(is.factor), as.character))
+#'   mutate(over(c("Sepal", "Petal"),
+#'               ~ mean(.("{.x}.Width"))))
 #'
-#' # A purrr-style formula
+#' # an anonymous function
 #' iris %>%
-#'   group_by(Species) %>%
-#'   summarise(across(starts_with("Sepal"), ~mean(.x, na.rm = TRUE)))
+#'   summarise(over(c("Sepal", "Petal"),
+#'                 function(x) mean(.("{x}.Width"))))
 #'
 #' # A named list of functions
 #' iris %>%
-#'   group_by(Species) %>%
-#'   summarise(across(starts_with("Sepal"), list(mean = mean, sd = sd)))
+#'   mutate(over(c("Sepal", "Petal"),
+#'               list(product = ~ .("{.x}.Width") * .("{.x}.Length"),
+#'                    sum = ~ .("{.x}.Width") + .("{.x}.Length")
+#'               )))
 #'
 #' # Use the .names argument to control the output names
 #' iris %>%
-#'   group_by(Species) %>%
-#'   summarise(across(starts_with("Sepal"), mean, .names = "mean_{col}"))
+#'   mutate(over(c("Sepal", "Petal"),
+#'               ~ .("{.x}.Width") * .("{.x}.Length"),
+#'               .names = "Product_{str}"))
+#'
+#' # apply a function to values of a variable
 #' iris %>%
-#'   group_by(Species) %>%
-#'   summarise(across(starts_with("Sepal"), list(mean = mean, sd = sd), .names = "{col}.{fn}"))
-#' iris %>%
-#'   group_by(Species) %>%
-#'   summarise(across(starts_with("Sepal"), list(mean, sd), .names = "{col}.fn{fn}"))
+#'   mutate(over(as.character(unique(Species)),
+#'              ~ if_else(Species == .x, 1, 0)))
+#'
+#' @importFrom rlang %||%
 #' @export
 over <- function(.strs, .fns = NULL, ..., .names = NULL){
 
@@ -145,7 +147,7 @@ over_setup <- function(strs, fns, names, cnames) {
 
   }
   # account for named character vectors to overwrite .names argument
-  if (is.function(fns) || is_formula(fns)) {
+  if (is.function(fns) || rlang::is_formula(fns)) {
     names <- names %||% "{str}"
     fns <- list(`1` = fns)
   } else {
