@@ -20,7 +20,7 @@ cut_off <- function(.pattern, .select = NULL, .vars = NULL) {
 get_suffix <- function(.pattern, .select = NULL, .vars = NULL){
 
   if (is.null(.vars) && sys.call(sys.nframe() - 1)[[1]] == "over_setup") {
-    .vars <- names(across())
+    .vars <- names(dplyr::across())
   }
 
   get_affix(.pattern = .pattern,
@@ -32,7 +32,7 @@ get_suffix <- function(.pattern, .select = NULL, .vars = NULL){
 get_prefix <- function(.pattern, .select = NULL, .vars = NULL){
 
   if (is.null(.vars) && sys.call(sys.nframe() - 1)[[1]] == "over_setup") {
-    .vars <- names(across())
+    .vars <- names(dplyr::across())
   }
 
   get_affix(.pattern = .pattern,
@@ -44,7 +44,7 @@ get_prefix <- function(.pattern, .select = NULL, .vars = NULL){
 get_affix <- function(.pattern, .select, side = c("right", "left"), .vars = NULL) {
 
   if (is.null(.vars) && sys.call(sys.nframe() - 1)[[1]] == "over_setup") {
-    .vars <- names(across())
+    .vars <- names(dplyr::across())
   }
 
   side <- match.arg(side)
@@ -74,7 +74,7 @@ get_values <- function(.var, .dat = NULL) {
 
   var <- rlang::as_string(rlang::ensym(.var))
 
- unique(as.character(.dat[[var]]))
+  unique(as.character(.dat[[var]]))
 
 }
 
