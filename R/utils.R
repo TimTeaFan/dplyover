@@ -1,7 +1,7 @@
 `.` <- function(x) {
   rlang::eval_tidy(rlang::sym(glue::glue(x,
-                                         .open = "{{",
-                                         .close = "}}",
+                                         .open = "{",
+                                         .close = "}",
                                          .envir = parent.frame())),
                    env = rlang::caller_env())
 }
