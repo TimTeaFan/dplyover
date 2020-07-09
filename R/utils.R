@@ -25,7 +25,7 @@ check_keep <- function() {
         if (!keep_val %in% c("all", "none")) {
           rlang::abort(c("Problem with `over()` inside `mutate()`.",
                          i = '`over()` is not supported in `mutate()` calls which set the `.keep` argument to "used" or "unused".',
-                         x = paste0('`over()` was called inside `mutate(..., .keep = "', keep_val ,'")'),
+                         x = paste0('`over()` was called inside `mutate(..., .keep = "', keep_val ,'").'),
                          i = 'Either drop the `.keep` argument or set it to "all" (default) or "none".'))
         }
       }
