@@ -133,17 +133,18 @@ over_setup <- function(strs, fns, names, cnames) {
     names_l <- ifelse(length(dnames) > 3, 3, length(dnames))
 
     rlang::abort(c("Problem with `over()` input `.strs`.",
-            i = paste0("Input `.strs` must not contain existing column names like ",
-                       paste0(paste0("`", dnames[seq_along(1:names_l)], "`"), collapse = ", "),
-                       ifelse(length(dnames) > 3, " etc. ", ".")
-                       ),
-            "If you want to transform existing columns try using `across()`."))
+            i = "Input `.strs` must not contain existing column names.",
+            x = paste0("`.str` contained the following column names: ",
+                       paste0(paste0("'", dnames[seq_along(1:names_l)], "'"), collapse = ", "),
+                       ifelse(length(dnames) > 3, " etc. ", ".")),
+            i = "If you want to transform existing columns try using `across()`."))
 
   }
   if (is.null(fns)) {
     rlang::abort(c("Problem with `over()` input `.fns`.",
             i = "Input `.fns` must be a function or a list of functions.",
-            "Try using `across(), if you want to return the data untransformed."))
+            x = "`over()` was called without specifying the `.fns` argument.",
+            i = "Try using `across(), if you want to return the data untransformed."))
 
   }
   # account for named character vectors to overwrite .names argument
