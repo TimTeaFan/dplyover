@@ -20,7 +20,9 @@
 #'
 #' @param .fns Functions to apply to each of the selected strings. Note that for
 #'   functions that expect variable names as input, the selected strings need to
-#'   be turned into symbols and evaluated early using <[`rlang's forcing operators`][rlang::nse-force]>.
+#'   be turned into symbols and evaluated early. <[`rlang's forcing operators`][rlang::nse-force]>
+#'   do not work as expected in regular dplyr calls. See the examples below and the `vignette("over")`
+#'   for `over()`'s genuine forcing function [`.()`].
 #'
 #'   Possible values are:
 #'
@@ -44,16 +46,40 @@
 #' @returns
 #' A tibble with one column for each string in `.strs` and each function in `.fns`.
 #' @examples
-#' # over() -----------------------------------------------------------------
-#' # A purrr-style formula with special evaluation using `.()`
+#' # over() has two main use cases:
+#'
+#' # (1) The strings in `.strs` are used to construct column names (sharing the same stem)
+#' # in a function call. Here it is important to, first, turn the strings into
+#' # symbols and then to evaluate them early. Consider the following only as an
+#' # example to understand what would be necessary to turn strings into column
+#' # names in a call to `over()`.
+#'
 #' iris %>%
 #'   mutate(over(c("Sepal", "Petal"),
-#'               ~ mean(.("{.x}.Width"))))
+#'               ~ mean(eval(sym(paste0(.x,".Width"))))
+#'               ))
 #'
-#' # an anonymous function
+#' # Note that rlang's forcing operator `!!` is not supported inside `over()`.
+#' \dontrun{
+#'   mutate(over(c("Sepal", "Petal"),
+#'               ~ mean(!! sym(paste0(.x,".Width")))
+#'               ))
+#'}
+#'
+#' # To make writing anonymous functions easier, `over()` comes with a genuine
+#' # forcing function `.()` which supports glue syntax and takes a string as
+#' # argument. This function is basically a wrapper around `eval_tidy(sym(glue(...)))`.
+#' # The purrr-style formula from above with special evaluation using `.()`:
+#' iris %>%
+#'   mutate(over(c("Sepal", "Petal"),
+#'               ~ mean(.("{.x}.Width"))
+#'               ))
+#'
+#' # `.()` also works with anonymous functions
 #' iris %>%
 #'   summarise(over(c("Sepal", "Petal"),
-#'                 function(x) mean(.("{x}.Width"))))
+#'                 function(x) mean(.("{x}.Width"))
+#'                 ))
 #'
 #' # A named list of functions
 #' iris %>%
@@ -65,13 +91,36 @@
 #' # Use the .names argument to control the output names
 #' iris %>%
 #'   mutate(over(c("Sepal", "Petal"),
-#'               ~ .("{.x}.Width") * .("{.x}.Length"),
-#'               .names = "Product_{str}"))
+#'               list(product = ~ .("{.x}.Width") * .("{.x}.Length"),
+#'                    sum = ~ .("{.x}.Width") + .("{.x}.Length")),
+#'               .names = "{fn}_{str}"))
 #'
-#' # apply a function to values of a variable
+#'
+#'
+#' # (2) In the second use case the strings in `.strs` are used as values and
+#' # mostly matched against conditions inside the functions `.fns`.
+#'
+#' # Lets create a dummy variable for each unique value in 'Species':
 #' iris %>%
 #'   mutate(over(as.character(unique(Species)),
 #'              ~ if_else(Species == .x, 1, 0)))
+#'
+#' # [`get_values()`] is a wrapper around `as.character(unique(...))`:
+#' iris_tbl %>%
+#'   mutate(over(get_values(Species),
+#'              ~ if_else(Species == .x, 1, 0)))
+#'
+#' # Lets create several dummy variables with different thresholds
+#' iris_tbl %>%
+#' mutate(over(as.character(seq(4.5, 8, by = 0.5)),
+#'             ~ if_else(Sepal.Length < as.numeric(.x), 1, 0),
+#'             .names = "Sepal.Length_{str}"))
+#'
+#' # [`chr_sq()`] and [`num()`] can shorten the above call:
+#' iris_tbl %>%
+#' mutate(over(chr_sq(4.5, 8, by = 0.5)),
+#'             ~ if_else(Sepal.Length < num(.x), 1, 0),
+#'             .names = "Sepal.Length_{str}"))
 #'
 #' @export
 over <- function(.strs, .fns, ..., .names = NULL){
