@@ -9,8 +9,8 @@ Authors@R:
            comment = c(ORCID = "0000-0001-9443-2434"))
 Description: This package extends 'dplyr's functionality so that columns can be
     created in 'mutate' and 'summarise' calls by applying a function (or a set of
-    functions) to a character vector using a syntax similar to the existing 'across'
-    function. Helper functions are provided to easily select and evaluate strings. Refer to
+    functions) to a character vector using a syntax similar to dplyr's 'across'.
+    Helper functions are provided to easily select and evaluate strings. Refer to
     the documentation for examples and more information.
 License: MIT + file LICENSE
 Encoding: UTF-8
