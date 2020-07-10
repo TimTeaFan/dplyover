@@ -4,7 +4,7 @@
 \alias{over}
 \title{Apply one or several functions to a character vector in 'dplyr'}
 \usage{
-over(.strs, .fns = NULL, ..., .names = NULL)
+over(.strs, .fns, ..., .names = NULL)
 }
 \arguments{
 \item{.strs}{A character vector to apply functions to. Instead of a character
@@ -15,7 +15,9 @@ contains existing column names. To transform existing columns use \code{\link[dp
 
 \item{.fns}{Functions to apply to each of the selected strings. Note that for
 functions that expect variable names as input, the selected strings need to
-be turned into symbols and evaluated early using <\code{\link[rlang:nse-force]{rlang's forcing operators}}>.
+be turned into symbols and evaluated early. <\code{\link[rlang:nse-force]{rlang's forcing operators}}>
+do not work as expected in regular dplyr calls. See the examples below and the \code{vignette("over")}
+for \code{over()}'s genuine forcing function \code{\link[=.]{.()}}.
 
 Possible values are:
 \itemize{
@@ -43,7 +45,7 @@ A tibble with one column for each string in \code{.strs} and each function in \c
 \description{
 \code{over()} makes it easy to create new colums inside a \code{\link[dplyr:mutate]{dplyr::mutate()}} or
 \code{\link[dplyr:summarise]{dplyr::summarise()}} call by applying a function (or a set of functions) to
-a character vector using a syntax similar to the existing \code{\link[dplyr:across]{dplyr::across()}}.
+a character vector using a syntax similar to \code{\link[dplyr:across]{dplyr::across()}}.
 The main difference is that \code{\link[dplyr:across]{dplyr::across()}} transforms or creates new
 columns based on existing ones, while \code{over()} creates new columns based on a
 character vector to which it will apply one or several functions. Whereas
@@ -53,16 +55,40 @@ character vector to which it will apply one or several functions. Whereas
 and \code{vignette("string_selection_helpers")} for more details.
 }
 \examples{
-# over() -----------------------------------------------------------------
-# A purrr-style formula with special evaluation using `.()`
+# over() has two main use cases:
+
+# (1) The strings in `.strs` are used to construct column names (sharing the same stem)
+# in a function call. Here it is important to, first, turn the strings into
+# symbols and then to evaluate them early. Consider the following only as an
+# example to understand what would be necessary to turn strings into column
+# names in a call to `over()`.
+
 iris \%>\%
   mutate(over(c("Sepal", "Petal"),
-              ~ mean(.("{.x}.Width"))))
+              ~ mean(eval(sym(paste0(.x,".Width"))))
+              ))
 
-# an anonymous function
+# Note that rlang's forcing operator `!!` is not supported inside `over()`.
+\dontrun{
+  mutate(over(c("Sepal", "Petal"),
+              ~ mean(!! sym(paste0(.x,".Width")))
+              ))
+}
+
+# To make writing anonymous functions easier, `over()` comes with a genuine
+# forcing function `.()` which supports glue syntax and takes a string as
+# argument. This function is basically a wrapper around `eval_tidy(sym(glue(...)))`.
+# The purrr-style formula from above with special evaluation using `.()`:
+iris \%>\%
+  mutate(over(c("Sepal", "Petal"),
+              ~ mean(.("{.x}.Width"))
+              ))
+
+# `.()` also works with anonymous functions
 iris \%>\%
   summarise(over(c("Sepal", "Petal"),
-                function(x) mean(.("{x}.Width"))))
+                function(x) mean(.("{x}.Width"))
+                ))
 
 # A named list of functions
 iris \%>\%
@@ -74,12 +100,35 @@ iris \%>\%
 # Use the .names argument to control the output names
 iris \%>\%
   mutate(over(c("Sepal", "Petal"),
-              ~ .("{.x}.Width") * .("{.x}.Length"),
-              .names = "Product_{str}"))
+              list(product = ~ .("{.x}.Width") * .("{.x}.Length"),
+                   sum = ~ .("{.x}.Width") + .("{.x}.Length")),
+              .names = "{fn}_{str}"))
 
-# apply a function to values of a variable
+
+
+# (2) In the second use case the strings in `.strs` are used as values and
+# mostly matched against conditions inside the functions `.fns`.
+
+# Lets create a dummy variable for each unique value in 'Species':
 iris \%>\%
   mutate(over(as.character(unique(Species)),
              ~ if_else(Species == .x, 1, 0)))
+
+# [`get_values()`] is a wrapper around `as.character(unique(...))`:
+iris_tbl \%>\%
+  mutate(over(get_values(Species),
+             ~ if_else(Species == .x, 1, 0)))
+
+# Lets create several dummy variables with different thresholds
+iris_tbl \%>\%
+mutate(over(as.character(seq(4.5, 8, by = 0.5)),
+            ~ if_else(Sepal.Length < as.numeric(.x), 1, 0),
+            .names = "Sepal.Length_{str}"))
+
+# [`chr_sq()`] and [`num()`] can shorten the above call:
+iris_tbl \%>\%
+mutate(over(chr_sq(4.5, 8, by = 0.5)),
+            ~ if_else(Sepal.Length < num(.x), 1, 0),
+            .names = "Sepal.Length_{str}"))
 
 }
