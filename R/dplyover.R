@@ -4,4 +4,5 @@
 #' @useDynLib dplyover, .registration = TRUE
 #' @keywords internal
 #' @importFrom rlang %||%
+#' @importFrom magrittr %>%
 "_PACKAGE"
