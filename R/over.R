@@ -3,7 +3,7 @@
 #' @description
 #' `over()` makes it easy to create new colums inside a [dplyr::mutate()] or
 #' [dplyr::summarise()] call by applying a function (or a set of functions) to
-#' a character vector using a syntax similar to the existing [dplyr::across()].
+#' a character vector using a syntax similar to [dplyr::across()].
 #' The main difference is that [dplyr::across()] transforms or creates new
 #' columns based on existing ones, while `over()` creates new columns based on a
 #' character vector to which it will apply one or several functions. Whereas
@@ -73,7 +73,6 @@
 #'   mutate(over(as.character(unique(Species)),
 #'              ~ if_else(Species == .x, 1, 0)))
 #'
-#' @importFrom rlang %||%
 #' @export
 over <- function(.strs, .fns = NULL, ..., .names = NULL){
 
