@@ -108,18 +108,18 @@
 #'              ~ if_else(Species == .x, 1, 0)))
 #'
 #' # `get_values()` is a wrapper around `as.character(unique(...))`:
-#' iris_tbl %>%
+#' iris %>%
 #'   mutate(over(get_values(Species),
 #'              ~ if_else(Species == .x, 1, 0)))
 #'
 #' # Lets create several dummy variables with different thresholds
-#' iris_tbl %>%
+#' iris %>%
 #' mutate(over(as.character(seq(4.5, 8, by = 0.5)),
 #'             ~ if_else(Sepal.Length < as.numeric(.x), 1, 0),
 #'             .names = "Sepal.Length_{str}"))
 #'
 #' # `chr_sq()` and `num()` can shorten the above call:
-#' iris_tbl %>%
+#' iris %>%
 #' mutate(over(chr_sq(4.5, 8, by = 0.5)),
 #'             ~ if_else(Sepal.Length < num(.x), 1, 0),
 #'             .names = "Sepal.Length_{str}"))
