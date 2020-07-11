@@ -122,7 +122,7 @@
 #'             ~ if_else(Sepal.Length < num(.x), 1, 0),
 #'             .names = "Sepal.Length_{str}"))
 #' @export
-over <- function(.strs, .fns, ..., .names = NULL){
+over <- function(.strs, .fns = NULL, ..., .names = NULL){
 
   data <- tryCatch({
     dplyr::across()
@@ -181,13 +181,19 @@ over_setup <- function(strs, fns, names, cnames) {
 
     rlang::abort(c("Problem with `over()` input `.strs`.",
             i = "Input `.strs` must not contain existing column names.",
-            x = paste0("`.str` contains the following column names: ",
+            x = paste0("`.str` contained the following column names: ",
                        paste0(paste0("'", dnames[seq_along(1:names_l)], "'"), collapse = ", "),
                        ifelse(length(dnames) > 3, " etc. ", ".")),
             i = "If you want to transform existing columns try using `across()`."))
 
   }
+  if (is.null(fns)) {
+    rlang::abort(c("Problem with `over()` input `.fns`.",
+            i = "Input `.fns` must be a function or a list of functions.",
+            x = "`over()` was called without specifying the `.fns` argument.",
+            i = "Try using `across(), if you want to return the data untransformed."))
 
+  }
   # account for named character vectors to overwrite .names argument
   if (is.function(fns) || rlang::is_formula(fns)) {
     names <- names %||% "{str}"
