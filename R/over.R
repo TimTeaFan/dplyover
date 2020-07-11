@@ -46,34 +46,35 @@
 #' @returns
 #' A tibble with one column for each string in `.strs` and each function in `.fns`.
 #' @examples
-#' # over() has two main use cases:
+#' # over() has two main use cases. They differ in how the strings in `.strs`
+#' # are used.
 #'
-#' # (1) The strings in `.strs` are used to construct column names (sharing the same stem)
-#' # in a function call. Here it is important to, first, turn the strings into
-#' # symbols and then to evaluate them early. Consider the following only as an
-#' # example to understand what would be necessary to turn strings into column
-#' # names in a call to `over()`.
+#' # (1) -----------------------------------------------------------------------
+#' # The strings supplied to `.strs` are used to construct column names (sharing the
+#' # same stem). This allows to dynamically use more than one column in the
+#' # function calls in `.fns`. To work properly, the strings need to be
+#' # turned into symbols and evaluated early. over()'s genuine forcing function
+#' # `.()` helps to declutter the otherwise rather verbose code. `.()`  supports
+#' # glue syntax and takes a string as argument:
 #'
+#' # Consider this example of a purrr-style formula with `.()`:
 #' iris %>%
 #'   mutate(over(c("Sepal", "Petal"),
-#'               ~ mean(eval(sym(paste0(.x,".Width"))))
+#'               ~ .("{.x}.Width") + .("{.x}.Length")
+#'               ))
+#'
+#' # The above syntax is equal to the more verbose:
+#' iris %>%
+#'   mutate(over(c("Sepal", "Petal"),
+#'               ~ eval(sym(paste0(.x, ".Width"))) + eval(sym(paste0(.x, ".Length")))
 #'               ))
 #'
 #' # Note that rlang's forcing operator `!!` is not supported inside `over()`.
 #' \dontrun{
 #'   mutate(over(c("Sepal", "Petal"),
-#'               ~ mean(!! sym(paste0(.x,".Width")))
+#'               ~ !! sym(paste0(.x, ".Width")) + !! sym(paste0(.x, ".Length"))
 #'               ))
 #'}
-#'
-#' # To make writing anonymous functions easier, `over()` comes with a genuine
-#' # forcing function `.()` which supports glue syntax and takes a string as
-#' # argument. This function is basically a wrapper around `eval_tidy(sym(glue(...)))`.
-#' # The purrr-style formula from above with special evaluation using `.()`:
-#' iris %>%
-#'   mutate(over(c("Sepal", "Petal"),
-#'               ~ mean(.("{.x}.Width"))
-#'               ))
 #'
 #' # `.()` also works with anonymous functions
 #' iris %>%
@@ -97,15 +98,16 @@
 #'
 #'
 #'
-#' # (2) In the second use case the strings in `.strs` are used as values and
-#' # mostly matched against conditions inside the functions `.fns`.
+#' # (2) -----------------------------------------------------------------------
+#' # In the second use case the strings in `.strs` are used as values and
+#' # matched against conditions inside the functions in `.fns`.
 #'
 #' # Lets create a dummy variable for each unique value in 'Species':
 #' iris %>%
 #'   mutate(over(as.character(unique(Species)),
 #'              ~ if_else(Species == .x, 1, 0)))
 #'
-#' # [`get_values()`] is a wrapper around `as.character(unique(...))`:
+#' # `get_values()` is a wrapper around `as.character(unique(...))`:
 #' iris_tbl %>%
 #'   mutate(over(get_values(Species),
 #'              ~ if_else(Species == .x, 1, 0)))
@@ -116,7 +118,7 @@
 #'             ~ if_else(Sepal.Length < as.numeric(.x), 1, 0),
 #'             .names = "Sepal.Length_{str}"))
 #'
-#' # [`chr_sq()`] and [`num()`] can shorten the above call:
+#' # `chr_sq()` and `num()` can shorten the above call:
 #' iris_tbl %>%
 #' mutate(over(chr_sq(4.5, 8, by = 0.5)),
 #'             ~ if_else(Sepal.Length < num(.x), 1, 0),
