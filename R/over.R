@@ -9,8 +9,8 @@
 #' character vector to which it will apply one or several functions. Whereas
 #' [dplyr::across()] allows `tidy-selection` helpers to select columns,
 #' `over()` provides its own helper functions to select strings based on either
-#' (1) column names or (2) values of specified columns. See `vignette("over")`
-#' and `vignette("string_selection_helpers")` for more details.
+#' (1) column names or (2) values of specified columns. See the examples below
+#' and the `vignette("over")` for more details.
 #'
 #' @param .strs A character vector to apply functions to. Instead of a character
 #'   vector a <[`string selection helper`][string_selection_helpers]> or any other function
