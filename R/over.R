@@ -123,8 +123,6 @@
 #' mutate(over(chr_sq(4.5, 8, by = 0.5)),
 #'             ~ if_else(Sepal.Length < num(.x), 1, 0),
 #'             .names = "Sepal.Length_{str}"))
-#' @importFrom rlang %||%
-#' @importFrom magrittr %>%
 #' @export
 over <- function(.strs, .fns, ..., .names = NULL){
 
