@@ -2,5 +2,3 @@
 
 export(over)
 importFrom(magrittr,"%>%")
-importFrom(rlang,"%||%")
-useDynLib(dplyover, .registration = TRUE)
