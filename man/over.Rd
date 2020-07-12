@@ -40,7 +40,7 @@ columns. This can use \code{{str}} to stand for the selected string name, and
 \code{"{str}_{fn}"} for the case where a list is used for \code{.fns}.}
 }
 \value{
-A tibble with one column for each string in \code{.strs} and each function in \code{.fns}.
+A tibble with one column for each string in \code{.strs} and each function in \code{.fns};.
 }
 \description{
 \code{over()} makes it easy to create new colums inside a \code{\link[dplyr:mutate]{dplyr::mutate()}} or
@@ -51,85 +51,166 @@ columns based on existing ones, while \code{over()} creates new columns based on
 character vector to which it will apply one or several functions. Whereas
 \code{\link[dplyr:across]{dplyr::across()}} allows \code{tidy-selection} helpers to select columns,
 \code{over()} provides its own helper functions to select strings based on either
-(1) column names or (2) values of specified columns. See \code{vignette("over")}
-and \code{vignette("string_selection_helpers")} for more details.
+(1) column names or (2) values of specified columns. See the examples below
+and the \code{vignette("over")} for more details.
 }
-\examples{
-# over() has two main use cases. They differ in how the strings in `.strs`
-# are used.
+\section{Examples}{
 
-# (1) -----------------------------------------------------------------------
-# The strings supplied to `.strs` are used to construct column names (sharing the
-# same stem). This allows to dynamically use more than one column in the
-# function calls in `.fns`. To work properly, the strings need to be
-# turned into symbols and evaluated early. over()'s genuine forcing function
-# `.()` helps to declutter the otherwise rather verbose code. `.()`  supports
-# glue syntax and takes a string as argument:
 
-# Consider this example of a purrr-style formula with `.()`:
-iris \%>\%
+\code{over()} can only be used inside \code{dplyr::mutate} or \code{dplyr::summarise}.
+It has two main use cases. They differ in how the strings in \code{.strs}
+are used. Let's first attach \code{dplyr}:\if{html}{\out{<div class="r">}}\preformatted{library(dplyr)
+
+# For better printing
+iris <- as_tibble(iris)
+}\if{html}{\out{</div>}}
+
+(1)
+The strings supplied to \code{.strs} are used to construct column names (sharing the
+same stem). This allows to dynamically use more than one column in the
+function calls in \code{.fns}. To work properly, the strings need to be
+turned into symbols and evaluated early. over()'s genuine forcing function
+\code{.()} helps to declutter the otherwise rather verbose code. \code{.()}  supports
+glue syntax and takes a string as argument:
+
+Consider this example of a purrr-style formula in \code{.fns} with \code{.()}:\if{html}{\out{<div class="r">}}\preformatted{iris \%>\%
   mutate(over(c("Sepal", "Petal"),
-              ~ .("{.x}.Width") + .("{.x}.Length")
+              ~ .("\{.x\}.Width") + .("\{.x\}.Length")
               ))
+#> # A tibble: 150 x 7
+#>   Sepal.Length Sepal.Width Petal.Length Petal.Width Species Sepal Petal
+#>          <dbl>       <dbl>        <dbl>       <dbl> <fct>   <dbl> <dbl>
+#> 1          5.1         3.5          1.4         0.2 setosa    8.6  1.60
+#> 2          4.9         3            1.4         0.2 setosa    7.9  1.60
+#> 3          4.7         3.2          1.3         0.2 setosa    7.9  1.5 
+#> 4          4.6         3.1          1.5         0.2 setosa    7.7  1.7 
+#> # ... with 146 more rows
+}\if{html}{\out{</div>}}
 
-# The above syntax is equal to the more verbose:
-iris \%>\%
+The above syntax is equal to the more verbose:\if{html}{\out{<div class="r">}}\preformatted{iris \%>\%
   mutate(over(c("Sepal", "Petal"),
-              ~ eval(sym(paste0(.x, ".Width"))) + eval(sym(paste0(.x, ".Length")))
+              ~ eval(sym(paste0(.x, ".Width"))) +
+                eval(sym(paste0(.x, ".Length")))
               ))
+#> # A tibble: 150 x 7
+#>   Sepal.Length Sepal.Width Petal.Length Petal.Width Species Sepal Petal
+#>          <dbl>       <dbl>        <dbl>       <dbl> <fct>   <dbl> <dbl>
+#> 1          5.1         3.5          1.4         0.2 setosa    8.6  1.60
+#> 2          4.9         3            1.4         0.2 setosa    7.9  1.60
+#> 3          4.7         3.2          1.3         0.2 setosa    7.9  1.5 
+#> 4          4.6         3.1          1.5         0.2 setosa    7.7  1.7 
+#> # ... with 146 more rows
+}\if{html}{\out{</div>}}
 
-# Note that rlang's forcing operator `!!` is not supported inside `over()`.
-\dontrun{
-  mutate(over(c("Sepal", "Petal"),
-              ~ !! sym(paste0(.x, ".Width")) + !! sym(paste0(.x, ".Length"))
+Note that rlang's forcing operator \verb{!!} is not supported inside \code{over()}.\if{html}{\out{<div class="r">}}\preformatted{  mutate(over(c("Sepal", "Petal"),
+              ~ !! sym(paste0(.x, ".Width")) +
+                !! sym(paste0(.x, ".Length"))
               ))
+}\if{html}{\out{</div>}}\preformatted{## Error: `over()` must only be used inside dplyr verbs
 }
 
-# `.()` also works with anonymous functions
-iris \%>\%
+\code{.()} also works with anonymous functions\if{html}{\out{<div class="r">}}\preformatted{iris \%>\%
   summarise(over(c("Sepal", "Petal"),
-                function(x) mean(.("{x}.Width"))
+                function(x) mean(.("\{x\}.Width"))
                 ))
+#> # A tibble: 1 x 2
+#>   Sepal Petal
+#>   <dbl> <dbl>
+#> 1  3.06  1.20
+}\if{html}{\out{</div>}}
 
-# A named list of functions
-iris \%>\%
+A named list of functions\if{html}{\out{<div class="r">}}\preformatted{iris \%>\%
   mutate(over(c("Sepal", "Petal"),
-              list(product = ~ .("{.x}.Width") * .("{.x}.Length"),
-                   sum = ~ .("{.x}.Width") + .("{.x}.Length")
-              )))
+              list(product = ~ .("\{.x\}.Width") * .("\{.x\}.Length"),
+                   sum = ~ .("\{.x\}.Width") + .("\{.x\}.Length"))
+                   ),
+         .keep = "none")
+#> # A tibble: 150 x 4
+#>   Sepal_product Sepal_sum Petal_product Petal_sum
+#>           <dbl>     <dbl>         <dbl>     <dbl>
+#> 1          17.8       8.6         0.280      1.60
+#> 2          14.7       7.9         0.280      1.60
+#> 3          15.0       7.9         0.26       1.5 
+#> 4          14.3       7.7         0.3        1.7 
+#> # ... with 146 more rows
+}\if{html}{\out{</div>}}
 
-# Use the .names argument to control the output names
-iris \%>\%
+Use the \code{.names} argument to control the output names\if{html}{\out{<div class="r">}}\preformatted{iris \%>\%
   mutate(over(c("Sepal", "Petal"),
-              list(product = ~ .("{.x}.Width") * .("{.x}.Length"),
-                   sum = ~ .("{.x}.Width") + .("{.x}.Length")),
-              .names = "{fn}_{str}"))
+              list(product = ~ .("\{.x\}.Width") * .("\{.x\}.Length"),
+                   sum = ~ .("\{.x\}.Width") + .("\{.x\}.Length")),
+              .names = "\{fn\}_\{str\}"),
+         .keep = "none")
+#> # A tibble: 150 x 4
+#>   product_Sepal sum_Sepal product_Petal sum_Petal
+#>           <dbl>     <dbl>         <dbl>     <dbl>
+#> 1          17.8       8.6         0.280      1.60
+#> 2          14.7       7.9         0.280      1.60
+#> 3          15.0       7.9         0.26       1.5 
+#> 4          14.3       7.7         0.3        1.7 
+#> # ... with 146 more rows
+}\if{html}{\out{</div>}}
 
+(2)
+In the second use case the strings in \code{.strs} are used as values and
+matched against conditions inside the functions in \code{.fns}.
 
-
-# (2) -----------------------------------------------------------------------
-# In the second use case the strings in `.strs` are used as values and
-# matched against conditions inside the functions in `.fns`.
-
-# Lets create a dummy variable for each unique value in 'Species':
-iris \%>\%
+Lets create a dummy variable for each unique value in 'Species':\if{html}{\out{<div class="r">}}\preformatted{iris \%>\%
   mutate(over(as.character(unique(Species)),
-             ~ if_else(Species == .x, 1, 0)))
+             ~ if_else(Species == .x, 1, 0)),
+         .keep = "none")
+#> # A tibble: 150 x 3
+#>   setosa versicolor virginica
+#>    <dbl>      <dbl>     <dbl>
+#> 1      1          0         0
+#> 2      1          0         0
+#> 3      1          0         0
+#> 4      1          0         0
+#> # ... with 146 more rows
+}\if{html}{\out{</div>}}
 
-# `get_values()` is a wrapper around `as.character(unique(...))`:
-iris \%>\%
+\code{get_values()} is a wrapper around \code{as.character(unique(...))}:\if{html}{\out{<div class="r">}}\preformatted{iris \%>\%
   mutate(over(get_values(Species),
-             ~ if_else(Species == .x, 1, 0)))
+             ~ if_else(Species == .x, 1, 0)),
+         .keep = "none")
+#> # A tibble: 150 x 3
+#>   setosa versicolor virginica
+#>    <dbl>      <dbl>     <dbl>
+#> 1      1          0         0
+#> 2      1          0         0
+#> 3      1          0         0
+#> 4      1          0         0
+#> # ... with 146 more rows
+}\if{html}{\out{</div>}}
 
-# Lets create several dummy variables with different thresholds
-iris \%>\%
-mutate(over(as.character(seq(4.5, 8, by = 0.5)),
+Lets create several dummy variables with different thresholds\if{html}{\out{<div class="r">}}\preformatted{iris \%>\%
+mutate(over(as.character(seq(4, 7, by = 1)),
             ~ if_else(Sepal.Length < as.numeric(.x), 1, 0),
-            .names = "Sepal.Length_{str}"))
+            .names = "Sepal.Length_\{str\}"),
+         .keep = "none")
+#> # A tibble: 150 x 4
+#>   Sepal.Length_4 Sepal.Length_5 Sepal.Length_6 Sepal.Length_7
+#>            <dbl>          <dbl>          <dbl>          <dbl>
+#> 1              0              0              1              1
+#> 2              0              1              1              1
+#> 3              0              1              1              1
+#> 4              0              1              1              1
+#> # ... with 146 more rows
+}\if{html}{\out{</div>}}
 
-# `chr_sq()` and `num()` can shorten the above call:
-iris \%>\%
-mutate(over(chr_sq(4.5, 8, by = 0.5)),
+\code{chr_sq()} and \code{num()} can shorten the above call:\if{html}{\out{<div class="r">}}\preformatted{iris \%>\%
+mutate(over(chr_sq(4, 7, by = 1),
             ~ if_else(Sepal.Length < num(.x), 1, 0),
-            .names = "Sepal.Length_{str}"))
+            .names = "Sepal.Length_\{str\}"),
+         .keep = "none")
+#> # A tibble: 150 x 4
+#>   Sepal.Length_4 Sepal.Length_5 Sepal.Length_6 Sepal.Length_7
+#>            <dbl>          <dbl>          <dbl>          <dbl>
+#> 1              0              0              1              1
+#> 2              0              1              1              1
+#> 3              0              1              1              1
+#> 4              0              1              1              1
+#> # ... with 146 more rows
+}\if{html}{\out{</div>}}
 }
+

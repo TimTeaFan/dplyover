@@ -44,85 +44,124 @@
 #'   `"{str}_{fn}"` for the case where a list is used for `.fns`.
 #'
 #' @returns
-#' A tibble with one column for each string in `.strs` and each function in `.fns`.
-#' @examples
-#' # over() has two main use cases. They differ in how the strings in `.strs`
-#' # are used.
+#' A tibble with one column for each string in `.strs` and each function in `.fns`;.
 #'
-#' # (1) -----------------------------------------------------------------------
-#' # The strings supplied to `.strs` are used to construct column names (sharing the
-#' # same stem). This allows to dynamically use more than one column in the
-#' # function calls in `.fns`. To work properly, the strings need to be
-#' # turned into symbols and evaluated early. over()'s genuine forcing function
-#' # `.()` helps to declutter the otherwise rather verbose code. `.()`  supports
-#' # glue syntax and takes a string as argument:
+#' @section Examples:
 #'
-#' # Consider this example of a purrr-style formula with `.()`:
+#' ```{r, child = "man/rmd/setup.Rmd"}
+#' ```
+#'
+#' `over()` can only be used inside `dplyr::mutate` or `dplyr::summarise`.
+#' It has two main use cases. They differ in how the strings in `.strs`
+#' are used. Let's first attach `dplyr`:
+#'
+#' ```{r, comment = "#>", collapse = TRUE}
+#' library(dplyr)
+#'
+#' # For better printing
+#' iris <- as_tibble(iris)
+#' ```
+#'
+#' (1)
+#' The strings supplied to `.strs` are used to construct column names (sharing the
+#' same stem). This allows to dynamically use more than one column in the
+#' function calls in `.fns`. To work properly, the strings need to be
+#' turned into symbols and evaluated early. over()'s genuine forcing function
+#' `.()` helps to declutter the otherwise rather verbose code. `.()`  supports
+#' glue syntax and takes a string as argument:
+#'
+#' Consider this example of a purrr-style formula in `.fns` with `.()`:
+#'
+#' ```{r, comment = "#>", collapse = TRUE}
 #' iris %>%
 #'   mutate(over(c("Sepal", "Petal"),
 #'               ~ .("{.x}.Width") + .("{.x}.Length")
 #'               ))
+#' ```
 #'
-#' # The above syntax is equal to the more verbose:
+#' The above syntax is equal to the more verbose:
+#' ```{r, comment = "#>", collapse = TRUE}
 #' iris %>%
 #'   mutate(over(c("Sepal", "Petal"),
-#'               ~ eval(sym(paste0(.x, ".Width"))) + eval(sym(paste0(.x, ".Length")))
+#'               ~ eval(sym(paste0(.x, ".Width"))) +
+#'                 eval(sym(paste0(.x, ".Length")))
 #'               ))
+#' ```
 #'
-#' # Note that rlang's forcing operator `!!` is not supported inside `over()`.
-#' \dontrun{
+#' Note that rlang's forcing operator `!!` is not supported inside `over()`.
+#' ```{r, error = TRUE}
 #'   mutate(over(c("Sepal", "Petal"),
-#'               ~ !! sym(paste0(.x, ".Width")) + !! sym(paste0(.x, ".Length"))
+#'               ~ !! sym(paste0(.x, ".Width")) +
+#'                 !! sym(paste0(.x, ".Length"))
 #'               ))
-#'}
+#' ```
 #'
-#' # `.()` also works with anonymous functions
+#' `.()` also works with anonymous functions
+#' ```{r, comment = "#>", collapse = TRUE}
 #' iris %>%
 #'   summarise(over(c("Sepal", "Petal"),
 #'                 function(x) mean(.("{x}.Width"))
 #'                 ))
+#' ```
 #'
-#' # A named list of functions
+#' A named list of functions
+#' ```{r, comment = "#>", collapse = TRUE}
 #' iris %>%
 #'   mutate(over(c("Sepal", "Petal"),
 #'               list(product = ~ .("{.x}.Width") * .("{.x}.Length"),
-#'                    sum = ~ .("{.x}.Width") + .("{.x}.Length")
-#'               )))
+#'                    sum = ~ .("{.x}.Width") + .("{.x}.Length"))
+#'                    ),
+#'          .keep = "none")
+#' ```
 #'
-#' # Use the .names argument to control the output names
+#' Use the `.names` argument to control the output names
+#' ```{r, comment = "#>", collapse = TRUE}
 #' iris %>%
 #'   mutate(over(c("Sepal", "Petal"),
 #'               list(product = ~ .("{.x}.Width") * .("{.x}.Length"),
 #'                    sum = ~ .("{.x}.Width") + .("{.x}.Length")),
-#'               .names = "{fn}_{str}"))
+#'               .names = "{fn}_{str}"),
+#'          .keep = "none")
+#' ```
 #'
 #'
+#' (2)
+#' In the second use case the strings in `.strs` are used as values and
+#' matched against conditions inside the functions in `.fns`.
 #'
-#' # (2) -----------------------------------------------------------------------
-#' # In the second use case the strings in `.strs` are used as values and
-#' # matched against conditions inside the functions in `.fns`.
-#'
-#' # Lets create a dummy variable for each unique value in 'Species':
+#' Lets create a dummy variable for each unique value in 'Species':
+#' ```{r, comment = "#>", collapse = TRUE}
 #' iris %>%
 #'   mutate(over(as.character(unique(Species)),
-#'              ~ if_else(Species == .x, 1, 0)))
+#'              ~ if_else(Species == .x, 1, 0)),
+#'          .keep = "none")
+#' ```
 #'
-#' # `get_values()` is a wrapper around `as.character(unique(...))`:
+#' `get_values()` is a wrapper around `as.character(unique(...))`:
+#' ```{r, comment = "#>", collapse = TRUE}
 #' iris %>%
 #'   mutate(over(get_values(Species),
-#'              ~ if_else(Species == .x, 1, 0)))
+#'              ~ if_else(Species == .x, 1, 0)),
+#'          .keep = "none")
+#' ```
 #'
-#' # Lets create several dummy variables with different thresholds
+#' Lets create several dummy variables with different thresholds
+#' ```{r, comment = "#>", collapse = TRUE}
 #' iris %>%
-#' mutate(over(as.character(seq(4.5, 8, by = 0.5)),
+#' mutate(over(as.character(seq(4, 7, by = 1)),
 #'             ~ if_else(Sepal.Length < as.numeric(.x), 1, 0),
-#'             .names = "Sepal.Length_{str}"))
+#'             .names = "Sepal.Length_{str}"),
+#'          .keep = "none")
+#' ```
 #'
-#' # `chr_sq()` and `num()` can shorten the above call:
+#' `chr_sq()` and `num()` can shorten the above call:
+#' ```{r, comment = "#>", collapse = TRUE}
 #' iris %>%
-#' mutate(over(chr_sq(4.5, 8, by = 0.5)),
+#' mutate(over(chr_sq(4, 7, by = 1),
 #'             ~ if_else(Sepal.Length < num(.x), 1, 0),
-#'             .names = "Sepal.Length_{str}"))
+#'             .names = "Sepal.Length_{str}"),
+#'          .keep = "none")
+#' ```
 #' @export
 over <- function(.strs, .fns, ..., .names = NULL){
 
