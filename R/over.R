@@ -88,8 +88,9 @@
 #'               ))
 #' ```
 #'
-#' Note that rlang's forcing operator `!!` is not supported inside `over()`.
+#' Note that `rlang`'s forcing operator `!!` is not supported inside `over()`.
 #' ```{r, error = TRUE}
+#' iris %>%
 #'   mutate(over(c("Sepal", "Petal"),
 #'               ~ !! sym(paste0(.x, ".Width")) +
 #'                 !! sym(paste0(.x, ".Length"))

@@ -102,11 +102,12 @@ The above syntax is equal to the more verbose:\if{html}{\out{<div class="r">}}\p
 #> # ... with 146 more rows
 }\if{html}{\out{</div>}}
 
-Note that rlang's forcing operator \verb{!!} is not supported inside \code{over()}.\if{html}{\out{<div class="r">}}\preformatted{  mutate(over(c("Sepal", "Petal"),
+Note that \code{rlang}'s forcing operator \verb{!!} is not supported inside \code{over()}.\if{html}{\out{<div class="r">}}\preformatted{iris \%>\%
+  mutate(over(c("Sepal", "Petal"),
               ~ !! sym(paste0(.x, ".Width")) +
                 !! sym(paste0(.x, ".Length"))
               ))
-}\if{html}{\out{</div>}}\preformatted{## Error: `over()` must only be used inside dplyr verbs
+}\if{html}{\out{</div>}}\preformatted{## Error in paste0(.x, ".Width"): object '.x' not found
 }
 
 \code{.()} also works with anonymous functions\if{html}{\out{<div class="r">}}\preformatted{iris \%>\%
