@@ -1,3 +1,55 @@
+#' Extract character vectors from variable names
+#'
+#' @description
+#' These string selection helpers extract strings according to a given pattern
+#' (`.pattern`) of selected (`.select`) variable names (`.vars`):
+#'
+#' * `cut_off()` Truncates variable names  `.pattern` of
+#'
+#' * `get_suffix()` ...
+#'
+#' * `get_prefix()` ...
+#'
+#' * `get_affix()` ...
+#'
+#' * ...
+#'
+#' @param .pattern A character string containing a <[regular expression][base::regex]> to be
+#'   matched in the selected variable names.
+#'
+#' @param .select A character string containing a regular expression to subset
+#'   the variable names supplied in `.vars`. If `NULL` the `.pattern` will be
+#'   applied to all variable names.
+#'
+#' @param .vars A character vector of variable names, e.g. names(iris). When
+#'   called within `over()` this automatically defaults to the column names of
+#'   the underlying data via a call to `names(dplyr::across())`.
+#'
+#' @param side Can be set to `right` or `left` defining from which side variable
+#'   names should be considered as invariant
+#'
+#' @return A character vector.
+#'
+#' @section Examples:
+#'
+#' ```{r, child = "man/rmd/setup.Rmd"}
+#' ```
+#'
+#' `over()` can only be used inside `dplyr::mutate` or `dplyr::summarise`.
+#' It has two main use cases. They differ in how the strings in `.strs`
+#' are used. Let's first attach `dplyr`:
+#'
+#' ```{r, comment = "#>", collapse = TRUE}
+#' library(dplyr)
+#'
+#' # For better printing
+#' iris <- as_tibble(iris)
+#' ```
+#' #' @name string_select
+NULL
+
+#' @export
+#' @rdname string_select
 cut_off <- function(.pattern, .select = NULL, .vars = NULL) {
 
   if (is.null(.vars) && sys.call(sys.nframe() - 1)[[1]] == "over_setup") {
@@ -17,6 +69,8 @@ cut_off <- function(.pattern, .select = NULL, .vars = NULL) {
 }
 
 
+#' @export
+#' @rdname string_select
 get_suffix <- function(.pattern, .select = NULL, .vars = NULL){
 
   if (is.null(.vars) && sys.call(sys.nframe() - 1)[[1]] == "over_setup") {
@@ -29,6 +83,8 @@ get_suffix <- function(.pattern, .select = NULL, .vars = NULL){
             .vars = .vars)
 }
 
+#' @export
+#' @rdname string_select
 get_prefix <- function(.pattern, .select = NULL, .vars = NULL){
 
   if (is.null(.vars) && sys.call(sys.nframe() - 1)[[1]] == "over_setup") {
@@ -41,6 +97,8 @@ get_prefix <- function(.pattern, .select = NULL, .vars = NULL){
             .vars = .vars)
 }
 
+#' @export
+#' @rdname string_select
 get_affix <- function(.pattern, .select, side = c("right", "left"), .vars = NULL) {
 
   if (is.null(.vars) && sys.call(sys.nframe() - 1)[[1]] == "over_setup") {

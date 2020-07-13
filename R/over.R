@@ -66,7 +66,7 @@
 #' The strings supplied to `.strs` are used to construct column names (sharing the
 #' same stem). This allows to dynamically use more than one column in the
 #' function calls in `.fns`. To work properly, the strings need to be
-#' turned into symbols and evaluated early. over()'s genuine forcing function
+#' turned into symbols and evaluated early. `over()`'s genuine forcing function
 #' `.()` helps to declutter the otherwise rather verbose code. `.()`  supports
 #' glue syntax and takes a string as argument:
 #'
