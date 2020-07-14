@@ -69,7 +69,7 @@ iris <- as_tibble(iris)
 The strings supplied to \code{.strs} are used to construct column names (sharing the
 same stem). This allows to dynamically use more than one column in the
 function calls in \code{.fns}. To work properly, the strings need to be
-turned into symbols and evaluated early. over()'s genuine forcing function
+turned into symbols and evaluated early. \code{over()}'s genuine forcing function
 \code{.()} helps to declutter the otherwise rather verbose code. \code{.()}  supports
 glue syntax and takes a string as argument:
 
@@ -184,7 +184,7 @@ Lets create a dummy variable for each unique value in 'Species':\if{html}{\out{<
 #> # ... with 146 more rows
 }\if{html}{\out{</div>}}
 
-Lets create several dummy variables with different thresholds\if{html}{\out{<div class="r">}}\preformatted{iris \%>\%
+Lets create several dummy variables with different thresholds:\if{html}{\out{<div class="r">}}\preformatted{iris \%>\%
 mutate(over(as.character(seq(4, 7, by = 1)),
             ~ if_else(Sepal.Length < as.numeric(.x), 1, 0),
             .names = "Sepal.Length_\{str\}"),
@@ -199,7 +199,7 @@ mutate(over(as.character(seq(4, 7, by = 1)),
 #> # ... with 146 more rows
 }\if{html}{\out{</div>}}
 
-\code{chr_sq()} and \code{num()} can shorten the above call:\if{html}{\out{<div class="r">}}\preformatted{iris \%>\%
+The wrapper functions \code{chr_sq()} and \code{num()} can shorten the above call:\if{html}{\out{<div class="r">}}\preformatted{iris \%>\%
 mutate(over(chr_sq(4, 7, by = 1),
             ~ if_else(Sepal.Length < num(.x), 1, 0),
             .names = "Sepal.Length_\{str\}"),
