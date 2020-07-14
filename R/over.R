@@ -146,7 +146,7 @@
 #'          .keep = "none")
 #' ```
 #'
-#' Lets create several dummy variables with different thresholds
+#' Lets create several dummy variables with different thresholds:
 #' ```{r, comment = "#>", collapse = TRUE}
 #' iris %>%
 #' mutate(over(as.character(seq(4, 7, by = 1)),
@@ -155,7 +155,7 @@
 #'          .keep = "none")
 #' ```
 #'
-#' `chr_sq()` and `num()` can shorten the above call:
+#' The wrapper functions `chr_sq()` and `num()` can shorten the above call:
 #' ```{r, comment = "#>", collapse = TRUE}
 #' iris %>%
 #' mutate(over(chr_sq(4, 7, by = 1),
