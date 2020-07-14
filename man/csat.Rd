@@ -14,8 +14,8 @@ A tibble with 150 rows and 15 variables:
 \item{postal_contact, phone_contact, email_contact, website_contact,
 shop_contact}{When did the customer have last contact via given channel?}
 \item{postal_rating, phone_rating, email_rating, website_rating,
-shop_rating}{If customer had contact within the last 3 years over the given
-channel: How satisfied was he?}
+shop_rating}{If customer had contact over the given channel:
+How satisfied was he?}
 }
 }
 \usage{

@@ -11,15 +11,15 @@ csatraw <- tibble::tibble(
   product = sample(product_vc, 150, replace = TRUE),
   item1  = round(runif(150, min = 1, max = 5), 0),
   item2a = sample(c(0,1,2,2,3,3), 150, replace = TRUE),
-  item2b = ifelse(item2a %in% c(0,1), NA, round(runif(150, min = 1, max = 5), 0)),
+  item2b = ifelse(item2a == 0, NA, round(runif(150, min = 1, max = 5), 0)),
   item3a = sample(c(0,1,2,2,3,3), 150, replace = TRUE),
-  item3b = ifelse(item3a %in% c(0,1), NA, round(runif(150, min = 1, max = 5), 0)),
+  item3b = ifelse(item3a  == 0, NA, round(runif(150, min = 1, max = 5), 0)),
   item4a = sample(c(0,1,2,2,3,3), 150, replace = TRUE),
-  item4b = ifelse(item4a %in% c(0,1), NA, round(runif(150, min = 1, max = 5), 0)),
+  item4b = ifelse(item4a  == 0, NA, round(runif(150, min = 1, max = 5), 0)),
   item5a = sample(c(0,1,2,2,3,3), 150, replace = TRUE),
-  item5b = ifelse(item5a %in% c(0,1), NA, round(runif(150, min = 1, max = 5), 0)),
+  item5b = ifelse(item5a  == 0, NA, round(runif(150, min = 1, max = 5), 0)),
   item6a = sample(c(0,1,2,2,3,3), 150, replace = TRUE),
-  item6b = ifelse(item6a %in% c(0,1), NA, round(runif(150, min = 1, max = 5), 0))
+  item6b = ifelse(item6a  == 0, NA, round(runif(150, min = 1, max = 5), 0))
 )
 
 usethis::use_data(csatraw, overwrite = TRUE)

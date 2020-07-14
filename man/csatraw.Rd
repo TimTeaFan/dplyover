@@ -16,9 +16,9 @@ A tibble with 150 rows and 15 variables:
 contact via postal mail (item2a), phone (item3a), email (item4a), website
 (item5a), a retail shop (item6a) ?\cr\cr Scale: 0 = "no contact", 1 = "more
 than 3 years ago", 2 = "within 1 to 3 years", 3 = "within the last year"}
-\item{item2b, item3b, item4b, item5b, item6b}{If customer had contact in the
-last 3 years via postal mail (item2b), phone (item3b), email (item4b),
-website (item5b), a retail shop (item6b): How satisfied was he?\cr\cr
+\item{item2b, item3b, item4b, item5b, item6b}{If customer had contact
+via postal mail (item2b), phone (item3b), email (item4b),  website (item5b),
+a retail shop (item6b): How satisfied was he?\cr\cr
 Scale: Ranging from 1 = "Very unsatisfied", to 5 = "Very satisfied"}
 }
 }
@@ -28,8 +28,8 @@ csatraw
 \description{
 This data is randomly generated. It resembles raw data from a customer
 satisfaction survey using CSAT (Customer Satisfaction Score) for a
-contract-based product. The first trhee variables are given, all other
-variables come from a survey tool and are only labled "item1" etc.
+contract-based product. The first three variables are given, all other
+variables come from a survey tool and are only named "item1" etc.
 A recoded version of this data set can be found here <\code{\link{csat}}>.
 }
 \examples{
