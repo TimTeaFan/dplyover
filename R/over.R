@@ -3,18 +3,18 @@
 #' @description
 #' `over()` makes it easy to create new colums inside a [dplyr::mutate()] or
 #' [dplyr::summarise()] call by applying a function (or a set of functions) to
-#' a character vector using a syntax similar to [dplyr::across()].
+#' a character or numeric vector using a syntax similar to [dplyr::across()].
 #' The main difference is that [dplyr::across()] transforms or creates new
 #' columns based on existing ones, while `over()` creates new columns based on a
-#' character vector to which it will apply one or several functions. Whereas
-#' [dplyr::across()] allows `tidy-selection` helpers to select columns,
-#' `over()` provides its own helper functions to select strings based on either
-#' (1) column names or (2) values of specified columns. See the examples below
-#' and the `vignette("over")` for more details.
+#' character or numeric vector to which it will apply one or several functions.
+#' Whereas [dplyr::across()] allows `tidy-selection` helpers to select columns,
+#' `over()` provides its own helper functions to select strings or values based
+#' on either (1) column names or (2) values of specified columns. See the examples
+#' below and the `vignette("over")` for more details.
 #'
-#' @param .strs A character vector to apply functions to. Instead of a character
+#' @param .strs A character, facotr or numeric vector to apply functions to. Instead of a
 #'   vector a <[`string selection helper`][string_selection_helpers]> or any other function
-#'   that evaluates to a character vector can be used. Note that `over()` must
+#'   that evaluates to a character, factor or numeric vector can be used. Note that `over()` must
 #'   only be used to create 'new' columns and will throw an error if `.strs`
 #'   contains existing column names. To transform existing columns use [dplyr::across()].
 #'
@@ -138,31 +138,55 @@
 #'          .keep = "none")
 #' ```
 #'
-#' `get_values()` is a wrapper around `as.character(unique(...))`:
+#' `dist_values()` gets the :
 #' ```{r, comment = "#>", collapse = TRUE}
 #' iris %>%
-#'   mutate(over(get_values(Species),
+#'   mutate(over(dist_values(Species),
 #'              ~ if_else(Species == .x, 1, 0)),
 #'          .keep = "none")
 #' ```
 #'
-#' Lets create several dummy variables with different thresholds:
+#' #' `over()` also works on numeric variables, which is helpful to create several
+#' dummy variables with different thresholds:
 #' ```{r, comment = "#>", collapse = TRUE}
 #' iris %>%
-#' mutate(over(as.character(seq(4, 7, by = 1)),
-#'             ~ if_else(Sepal.Length < as.numeric(.x), 1, 0),
+#' mutate(over(seq(4, 7, by = 1),
+#'             ~ if_else(Sepal.Length < .x, 1, 0),
 #'             .names = "Sepal.Length_{str}"),
 #'          .keep = "none")
 #' ```
 #'
-#' The wrapper functions `chr_sq()` and `num()` can shorten the above call:
+#' We can easily summarise the percent of each unique value of a variable:
 #' ```{r, comment = "#>", collapse = TRUE}
-#' iris %>%
-#' mutate(over(chr_sq(4, 7, by = 1),
-#'             ~ if_else(Sepal.Length < num(.x), 1, 0),
-#'             .names = "Sepal.Length_{str}"),
-#'          .keep = "none")
+#' mtcars %>%
+#'   summarise(over(dist_values(gear),
+#'                  ~ mean(gear == .x),
+#'                  .names = "gear_{str}"))
 #' ```
+#'
+#' This is especially useful when working with grouped data. However, in this
+#' case `dist_values()` should be called on factors, since it will require all
+#' values to be present in all groups. If that is not the case it will through
+#' an error.
+#'
+#' ```{r, error = TRUE}
+#' mtcars %>%
+#'   group_by(cyl) %>%
+#'   summarise(over(dist_values(gear),
+#'                  ~ mean(gear == .x)))
+#' ```
+#'
+#' If used on a factor variable it will work:
+#'
+#' ```{r, comment = "#>", collapse = TRUE}
+#' mtcars %>%
+#'   mutate(gear = as.factor(gear)) %>%
+#'   group_by(cyl) %>%
+#'   summarise(over(dist_values(gear),
+#'                  ~ mean(gear == .x),
+#'                  .names = "gear_{str}"))
+#' ```
+#'
 #' @export
 over <- function(.strs, .fns, ..., .names = NULL){
 
@@ -172,10 +196,14 @@ over <- function(.strs, .fns, ..., .names = NULL){
     rlang::abort("`over()` must only be used inside dplyr verbs")
   })
 
+  .cnames <- names(data)
+
+  check_keep()
+
   setup <- over_setup({{ .strs }},
                       fns = .fns,
                       names = .names,
-                      cnames = names(data))
+                      cnames = .cnames)
 
   vars <- setup$vars
   if (length(vars) == 0L) {
@@ -184,7 +212,18 @@ over <- function(.strs, .fns, ..., .names = NULL){
   fns <- setup$fns
   names <- setup$names
 
-  check_keep()
+  if (any(names %in% .cnames)) {
+    dnames <- .cnames[.cnames %in% names]
+    names_l <- ifelse(length(dnames) > 3, 3, length(dnames))
+
+    rlang::abort(c("Problem with `over()` input `.strs`.",
+                   i = "Input `.strs` must not contain existing column names.",
+                   x = paste0("`.strs` contained the following column names: ",
+                              paste0(paste0("'", dnames[seq_along(1:names_l)], "'"), collapse = ", "),
+                              ifelse(length(dnames) > 3, " etc. ", ".")),
+                   i = "If you want to transform existing columns try using `across()`."))
+
+  }
 
   n_strs <- length(vars)
   n_fns <- length(fns)
@@ -211,24 +250,26 @@ over <- function(.strs, .fns, ..., .names = NULL){
 
 over_setup <- function(strs, fns, names, cnames) {
 
-  if(!is.character(strs)) {
+  if(!is.character(strs) && !is.numeric(strs) && !is.factor(strs)) {
     rlang::abort(c("Problem with `over()` input `.strs`.",
-            i = "Input `.strs` must be a character vector or a function that evaluates to a character vector"))
+            i = "Input `.strs` must be a either a character, factor or numeric vector or a function that evaluates to one of the former.",
+            x = paste0("`.strs` is of class: ", class(strs), ".")))
   } else {
     vars <- strs
   }
-  if (any(vars %in% cnames)) {
-    dnames <- cnames[cnames %in% vars]
-    names_l <- ifelse(length(dnames) > 3, 3, length(dnames))
+  # if (any(vars %in% cnames)) {
+  #   dnames <- cnames[cnames %in% vars]
+  #   names_l <- ifelse(length(dnames) > 3, 3, length(dnames))
+  #
+  #   rlang::abort(c("Problem with `over()` input `.strs`.",
+  #           i = "Input `.strs` must not contain existing column names.",
+  #           x = paste0("`.strs` contained the following column names: ",
+  #                      paste0(paste0("'", dnames[seq_along(1:names_l)], "'"), collapse = ", "),
+  #                      ifelse(length(dnames) > 3, " etc. ", ".")),
+  #           i = "If you want to transform existing columns try using `across()`."))
+  #
+  # }
 
-    rlang::abort(c("Problem with `over()` input `.strs`.",
-            i = "Input `.strs` must not contain existing column names.",
-            x = paste0("`.str` contained the following column names: ",
-                       paste0(paste0("'", dnames[seq_along(1:names_l)], "'"), collapse = ", "),
-                       ifelse(length(dnames) > 3, " etc. ", ".")),
-            i = "If you want to transform existing columns try using `across()`."))
-
-  }
   # account for named character vectors to overwrite .names argument
   if (is.function(fns) || rlang::is_formula(fns)) {
     names <- names %||% "{str}"
