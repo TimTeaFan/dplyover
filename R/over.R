@@ -37,10 +37,10 @@
 #' @param ... Additional arguments for the function calls in `.fns`.
 #'
 #' @param .names A glue specification that describes how to name the output
-#'   columns. This can use `{str}` to stand for the selected string name, and
+#'   columns. This can use `{vec}` to stand for the selected vector element, and
 #'   `{fn}` to stand for the name of the function being applied. The default
-#'   (`NULL`) is equivalent to `"{str}"` for the single function case and
-#'   `"{str}_{fn}"` for the case where a list is used for `.fns`.
+#'   (`NULL`) is equivalent to `"{vec}"` for the single function case and
+#'   `"{vec}_{fn}"` for the case where a list is used for `.fns`.
 #'
 #' @returns
 #' A tibble with one column for each element in `.vec` and each function in `.fns`;.
@@ -120,7 +120,7 @@
 #'   mutate(over(c("Sepal", "Petal"),
 #'               list(product = ~ .("{.x}.Width") * .("{.x}.Length"),
 #'                    sum = ~ .("{.x}.Width") + .("{.x}.Length")),
-#'               .names = "{fn}_{str}"),
+#'               .names = "{fn}_{vec}"),
 #'          .keep = "none")
 #' ```
 #'
@@ -151,7 +151,7 @@
 #' iris %>%
 #' mutate(over(seq(4, 7, by = 1),
 #'             ~ if_else(Sepal.Length < .x, 1, 0),
-#'             .names = "Sepal.Length_{str}"),
+#'             .names = "Sepal.Length_{vec}"),
 #'          .keep = "none")
 #' ```
 #'
@@ -160,7 +160,7 @@
 #' mtcars %>%
 #'   summarise(over(dist_values(gear),
 #'                  ~ mean(gear == .x),
-#'                  .names = "gear_{str}"))
+#'                  .names = "gear_{vec}"))
 #' ```
 #'
 #' This is especially useful when working with grouped data. However, in this
@@ -183,7 +183,7 @@
 #'   group_by(cyl) %>%
 #'   summarise(over(dist_values(gear),
 #'                  ~ mean(gear == .x),
-#'                  .names = "gear_{str}"))
+#'                  .names = "gear_{vec}"))
 #' ```
 #'
 #' @export
@@ -232,7 +232,6 @@ over <- function(.vec, .fns, ..., .names = NULL){
   out <- vector("list", n_vec * n_fns)
 
   for (i in seq_n_vec) {
-    # var <- vars[[i]]
     str <- vars[[i]]
     for (j in seq_fns) {
       fn <- fns[[j]]
@@ -249,32 +248,21 @@ over <- function(.vec, .fns, ..., .names = NULL){
 
 over_setup <- function(vec, fns, names, cnames) {
 
-  if(!is.character(vec) && !is.numeric(vec) && !is.factor(vec)) {
+  # lgoical, numeric, character, date, factor
+  if(!is.atomic(vec) && !is.raw(vec) && !is.complex(vec)) {
     rlang::abort(c("Problem with `over()` input `.vec`.",
-            i = "Input `.vec` must be a either a character, factor or numeric vector or a function that evaluates to one of the former.",
+            i = "Input `.vec` must be an atomic vector or a function that evaluates to one.",
             x = paste0("`.vec` is of class: ", class(vec), ".")))
   } else {
     vars <- vec
   }
-  # if (any(vars %in% cnames)) {
-  #   dnames <- cnames[cnames %in% vars]
-  #   names_l <- ifelse(length(dnames) > 3, 3, length(dnames))
-  #
-  #   rlang::abort(c("Problem with `over()` input `.vec`.",
-  #           i = "Input `.vec` must not contain existing column names.",
-  #           x = paste0("`.vec` contained the following column names: ",
-  #                      paste0(paste0("'", dnames[seq_along(1:names_l)], "'"), collapse = ", "),
-  #                      ifelse(length(dnames) > 3, " etc. ", ".")),
-  #           i = "If you want to transform existing columns try using `across()`."))
-  #
-  # }
 
-  # account for named character vectors to overwrite .names argument
+  # to+do: account for named character vectors to overwrite .names argument
   if (is.function(fns) || rlang::is_formula(fns)) {
-    names <- names %||% "{str}"
+    names <- names %||% "{vec}"
     fns <- list(`1` = fns)
   } else {
-    names <- names %||% "{str}_{fn}"
+    names <- names %||% "{vec}_{fn}"
   }
 
   if (!is.list(fns)) {
@@ -294,7 +282,8 @@ over_setup <- function(vec, fns, names, cnames) {
     }
   }
 
-  names <- vctrs::vec_as_names(glue::glue(names, str = rep(vars, each = length(fns)),
+  names <- vctrs::vec_as_names(glue::glue(names,
+                                          vec = rep(vars, each = length(fns)),
                                           fn = rep(names_fns, length(vars))),
                                repair = "check_unique")
   value <- list(vars = vars, fns = fns, names = names)
