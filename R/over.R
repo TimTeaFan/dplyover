@@ -1,21 +1,20 @@
-#' Apply one or several functions to a character vector in 'dplyr'
+#' Apply one or several functions to a vector in 'dplyr'
 #'
 #' @description
 #' `over()` makes it easy to create new colums inside a [dplyr::mutate()] or
 #' [dplyr::summarise()] call by applying a function (or a set of functions) to
-#' a character or numeric vector using a syntax similar to [dplyr::across()].
-#' The main difference is that [dplyr::across()] transforms or creates new
-#' columns based on existing ones, while `over()` creates new columns based on a
-#' character or numeric vector to which it will apply one or several functions.
-#' Whereas [dplyr::across()] allows `tidy-selection` helpers to select columns,
-#' `over()` provides its own helper functions to select strings or values based
-#' on either (1) column names or (2) values of specified columns. See the examples
-#' below and the `vignette("over")` for more details.
+#' a vector using a syntax similar to [dplyr::across()]. The main difference is
+#' that [dplyr::across()] transforms or creates new columns based on existing ones,
+#' while `over()` creates new columns based on a vector to which it will apply one
+#' or several functions. Whereas [dplyr::across()] allows `tidy-selection` helpers
+#' to select columns, `over()` provides its own helper functions to select strings
+#' or values based on either (1) column names or (2) values of specified columns.
+#' See the examples below and the `vignette("over")` for more details.
 #'
-#' @param .strs A character, facotr or numeric vector to apply functions to. Instead of a
+#' @param .vec A character, factor or numeric vector to apply functions to. Instead of a
 #'   vector a <[`string selection helper`][string_selection_helpers]> or any other function
 #'   that evaluates to a character, factor or numeric vector can be used. Note that `over()` must
-#'   only be used to create 'new' columns and will throw an error if `.strs`
+#'   only be used to create 'new' columns and will throw an error if `.vec`
 #'   contains existing column names. To transform existing columns use [dplyr::across()].
 #'
 #' @param .fns Functions to apply to each of the selected strings. Note that for
@@ -44,7 +43,7 @@
 #'   `"{str}_{fn}"` for the case where a list is used for `.fns`.
 #'
 #' @returns
-#' A tibble with one column for each string in `.strs` and each function in `.fns`;.
+#' A tibble with one column for each element in `.vec` and each function in `.fns`;.
 #'
 #' @section Examples:
 #'
@@ -52,7 +51,7 @@
 #' ```
 #'
 #' `over()` can only be used inside `dplyr::mutate` or `dplyr::summarise`.
-#' It has two main use cases. They differ in how the strings in `.strs`
+#' It has two main use cases. They differ in how the elements in `.vec`
 #' are used. Let's first attach `dplyr`:
 #'
 #' ```{r, comment = "#>", collapse = TRUE}
@@ -63,7 +62,7 @@
 #' ```
 #'
 #' (1)
-#' The strings supplied to `.strs` are used to construct column names (sharing the
+#' The strings supplied to `.vec` are used to construct column names (sharing the
 #' same stem). This allows to dynamically use more than one column in the
 #' function calls in `.fns`. To work properly, the strings need to be
 #' turned into symbols and evaluated early. `over()`'s genuine forcing function
@@ -127,7 +126,7 @@
 #'
 #'
 #' (2)
-#' In the second use case the strings in `.strs` are used as values and
+#' In the second use case the strings in `.vec` are used as values and
 #' matched against conditions inside the functions in `.fns`.
 #'
 #' Lets create a dummy variable for each unique value in 'Species':
@@ -188,7 +187,7 @@
 #' ```
 #'
 #' @export
-over <- function(.strs, .fns, ..., .names = NULL){
+over <- function(.vec, .fns, ..., .names = NULL){
 
   data <- tryCatch({
     dplyr::across()
@@ -200,7 +199,7 @@ over <- function(.strs, .fns, ..., .names = NULL){
 
   check_keep()
 
-  setup <- over_setup({{ .strs }},
+  setup <- over_setup({{ .vec }},
                       fns = .fns,
                       names = .names,
                       cnames = .cnames)
@@ -216,23 +215,23 @@ over <- function(.strs, .fns, ..., .names = NULL){
     dnames <- .cnames[.cnames %in% names]
     names_l <- ifelse(length(dnames) > 3, 3, length(dnames))
 
-    rlang::abort(c("Problem with `over()` input `.strs`.",
-                   i = "Input `.strs` must not contain existing column names.",
-                   x = paste0("`.strs` contained the following column names: ",
+    rlang::abort(c("Problem with `over()` input `.vec`.",
+                   i = "Input `.vec` must not contain existing column names.",
+                   x = paste0("`.vec` contained the following column names: ",
                               paste0(paste0("'", dnames[seq_along(1:names_l)], "'"), collapse = ", "),
                               ifelse(length(dnames) > 3, " etc. ", ".")),
                    i = "If you want to transform existing columns try using `across()`."))
 
   }
 
-  n_strs <- length(vars)
+  n_vec <- length(vars)
   n_fns <- length(fns)
-  seq_n_strs <- seq_len(n_strs)
+  seq_n_vec <- seq_len(n_vec)
   seq_fns <- seq_len(n_fns)
   k <- 1L
-  out <- vector("list", n_strs * n_fns)
+  out <- vector("list", n_vec * n_fns)
 
-  for (i in seq_n_strs) {
+  for (i in seq_n_vec) {
     # var <- vars[[i]]
     str <- vars[[i]]
     for (j in seq_fns) {
@@ -248,22 +247,22 @@ over <- function(.strs, .fns, ..., .names = NULL){
 }
 
 
-over_setup <- function(strs, fns, names, cnames) {
+over_setup <- function(vec, fns, names, cnames) {
 
-  if(!is.character(strs) && !is.numeric(strs) && !is.factor(strs)) {
-    rlang::abort(c("Problem with `over()` input `.strs`.",
-            i = "Input `.strs` must be a either a character, factor or numeric vector or a function that evaluates to one of the former.",
-            x = paste0("`.strs` is of class: ", class(strs), ".")))
+  if(!is.character(vec) && !is.numeric(vec) && !is.factor(vec)) {
+    rlang::abort(c("Problem with `over()` input `.vec`.",
+            i = "Input `.vec` must be a either a character, factor or numeric vector or a function that evaluates to one of the former.",
+            x = paste0("`.vec` is of class: ", class(vec), ".")))
   } else {
-    vars <- strs
+    vars <- vec
   }
   # if (any(vars %in% cnames)) {
   #   dnames <- cnames[cnames %in% vars]
   #   names_l <- ifelse(length(dnames) > 3, 3, length(dnames))
   #
-  #   rlang::abort(c("Problem with `over()` input `.strs`.",
-  #           i = "Input `.strs` must not contain existing column names.",
-  #           x = paste0("`.strs` contained the following column names: ",
+  #   rlang::abort(c("Problem with `over()` input `.vec`.",
+  #           i = "Input `.vec` must not contain existing column names.",
+  #           x = paste0("`.vec` contained the following column names: ",
   #                      paste0(paste0("'", dnames[seq_along(1:names_l)], "'"), collapse = ", "),
   #                      ifelse(length(dnames) > 3, " etc. ", ".")),
   #           i = "If you want to transform existing columns try using `across()`."))
