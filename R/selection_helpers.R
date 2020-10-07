@@ -37,20 +37,14 @@ cut_names <- function(.pattern, .select = NULL, .vars = NULL) {
 }
 
 
-dist_values <- function(.var, .sort = c("asc", "desc", "none"), .dat = NULL) {
-
-  if (is.null(.dat) && sys.call(sys.nframe() - 1)[[1]] == "over_setup") {
-    .dat <- dplyr::across()
-  }
+dist_values <- function(.var, .sort = c("asc", "desc", "none")) {
 
   sort <- match.arg(.sort)
 
-  var <- rlang::as_string(rlang::ensym(.var))
-
-  if (is.factor(.dat[[var]])) {
-    res <- levels(.dat[[var]])
+  if (is.factor(.var)) {
+    res <- levels(.var)
   } else {
-    res <- unique(.dat[[var]])
+    res <- unique(.var)
   }
 
   if (sort == "asc") {
@@ -64,6 +58,13 @@ dist_values <- function(.var, .sort = c("asc", "desc", "none"), .dat = NULL) {
 }
 
 
+seq_range <- function(.var, .by) {
 
+  .range <- range(.var)
 
+  seq.int(ceiling(.range[1]),
+          floor(.range[2]),
+          by = .by)
+
+}
 
