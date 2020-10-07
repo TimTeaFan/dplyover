@@ -65,3 +65,5 @@ dist_values <- function(.var, .sort = c("asc", "desc", "none"), .dat = NULL) {
 
 
 
+
+
