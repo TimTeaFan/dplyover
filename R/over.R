@@ -11,13 +11,13 @@
 #' or values based on either (1) column names or (2) values of specified columns.
 #' See the examples below and the `vignette("over")` for more details.
 #'
-#' @param .vec A character, factor or numeric vector to apply functions to. Instead of a
-#'   vector a <[`string selection helper`][string_selection_helpers]> or any other function
-#'   that evaluates to a character, factor or numeric vector can be used. Note that `over()` must
-#'   only be used to create 'new' columns and will throw an error if `.vec`
-#'   contains existing column names. To transform existing columns use [dplyr::across()].
+#' @param .vec An atomic vector (expect 'raw' and 'complex') to apply functions to.
+#'   Instead of a vector a <[`selection helper`][selection_helpers]> or anything else
+#'   that is coercible to an atomic vector can be used. Note that `over()` must only
+#'   be used to create 'new' columns and will throw an error if `.vec` contains
+#'   existing column names. To transform existing columns use [dplyr::across()].
 #'
-#' @param .fns Functions to apply to each of the selected strings. Note that for
+#' @param .fns Functions to apply to each of the elements in `.vec`. Note that for
 #'   functions that expect variable names as input, the selected strings need to
 #'   be turned into symbols and evaluated early. <[`rlang's forcing operators`][rlang::nse-force]>
 #'   do not work as expected in regular dplyr calls. See the examples below and the `vignette("over")`
@@ -66,7 +66,7 @@
 #' same stem). This allows to dynamically use more than one column in the
 #' function calls in `.fns`. To work properly, the strings need to be
 #' turned into symbols and evaluated early. `over()`'s genuine forcing function
-#' `.()` helps to declutter the otherwise rather verbose code. `.()`  supports
+#' `.()` helps to declutter the otherwise rather verbose code. `.()` supports
 #' glue syntax and takes a string as argument:
 #'
 #' Consider this example of a purrr-style formula in `.fns` with `.()`:
@@ -137,7 +137,7 @@
 #'          .keep = "none")
 #' ```
 #'
-#' `dist_values()` gets the :
+#' `dist_values()` gets the ... :
 #' ```{r, comment = "#>", collapse = TRUE}
 #' iris %>%
 #'   mutate(over(dist_values(Species),
