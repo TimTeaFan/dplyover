@@ -9,10 +9,10 @@
 #'
 #' * [seq_range()] returns the sequence between the `range()` of a variable `x`.
 #'
-#' @param x An atomic vector. For [seq_range()] the vector must be numeric.
+#' @param x An atomic vector. For [seq_range()] x must be numeric or date.
 #' @param .sort A character string indicating which sorting scheme is to be applied
 #'   to distinct values: ascending ("asc" = default), descending ("desc") or "none".
-#' @param .by A number representing the increment of the sequence.
+#' @param .by A number (or date expression) representing the increment of the sequence.
 #'
 #' @return
 #' An atomic vector. [seq_range()] returns an numeric vector.
@@ -22,15 +22,101 @@
 #' ```{r, child = "man/rmd/setup.Rmd"}
 #' ```
 #'
-#' `over()` can only be used inside `dplyr::mutate` or `dplyr::summarise`.
-#' It has two main use cases. They differ in how the elements in `.vec`
-#' are used. Let's first attach `dplyr`:
+#' Selection helpers can be used inside `dplyover::over()` which in turn must be
+#' used inside `dplyr::mutate` or `dplyr::summarise`. Let's first attach `dplyr`:
 #'
 #' ```{r, comment = "#>", collapse = TRUE}
 #' library(dplyr)
 #'
 #' # For better printing
 #' iris <- as_tibble(iris)
+#' ```
+#'
+#' `dist_values()` extracts all distinct values of a column/variable.
+#' This is helpful when creating dummy variables in a loop using `over()`.
+#'
+#' ```{r, comment = "#>", collapse = TRUE}
+#' iris %>%
+#'   mutate(over(dist_values(Species),
+#'               ~ if_else(Species == .x, 1, 0)
+#'               ),
+#'          .keep = "none")
+#' ```
+#'
+#' While the output in the example above is identical to `unique()`,
+#' `dist_values()` has three differences:
+#'
+#' (1) `NA` values are automatically stripped. Compare:
+#'
+#' ```{r, comment = "#>", collapse = TRUE}
+#' unique(c(1:3, NA))
+#' dist_values(c(1:3, NA))
+#' ```
+#'
+#' (2) Applied on factors, `dist_values()` returns all distinct `levels` as
+#' character. Compare:
+#'
+#' ```{r, comment = "#>", collapse = TRUE}
+#' factor(c(1:3, NA) %>%
+#'   as.factor() %>%
+#'   unique() %>%
+#'   class()
+#'
+#' factor(c(1:3, NA) %>%
+#'   as.factor() %>%
+#'   dist_values() %>%
+#'   class()
+#' ```
+#'
+#' (3) As default, the output is sorted in ascending order. This can be
+#' controlled by setting the `.sort` argument. Compare:
+#'
+#' ```{r, comment = "#>", collapse = TRUE}
+#' unique(c(3,1,2))
+#'
+#' dist_values(c(3,1,2))
+#' dist_values(c(3,1,2), .sort = "desc")
+#' dist_values(c(3,1,2), .sort = "none")
+#' ```
+#'
+#'
+#' `seq_range()` generates a numeric sequence between the `min` and `max`
+#' values of its input variable. This is helpful when creating many dummy
+#' variables with varying thresholds.
+#'
+#' ```{r, comment = "#>", collapse = TRUE}
+#' iris %>%
+#'   mutate(over(seq_range(Sepal.Length, 1),
+#'               ~ if_else(Sepal.Length > .x, 1, 0),
+#'               .names = "Sepal.Length.{vec}"),
+#'          .keep = "none")
+#' ```
+#'
+#' Note that if the input variable has not decimal places, `min` and `max` are
+#' wrapped in `ceiling` and `floor` accordingly. This will prevent the creation of
+#' variables that contain only `0` or `1`. Compare the output below with the
+#' example above:
+#'
+#' ```{r, comment = "#>", collapse = TRUE}
+#' iris %>%
+#'   mutate(over(seq(round(min(Sepal.Length), 0),
+#'                   round(max(Sepal.Length), 0),
+#'                   1),
+#'               ~ if_else(Sepal.Length > .x, 1, 0),
+#'               .names = "Sepal.Length.{vec}"),
+#'          .keep = "none")
+#' ```
+#'
+#' `seq_range()` also works on dates:
+#'
+#' ```{r, comment = "#>", collapse = TRUE}
+#' some_dates <- c(as.Date("2020-01-02"),
+#'                 as.Date("2020-05-02"),
+#'                 as.Date("2020-03-02"))
+#'
+#'
+#' dat_rag %>%
+#'   seq_range(., "1 month")
 #' ```
 #'
 #' @name select_values
@@ -62,7 +148,7 @@ dist_values <- function(x, .sort = c("asc", "desc", "none")) {
 #' @export
 seq_range <- function(x, .by) {
 
-  if (!is.numeric(x)) {
+  if (!is.numeric(x) & !is.date(x)) {
     rlang::abort(
       c("Problem with `seq_range()` input `x`.",
         i = "`x` must be a numeric vector.",
@@ -72,11 +158,11 @@ seq_range <- function(x, .by) {
 
   .range <- range(x)
 
-  if (identical(.by, round(.by, 0))) {
+  if (!is.date(x) && identical(.by, round(.by, 0))) {
     .range[1] <- ceiling(.range[1])
     .range[2] <- floor(.range[2])
   }
 
-  seq.int(.range[1], .range[2], by = .by)
+  seq(.range[1], .range[2], by = .by)
 
 }
