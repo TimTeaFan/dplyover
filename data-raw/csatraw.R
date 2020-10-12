@@ -42,7 +42,9 @@ csat <- csat %>%
               .cols = starts_with("item5")) %>%
   rename_with(~ gsub("item6", "shop", .x),
               .cols = starts_with("item6")) %>%
-  mutate(across(matches("csat") | ends_with("_rating"),
+  mutate(type = factor(type, levels = c("new", "existing", "reactivate")),
+         product = factor(product, levels = c("basic", "advanced", "premium")),
+         across(matches("csat") | ends_with("_rating"),
                 ~ recode(.x,
                          `1` = "Very unsatisfied",
                          `2` = "Unsatisfied",

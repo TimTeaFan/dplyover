@@ -18,5 +18,5 @@
 #'  How satisfied was he?}
 #' }
 #' @examples
-#' csatraw
+#' csat
 "csat"
