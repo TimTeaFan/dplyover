@@ -7,6 +7,11 @@
 }
 
 
+is.date <- function(x) {
+  inherits(x, c("Date", "POSIXt"))
+}
+
+
 check_keep <- function() {
 
   call_st <- sys.calls()
