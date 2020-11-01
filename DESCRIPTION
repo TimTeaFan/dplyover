@@ -1,5 +1,5 @@
 Package: dplyover
-Title: Create Columns by Looping over Strings in 'dplyr'
+Title: Create Columns by Looping over Vectors in 'dplyr'
 Version: 0.0.0.9000
 Authors@R: 
     person(given = "Tim",
@@ -9,10 +9,9 @@ Authors@R:
            comment = c(ORCID = "0000-0001-9443-2434"))
 Description: Extension of 'dplyr's functionality which allows to create new
     columns in 'dplyr::mutate()' and 'dplyr::summarise()' by applying a function
-    (or a set of functions) to a character vector using a syntax similar to 
-    'dplyr::across()'. Helper functions are provided to easily select and
-    evaluate strings. Refer to the documentation for examples and more
-    information.
+    (or a set of functions) to a vector using a syntax similar to 'dplyr::across()'.
+    Helper functions are provided to easily select and evaluate strings. Refer
+    to the documentation for examples and more information.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -23,11 +22,11 @@ BugReports: https://github.com/TimTeaFan/dplyover/issues
 Suggests: 
     testthat
 Imports: 
-    dplyr,
-    rlang,
-    vctrs,
+    dplyr (>= 1.0.0),
+    rlang (>= 0.4.7),
+    vctrs (>= 0.3.3),
     purrr,
-    glue,
-    tibble
+    glue (>= 1.3.2),
+    tibble (>= 2.1.3)
 Depends: 
-    R (>= 2.10)
+    R (>= 3.2.0)
