@@ -2,21 +2,24 @@
 #'
 #' @description
 #'
-#' These functions are [selection helpers][selection_helpers].
+#' These functions are [selection helpers][selection_helpers]. They are intended
+#' to be used inside `over()` to extract parts or patterns of the column names of
+#' the underlying data.
 #'
-#' * [cut_names()] selects column names by cutting of the specified `.pattern`.
+#' * [cut_names()] selects strings by removing (cutting off) the specified `.pattern`.
+#' This functionality resembles `stringr::str_remove_all`.
 #'
-#' * [get_pattern()] select column names by extracting the specified `.pattern`.
+#' * [extract_names()] selects strings by extracting the specified `.pattern`.
+#' This functionality resembles `stringr::str_extract`.
 #'
-#' @param .pattern Pattern to apply function to.
+#' @param .pattern Pattern to look for.
 #' @param .vars A charactor vector with variables names. When used inside `over`
 #'   all column names of the underlying data are automatically supplied to `.vars`.
 #'   This argument is useful when testing the functionality outside the context of
 #'   `over()`.
 #' @param .select Pattern to further select and narrow down the variable names
 #'   provided in `.vars`. When this argument is provided the variables names in
-#'   `.vars` will be basically updated with a call to
-#'   `grep(.select, .vars, perl = TRUE, value = TRUE)`.
+#'   `.vars` will be narrowed down those who match the pattern specified in `.select`.
 #'
 #' @return
 #' A character vector.
@@ -36,7 +39,23 @@
 #' # For better printing
 #' iris <- as_tibble(iris)
 #' ```
+#'# test get_suffix, successful, but warnings need to be addressed
 #'
+#'
+
+
+iris_tbl %>%
+  mutate(over(c("Sepal", "Petal"),
+              ~ .("{.x}.Width") * .("{.x}.Length"),
+              .names = "Product_{vec}"))
+
+csatraw %>%
+  transmute(over(extract_names("item\\d", "[2-9]\\w$"),
+                 ~ .("{.x}a") * .("{.x}b"),
+                 .names = "Product_{vec}")
+  )
+
+
 #' @name select_vars
 NULL
 
@@ -81,7 +100,7 @@ cut_names <- function(.pattern, .select = NULL, .vars = NULL) {
 
 #' @rdname select_vars
 #' @export
- get_pattern <- function(.pattern, .select = NULL, .vars = NULL) {
+extract_names <- function(.pattern, .select = NULL, .vars = NULL) {
 
    .varn <- .vars
 
@@ -96,7 +115,7 @@ cut_names <- function(.pattern, .select = NULL, .vars = NULL) {
 
      if (length(.selected) == 0) {
        rlang::abort(
-         c("Problem with `get_pattern()` input `.select`.",
+         c("Problem with `extract_names()` input `.select`.",
            i = paste0("The character string provided in `.select` ('",
                       .select, "') must at least match one ",
                       ifelse(is.null(.vars), "column name.", "element in `.vars`.")),
@@ -104,13 +123,12 @@ cut_names <- function(.pattern, .select = NULL, .vars = NULL) {
      }
    }
 
-  .match <- grepl(.pattern, .selected, perl = TRUE)
-  .extract <- regexpr(.pattern, .varn, perl = TRUE)
-  .res <- regmatches(.varn, .extract)
+  .extract <- regexpr(.pattern, .selected, perl = TRUE)
+  .res <- regmatches(.selected, .extract)
 
   if (length(.res) == 0) {
     rlang::abort(
-      c("Problem with `get_pattern()` input `.pattern`.",
+      c("Problem with `extract_names()` input `.pattern`.",
         i = paste0("The character string provided in `.pattern` ('",
                    .pattern, "') must at least return one match."),
         x = "No match was found."))
