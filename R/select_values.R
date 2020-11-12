@@ -15,7 +15,10 @@
 #' @param .by A number (or date expression) representing the increment of the sequence.
 #'
 #' @return
-#' An atomic vector. [seq_range()] returns an numeric vector.
+#' [dist_values()] returns a vector of the same type of x, with exception of
+#' factors which are converted to type `"character"`.
+#'
+#' [seq_range()] returns an vector of type `"integer"` or `"double"`.
 #'
 #' @section Examples:
 #'
@@ -92,7 +95,7 @@
 #'          .keep = "none")
 #' ```
 #'
-#' Note that if the input variable has not decimal places, `min` and `max` are
+#' Note that if the input variable does not have decimal places, `min` and `max` are
 #' wrapped in `ceiling` and `floor` accordingly. This will prevent the creation of
 #' variables that contain only `0` or `1`. Compare the output below with the
 #' example above:
@@ -148,7 +151,7 @@ dist_values <- function(x, .sort = c("asc", "desc", "none")) {
 #' @export
 seq_range <- function(x, .by) {
 
-  if (!is.numeric(x) & !is.date(x)) {
+  if (!class(x) %in% c("numeric", "integer", "Date")) {
     rlang::abort(
       c("Problem with `seq_range()` input `x`.",
         i = "`x` must be a numeric vector.",

@@ -17,9 +17,9 @@
 #'   be used to create 'new' columns and will throw an error if `.vec` contains
 #'   existing column names. To transform existing columns use [dplyr::across()].
 #'
-#' @param .fns Functions to apply to each of the elements in `.vec`. Note that for
+#' @param .fns Functions to apply to each of the elements in `.vec`. For
 #'   functions that expect variable names as input, the selected strings need to
-#'   be turned into symbols and evaluated early. <[`rlang's forcing operators`][rlang::nse-force]>
+#'   be turned into symbols and evaluated. Note that <[`rlang's forcing operators`][rlang::nse-force]>
 #'   do not work as expected in regular dplyr calls. See the examples below and the `vignette("over")`
 #'   for `over()`'s genuine forcing function [`.()`].
 #'
@@ -62,10 +62,10 @@
 #' ```
 #'
 #' (1)
-#' The strings supplied to `.vec` are used to construct column names (sharing the
-#' same stem). This allows to dynamically use more than one column in the
+#' Here strings a supplied to `.vec` to construct column names (sharing the
+#' same stem). This allows us to dynamically use more than one column in the
 #' function calls in `.fns`. To work properly, the strings need to be
-#' turned into symbols and evaluated early. `over()`'s genuine forcing function
+#' turned into symbols and evaluated. `over()`'s genuine forcing function
 #' `.()` helps to declutter the otherwise rather verbose code. `.()` supports
 #' glue syntax and takes a string as argument:
 #'
@@ -126,7 +126,7 @@
 #'
 #'
 #' (2)
-#' In the second use case the strings in `.vec` are used as values and
+#' In the second use case the values in `.vec` are used as input
 #' matched against conditions inside the functions in `.fns`.
 #'
 #' Lets create a dummy variable for each unique value in 'Species':
@@ -249,9 +249,9 @@ over <- function(.vec, .fns, ..., .names = NULL){
 over_setup <- function(vec, fns, names, cnames) {
 
   # lgoical, numeric, character, date, factor
-  if(!is.atomic(vec) && !is.raw(vec) && !is.complex(vec)) {
+  if(!class(vec) %in% c("integer", "numeric", "character", "Date")) {
     rlang::abort(c("Problem with `over()` input `.vec`.",
-            i = "Input `.vec` must be an atomic vector or a function that evaluates to one.",
+            i = "Input `.vec` must be of class 'integer', 'numeric', 'character' or 'Date'.",
             x = paste0("`.vec` is of class: ", class(vec), ".")))
   } else {
     vars <- vec
@@ -290,7 +290,39 @@ over_setup <- function(vec, fns, names, cnames) {
   value
 }
 
-
+#'
+#'
+#' @description
+#'
+#' These functions are [selection helpers][selection_helpers]. They are intended
+#' to be used inside `over()` to extract parts or patterns of the column names of
+#' the underlying data.
+#'
+#' * [cut_names()] selects strings by removing (cutting off) the specified `.pattern`.
+#' This functionality resembles `stringr::str_remove_all()`.
+#'
+#' * [extract_names()] selects strings by extracting the specified `.pattern`.
+#' This functionality resembles `stringr::str_extract()`.
+#'
+#' @param .pattern Pattern to look for.
+#' @param .vars A character vector with variables names. When used inside `over`
+#'   all column names of the underlying data are automatically supplied to `.vars`.
+#'   This argument is useful when testing the functionality outside the context of
+#'   `over()`.
+#' @param .select Pattern to further select and narrow down the variable names
+#'   provided in `.vars`. When this argument is provided the variables names in
+#'   `.vars` will be narrowed down to those who match the pattern specified in
+#'   `.select`.
+#'
+#' @return
+#' A character vector.
+#'
+#' @section Examples:
+#'
+#' ```{r, child = "man/rmd/setup.Rmd"}
+#' ```
+#'
+#' @export
 `.` <- function(x) {
   rlang::eval_tidy(rlang::sym(glue::glue(x,
                                          .open = "{",
@@ -300,11 +332,13 @@ over_setup <- function(vec, fns, names, cnames) {
 }
 
 
-# is.date <- function(x) {
-#   inherits(x, c("Date", "POSIXt"))
-# }
+# adapted from https://stackoverflow.com/a/60447909/9349302
+is.date <- function(x) {
+  inherits(x, c("Date", "POSIXt"))
+}
 
-
+# function to check the `.keep` argument in the preceeding `mutate()` call
+# some help from https://stackoverflow.com/questions/62746607/
 check_keep <- function() {
 
   call_st <- sys.calls()
