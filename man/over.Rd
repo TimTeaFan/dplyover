@@ -2,20 +2,20 @@
 % Please edit documentation in R/over.R
 \name{over}
 \alias{over}
-\title{Apply one or several functions to a character vector in 'dplyr'}
+\title{Apply one or several functions to a vector in 'dplyr'}
 \usage{
-over(.strs, .fns, ..., .names = NULL)
+over(.vec, .fns, ..., .names = NULL)
 }
 \arguments{
-\item{.strs}{A character vector to apply functions to. Instead of a character
-vector a <\code{\link[=string_selection_helpers]{string selection helper}}> or any other function
-that evaluates to a character vector can be used. Note that \code{over()} must
-only be used to create 'new' columns and will throw an error if \code{.strs}
-contains existing column names. To transform existing columns use \code{\link[dplyr:across]{dplyr::across()}}.}
+\item{.vec}{An atomic vector (expect 'raw' and 'complex') to apply functions to.
+Instead of a vector a <\code{\link[=selection_helpers]{selection helper}}> or anything else
+that is coercible to an atomic vector can be used. Note that \code{over()} must only
+be used to create 'new' columns and will throw an error if \code{.vec} contains
+existing column names. To transform existing columns use \code{\link[dplyr:across]{dplyr::across()}}.}
 
-\item{.fns}{Functions to apply to each of the selected strings. Note that for
+\item{.fns}{Functions to apply to each of the elements in \code{.vec}. For
 functions that expect variable names as input, the selected strings need to
-be turned into symbols and evaluated early. <\code{\link[rlang:nse-force]{rlang's forcing operators}}>
+be turned into symbols and evaluated. Note that <\code{\link[rlang:nse-force]{rlang's forcing operators}}>
 do not work as expected in regular dplyr calls. See the examples below and the \code{vignette("over")}
 for \code{over()}'s genuine forcing function \code{\link[=.]{.()}}.
 
@@ -34,31 +34,30 @@ value to `.fns``.}
 \item{...}{Additional arguments for the function calls in \code{.fns}.}
 
 \item{.names}{A glue specification that describes how to name the output
-columns. This can use \code{{str}} to stand for the selected string name, and
+columns. This can use \code{{vec}} to stand for the selected vector element, and
 \code{{fn}} to stand for the name of the function being applied. The default
-(\code{NULL}) is equivalent to \code{"{str}"} for the single function case and
-\code{"{str}_{fn}"} for the case where a list is used for \code{.fns}.}
+(\code{NULL}) is equivalent to \code{"{vec}"} for the single function case and
+\code{"{vec}_{fn}"} for the case where a list is used for \code{.fns}.}
 }
 \value{
-A tibble with one column for each string in \code{.strs} and each function in \code{.fns};.
+A tibble with one column for each element in \code{.vec} and each function in \code{.fns};.
 }
 \description{
 \code{over()} makes it easy to create new colums inside a \code{\link[dplyr:mutate]{dplyr::mutate()}} or
 \code{\link[dplyr:summarise]{dplyr::summarise()}} call by applying a function (or a set of functions) to
-a character vector using a syntax similar to \code{\link[dplyr:across]{dplyr::across()}}.
-The main difference is that \code{\link[dplyr:across]{dplyr::across()}} transforms or creates new
-columns based on existing ones, while \code{over()} creates new columns based on a
-character vector to which it will apply one or several functions. Whereas
-\code{\link[dplyr:across]{dplyr::across()}} allows \code{tidy-selection} helpers to select columns,
-\code{over()} provides its own helper functions to select strings based on either
-(1) column names or (2) values of specified columns. See the examples below
-and the \code{vignette("over")} for more details.
+a vector using a syntax similar to \code{\link[dplyr:across]{dplyr::across()}}. The main difference is
+that \code{\link[dplyr:across]{dplyr::across()}} transforms or creates new columns based on existing ones,
+while \code{over()} creates new columns based on a vector to which it will apply one
+or several functions. Whereas \code{\link[dplyr:across]{dplyr::across()}} allows \code{tidy-selection} helpers
+to select columns, \code{over()} provides its own helper functions to select strings
+or values based on either (1) column names or (2) values of specified columns.
+See the examples below and the \code{vignette("over")} for more details.
 }
 \section{Examples}{
 
 
 \code{over()} can only be used inside \code{dplyr::mutate} or \code{dplyr::summarise}.
-It has two main use cases. They differ in how the strings in \code{.strs}
+It has two main use cases. They differ in how the elements in \code{.vec}
 are used. Let's first attach \code{dplyr}:\if{html}{\out{<div class="r">}}\preformatted{library(dplyr)
 
 # For better printing
@@ -66,11 +65,11 @@ iris <- as_tibble(iris)
 }\if{html}{\out{</div>}}
 
 (1)
-The strings supplied to \code{.strs} are used to construct column names (sharing the
-same stem). This allows to dynamically use more than one column in the
+Here strings a supplied to \code{.vec} to construct column names (sharing the
+same stem). This allows us to dynamically use more than one column in the
 function calls in \code{.fns}. To work properly, the strings need to be
-turned into symbols and evaluated early. \code{over()}'s genuine forcing function
-\code{.()} helps to declutter the otherwise rather verbose code. \code{.()}  supports
+turned into symbols and evaluated. \code{over()}'s genuine forcing function
+\code{.()} helps to declutter the otherwise rather verbose code. \code{.()} supports
 glue syntax and takes a string as argument:
 
 Consider this example of a purrr-style formula in \code{.fns} with \code{.()}:\if{html}{\out{<div class="r">}}\preformatted{iris \%>\%
@@ -140,7 +139,7 @@ Use the \code{.names} argument to control the output names\if{html}{\out{<div cl
   mutate(over(c("Sepal", "Petal"),
               list(product = ~ .("\{.x\}.Width") * .("\{.x\}.Length"),
                    sum = ~ .("\{.x\}.Width") + .("\{.x\}.Length")),
-              .names = "\{fn\}_\{str\}"),
+              .names = "\{fn\}_\{vec\}"),
          .keep = "none")
 #> # A tibble: 150 x 4
 #>   product_Sepal sum_Sepal product_Petal sum_Petal
@@ -153,7 +152,7 @@ Use the \code{.names} argument to control the output names\if{html}{\out{<div cl
 }\if{html}{\out{</div>}}
 
 (2)
-In the second use case the strings in \code{.strs} are used as values and
+In the second use case the values in \code{.vec} are used as input
 matched against conditions inside the functions in \code{.fns}.
 
 Lets create a dummy variable for each unique value in 'Species':\if{html}{\out{<div class="r">}}\preformatted{iris \%>\%
@@ -170,8 +169,8 @@ Lets create a dummy variable for each unique value in 'Species':\if{html}{\out{<
 #> # ... with 146 more rows
 }\if{html}{\out{</div>}}
 
-\code{get_values()} is a wrapper around \code{as.character(unique(...))}:\if{html}{\out{<div class="r">}}\preformatted{iris \%>\%
-  mutate(over(get_values(Species),
+\code{dist_values()} gets the ... :\if{html}{\out{<div class="r">}}\preformatted{iris \%>\%
+  mutate(over(dist_values(Species),
              ~ if_else(Species == .x, 1, 0)),
          .keep = "none")
 #> # A tibble: 150 x 3
@@ -184,10 +183,11 @@ Lets create a dummy variable for each unique value in 'Species':\if{html}{\out{<
 #> # ... with 146 more rows
 }\if{html}{\out{</div>}}
 
-Lets create several dummy variables with different thresholds:\if{html}{\out{<div class="r">}}\preformatted{iris \%>\%
-mutate(over(as.character(seq(4, 7, by = 1)),
-            ~ if_else(Sepal.Length < as.numeric(.x), 1, 0),
-            .names = "Sepal.Length_\{str\}"),
+#' \code{over()} also works on numeric variables, which is helpful to create several
+dummy variables with different thresholds:\if{html}{\out{<div class="r">}}\preformatted{iris \%>\%
+mutate(over(seq(4, 7, by = 1),
+            ~ if_else(Sepal.Length < .x, 1, 0),
+            .names = "Sepal.Length_\{vec\}"),
          .keep = "none")
 #> # A tibble: 150 x 4
 #>   Sepal.Length_4 Sepal.Length_5 Sepal.Length_6 Sepal.Length_7
@@ -199,19 +199,41 @@ mutate(over(as.character(seq(4, 7, by = 1)),
 #> # ... with 146 more rows
 }\if{html}{\out{</div>}}
 
-The wrapper functions \code{chr_sq()} and \code{num()} can shorten the above call:\if{html}{\out{<div class="r">}}\preformatted{iris \%>\%
-mutate(over(chr_sq(4, 7, by = 1),
-            ~ if_else(Sepal.Length < num(.x), 1, 0),
-            .names = "Sepal.Length_\{str\}"),
-         .keep = "none")
-#> # A tibble: 150 x 4
-#>   Sepal.Length_4 Sepal.Length_5 Sepal.Length_6 Sepal.Length_7
-#>            <dbl>          <dbl>          <dbl>          <dbl>
-#> 1              0              0              1              1
-#> 2              0              1              1              1
-#> 3              0              1              1              1
-#> 4              0              1              1              1
-#> # ... with 146 more rows
+We can easily summarise the percent of each unique value of a variable:\if{html}{\out{<div class="r">}}\preformatted{mtcars \%>\%
+  summarise(over(dist_values(gear),
+                 ~ mean(gear == .x),
+                 .names = "gear_\{vec\}"))
+#>   gear_3 gear_4 gear_5
+#> 1   0.47   0.38   0.16
+}\if{html}{\out{</div>}}
+
+This is especially useful when working with grouped data. However, in this
+case \code{dist_values()} should be called on factors, since it will require all
+values to be present in all groups. If that is not the case it will through
+an error.\if{html}{\out{<div class="r">}}\preformatted{mtcars \%>\%
+  group_by(cyl) \%>\%
+  summarise(over(dist_values(gear),
+                 ~ mean(gear == .x)))
+}\if{html}{\out{</div>}}\preformatted{## Error: Problem with `summarise()` input `..1`.
+## x Can't subset columns that don't exist.
+## x Location 3 doesn't exist.
+## i There are only 2 columns.
+## i Input `..1` is `over(dist_values(gear), ~mean(gear == .x))`.
+## i The error occured in group 3: cyl = 8.
+}
+
+If used on a factor variable it will work:\if{html}{\out{<div class="r">}}\preformatted{mtcars \%>\%
+  mutate(gear = as.factor(gear)) \%>\%
+  group_by(cyl) \%>\%
+  summarise(over(dist_values(gear),
+                 ~ mean(gear == .x),
+                 .names = "gear_\{vec\}"))
+#> # A tibble: 3 x 4
+#>     cyl gear_3 gear_4 gear_5
+#>   <dbl>  <dbl>  <dbl>  <dbl>
+#> 1     4 0.0909  0.727  0.182
+#> 2     6 0.286   0.571  0.143
+#> 3     8 0.857   0      0.143
 }\if{html}{\out{</div>}}
 }
 

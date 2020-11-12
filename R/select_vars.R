@@ -42,12 +42,12 @@
 #' iris <- as_tibble(iris)
 #' ```
 #'
-#' Let's first compare [cut_names()] and [extract_names()]  to their {stringr}
+#' Let's first compare `cut_names()` and `extract_names()`  to their {stringr}
 #' equivalents `stringr::str_remove_all()` and `stringr::str_extract()`:
 #'
 #' We can observe two main differences:
 #'
-#' (1)  [cut_names()] and [extract_names()] only return strings where the function
+#' (1)  `cut_names()` and `extract_names()` only return strings where the function
 #' was applied successfully (when characters have actually been removed or
 #' extracted). `stringr::str_remove_all()` returns unmatched strings as is, while
 #' `stringr::str_extract()` returns `NA`.
@@ -60,7 +60,7 @@
 #' str_extract(rep(names(iris), 2), "Length|Width")
 #' ```
 #'
-#' (2) [cut_names()] and [extract_names()] return only unique values:
+#' (2) `cut_names()` and `extract_names()` return only unique values:
 #'
 #' ```{r, comment = "#>", collapse = TRUE}
 #' cut_names("Width", .vars = rep(names(iris), 2))
@@ -70,8 +70,8 @@
 #' str_extract(rep(names(iris), 2), "Length|Width")
 #' ```
 #'
-#' The examples above do not show that [cut_names()] removes *all* strings matching
-#' the `.pattern` argument, while [extract_names()] does only extract the `.pattern`
+#' The examples above do not show that `cut_names()` removes *all* strings matching
+#' the `.pattern` argument, while `extract_names()` does only extract the `.pattern`
 #' *one* time:
 #'
 #' ```{r, comment = "#>", collapse = TRUE}
@@ -82,41 +82,41 @@
 #' str_extract("Width.Petal.Width", "Width")
 #' ```
 #'
-#' Within [`over()`] [cut_names()] and [extract_names()] automatically use the
+#' Within [`over()`] `cut_names()` and `extract_names()` automatically use the
 #' column names of the underlying data:
 #'
 #' ```{r, comment = "#>", collapse = TRUE}
-#' iris_tbl %>%
+#' iris %>%
 #' mutate(over(cut_names(".Width"),
 #'             ~ .("{.x}.Width") * .("{.x}.Length"),
 #'             .names = "Product_{vec}"))
 #'
-#' iris_tbl %>%
+#' iris %>%
 #'   mutate(over(extract_names("Length|Width"),
 #'               ~.("Petal.{.x}") * .("Sepal.{.x}"),
 #'              .names = "Product_{vec}"))
 #' ```
 #'
-#' What problem does [cut_names()] solve?
-#' In the example above using [cut_names()] might not seem helpful, since we could easily
+#' What problem does `cut_names()` solve?
+#' In the example above using `cut_names()` might not seem helpful, since we could easily
 #' use `c("Sepal", "Petal")` instead. However, there are cases where we have
 #' data with a lot of similar pairs of variables sharing a common prefix or
-#' suffix. If we want to loop over them using `over()` then [cut_names()] comes
+#' suffix. If we want to loop over them using `over()` then `cut_names()` comes
 #' in handy.
 #'
-#' The usage of [extract_names()] might be less obvious. Lets look at raw data
+#' The usage of `extract_names()` might be less obvious. Lets look at raw data
 #' from a customer satifsaction survey which contains the following variables.
 #'
 #' ```{r, comment = "#>", collapse = TRUE}
-#' csatraw %>% glimpse
+#' csatraw %>% glimpse(width = 50)
 #' ```
 #'
 #' The survey has several `item`s consisting of two sub-questions / variables `a`
 #' and `b`. Lets say we want to calculate the product of those two variables for
-#' each item. [extract_names()] helps us to select all variables containing
+#' each item. `extract_names()` helps us to select all variables containing
 #' `"item"` followed by a digit using as regex `"item\\d"` as `.pattern`.
 #' However, there is `item1` which is only one variable not followed by `a` and
-#' `b`. [extract_names()] lets us exclude this item by setting the `.select`
+#' `b`. `extract_names()` lets us exclude this item by setting the `.select`
 #' argument to `[^item1]`:
 #'
 #' ```{r, comment = "#>", collapse = TRUE}

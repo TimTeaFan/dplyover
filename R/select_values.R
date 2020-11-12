@@ -35,7 +35,7 @@
 #' iris <- as_tibble(iris)
 #' ```
 #'
-#' `dist_values()` extracts all distinct values of a column/variable.
+#' `dist_values()` extracts all distinct values of a column variable.
 #' This is helpful when creating dummy variables in a loop using `over()`.
 #'
 #' ```{r, comment = "#>", collapse = TRUE}
@@ -60,12 +60,12 @@
 #' character. Compare:
 #'
 #' ```{r, comment = "#>", collapse = TRUE}
-#' factor(c(1:3, NA) %>%
+#' factor(c(1:3, NA)) %>%
 #'   as.factor() %>%
 #'   unique() %>%
 #'   class()
 #'
-#' factor(c(1:3, NA) %>%
+#' factor(c(1:3, NA)) %>%
 #'   as.factor() %>%
 #'   dist_values() %>%
 #'   class()
@@ -118,7 +118,7 @@
 #'                 as.Date("2020-03-02"))
 #'
 #'
-#' dat_rag %>%
+#' some_dates %>%
 #'   seq_range(., "1 month")
 #' ```
 #'

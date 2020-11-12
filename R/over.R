@@ -290,7 +290,7 @@ over_setup <- function(vec, fns, names, cnames) {
   value
 }
 
-#'
+#' `over()`'s genuine forcing function
 #'
 #' @description
 #'

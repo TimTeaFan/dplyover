@@ -28,6 +28,6 @@ contract-based product. The data has been recoded. The raw version of this data
 set can be found here <\code{\link{csatraw}}>.
 }
 \examples{
-csatraw
+csat
 }
 \keyword{datasets}
