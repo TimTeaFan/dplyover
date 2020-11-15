@@ -19,7 +19,7 @@
 #'   `over()`.
 #' @param .select Pattern to further select and narrow down the variable names
 #'   provided in `.vars`. When this argument is provided the variables names in
-#'   `.vars` will be narrowed down to those who match the pattern specified in
+#'   `.vars` will be narrowed down to those which match the pattern specified in
 #'   `.select`.
 #'
 #' @return
