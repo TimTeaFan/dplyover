@@ -246,18 +246,14 @@ over <- function(.vec, .fns, ..., .names = NULL){
 }
 
 
-over_setup <- function(vec, fns, names, cnames) {
+over_setup <- function(vars, fns, names, cnames) {
 
-  # lgoical, numeric, character, date, factor
-  if(!class(vec) %in% c("integer", "numeric", "character", "Date")) {
+  if(is.list(vars) && !rlang::is_named(vars)) {
     rlang::abort(c("Problem with `over()` input `.vec`.",
-            i = "Input `.vec` must be of class 'integer', 'numeric', 'character' or 'Date'.",
-            x = paste0("`.vec` is of class: ", class(vec), ".")))
-  } else {
-    vars <- vec
+                   i = "If `.vec` is a list, it must be named.",
+                   x = "`.vec` is an unnamed list."))
   }
 
-  # ToDo: account for named character vectors to overwrite `.names` argument
   if (is.function(fns) || rlang::is_formula(fns)) {
     names <- names %||% "{vec}"
     fns <- list(`1` = fns)
@@ -283,7 +279,7 @@ over_setup <- function(vec, fns, names, cnames) {
   }
 
   names <- vctrs::vec_as_names(glue::glue(names,
-                                          vec = rep(vars, each = length(fns)),
+                                          vec = rep(names(vars) %||% vars, each = length(fns)),
                                           fn = rep(names_fns, length(vars))),
                                repair = "check_unique")
   value <- list(vars = vars, fns = fns, names = names)
