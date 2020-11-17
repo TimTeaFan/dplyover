@@ -1,4 +1,4 @@
-#' Apply one or several functions to a vector in 'dplyr'
+#' Loop an object over one or several functions in 'dplyr'
 #'
 #' @description
 #' `over()` makes it easy to create new colums inside a [dplyr::mutate()] or
@@ -11,13 +11,13 @@
 #' or values based on either (1) column names or (2) values of specified columns.
 #' See the examples below and the `vignette("over")` for more details.
 #'
-#' @param .vec An atomic vector (expect 'raw' and 'complex') to apply functions to.
+#' @param .x An atomic vector (expect 'raw' and 'complex') to apply functions to.
 #'   Instead of a vector a <[`selection helper`][selection_helpers]> or anything else
 #'   that is coercible to an atomic vector can be used. Note that `over()` must only
-#'   be used to create 'new' columns and will throw an error if `.vec` contains
+#'   be used to create 'new' columns and will throw an error if `.x` contains
 #'   existing column names. To transform existing columns use [dplyr::across()].
 #'
-#' @param .fns Functions to apply to each of the elements in `.vec`. For
+#' @param .fns Functions to apply to each of the elements in `.x`. For
 #'   functions that expect variable names as input, the selected strings need to
 #'   be turned into symbols and evaluated. Note that <[`rlang's forcing operators`][rlang::nse-force]>
 #'   do not work as expected in regular dplyr calls. See the examples below and the `vignette("over")`
@@ -43,7 +43,7 @@
 #'   `"{vec}_{fn}"` for the case where a list is used for `.fns`.
 #'
 #' @returns
-#' A tibble with one column for each element in `.vec` and each function in `.fns`;.
+#' A tibble with one column for each element in `.x` and each function in `.fns`;.
 #'
 #' @section Examples:
 #'
@@ -51,7 +51,7 @@
 #' ```
 #'
 #' `over()` can only be used inside `dplyr::mutate` or `dplyr::summarise`.
-#' It has two main use cases. They differ in how the elements in `.vec`
+#' It has two main use cases. They differ in how the elements in `.x`
 #' are used. Let's first attach `dplyr`:
 #'
 #' ```{r, comment = "#>", collapse = TRUE}
@@ -62,7 +62,7 @@
 #' ```
 #'
 #' (1)
-#' Here strings a supplied to `.vec` to construct column names (sharing the
+#' Here strings a supplied to `.x` to construct column names (sharing the
 #' same stem). This allows us to dynamically use more than one column in the
 #' function calls in `.fns`. To work properly, the strings need to be
 #' turned into symbols and evaluated. `over()`'s genuine forcing function
@@ -126,7 +126,7 @@
 #'
 #'
 #' (2)
-#' In the second use case the values in `.vec` are used as input
+#' In the second use case the values in `.x` are used as input
 #' matched against conditions inside the functions in `.fns`.
 #'
 #' Lets create a dummy variable for each unique value in 'Species':
@@ -187,7 +187,7 @@
 #' ```
 #'
 #' @export
-over <- function(.vec, .fns, ..., .names = NULL){
+over <- function(.x, .fns, ..., .names = NULL){
 
   data <- tryCatch({
     dplyr::across()
@@ -199,13 +199,13 @@ over <- function(.vec, .fns, ..., .names = NULL){
 
   check_keep()
 
-  setup <- over_setup({{ .vec }},
+  setup <- over_setup({{ .x }},
                       fns = .fns,
                       names = .names,
                       cnames = .cnames)
 
-  vars <- setup$vars
-  if (length(vars) == 0L) {
+  x <- setup$x
+  if (length(x) == 0L) {
     return(tibble::new_tibble(list(), nrow = 1L))
   }
   fns <- setup$fns
@@ -215,16 +215,17 @@ over <- function(.vec, .fns, ..., .names = NULL){
     dnames <- .cnames[.cnames %in% names]
     names_l <- ifelse(length(dnames) > 3, 3, length(dnames))
 
-    rlang::abort(c("Problem with `over()` input `.vec`.",
-                   i = "Input `.vec` must not contain existing column names.",
-                   x = paste0("`.vec` contained the following column names: ",
+    rlang::abort(c("Problem with `over()`.",
+                   i = "Output must not contain existing column names.",
+                   x = paste0("`over()` tried to create the following existing column names: ",
                               paste0(paste0("'", dnames[seq_along(1:names_l)], "'"), collapse = ", "),
                               ifelse(length(dnames) > 3, " etc. ", ".")),
-                   i = "If you want to transform existing columns try using `across()`."))
+                   i = "If you want to transform existing columns try using `across()`.",
+                   i = "If you want to change to output names use the `.names` argument"))
 
   }
 
-  n_vec <- length(vars)
+  n_vec <- length(x)
   n_fns <- length(fns)
   seq_n_vec <- seq_len(n_vec)
   seq_fns <- seq_len(n_fns)
@@ -232,10 +233,10 @@ over <- function(.vec, .fns, ..., .names = NULL){
   out <- vector("list", n_vec * n_fns)
 
   for (i in seq_n_vec) {
-    str <- vars[[i]]
+    xi <- x[[i]]
     for (j in seq_fns) {
       fn <- fns[[j]]
-      out[[k]] <- fn(str, ...)
+      out[[k]] <- fn(xi, ...)
       k <- k + 1L
     }
   }
@@ -246,19 +247,19 @@ over <- function(.vec, .fns, ..., .names = NULL){
 }
 
 
-over_setup <- function(vars, fns, names, cnames) {
+over_setup <- function(x1, fns, names, cnames) {
 
-  if(is.list(vars) && !rlang::is_named(vars)) {
-    rlang::abort(c("Problem with `over()` input `.vec`.",
-                   i = "If `.vec` is a list, it must be named.",
-                   x = "`.vec` is an unnamed list."))
+  if(is.list(x1) && !rlang::is_named(x1)) {
+    rlang::abort(c("Problem with `over()` input `.x`.",
+                   i = "If `.x` is a list, it must be named.",
+                   x = "`.x` is an unnamed list."))
   }
 
   if (is.function(fns) || rlang::is_formula(fns)) {
-    names <- names %||% "{vec}"
+    names <- names %||% "{x}"
     fns <- list(`1` = fns)
   } else {
-    names <- names %||% "{vec}_{fn}"
+    names <- names %||% "{x}_{fn}"
   }
 
   if (!is.list(fns)) {
@@ -279,10 +280,10 @@ over_setup <- function(vars, fns, names, cnames) {
   }
 
   names <- vctrs::vec_as_names(glue::glue(names,
-                                          vec = rep(names(vars) %||% vars, each = length(fns)),
-                                          fn = rep(names_fns, length(vars))),
+                                          x = rep(names(x1) %||% x1, each = length(fns)),
+                                          fn = rep(names_fns, length(x1))),
                                repair = "check_unique")
-  value <- list(vars = vars, fns = fns, names = names)
+  value <- list(x = x1, fns = fns, names = names)
   value
 }
 
