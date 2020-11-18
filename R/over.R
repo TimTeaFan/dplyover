@@ -37,10 +37,10 @@
 #' @param ... Additional arguments for the function calls in `.fns`.
 #'
 #' @param .names A glue specification that describes how to name the output
-#'   columns. This can use `{vec}` to stand for the selected vector element, and
+#'   columns. This can use `{x}` to stand for the selected vector element, and
 #'   `{fn}` to stand for the name of the function being applied. The default
-#'   (`NULL`) is equivalent to `"{vec}"` for the single function case and
-#'   `"{vec}_{fn}"` for the case where a list is used for `.fns`.
+#'   (`NULL`) is equivalent to `"{x}"` for the single function case and
+#'   `"{x}_{fn}"` for the case where a list is used for `.fns`.
 #'
 #' @returns
 #' A tibble with one column for each element in `.x` and each function in `.fns`;.
@@ -120,7 +120,7 @@
 #'   mutate(over(c("Sepal", "Petal"),
 #'               list(product = ~ .("{.x}.Width") * .("{.x}.Length"),
 #'                    sum = ~ .("{.x}.Width") + .("{.x}.Length")),
-#'               .names = "{fn}_{vec}"),
+#'               .names = "{fn}_{x}"),
 #'          .keep = "none")
 #' ```
 #'
@@ -151,7 +151,7 @@
 #' iris %>%
 #' mutate(over(seq(4, 7, by = 1),
 #'             ~ if_else(Sepal.Length < .x, 1, 0),
-#'             .names = "Sepal.Length_{vec}"),
+#'             .names = "Sepal.Length_{x}"),
 #'          .keep = "none")
 #' ```
 #'
@@ -160,7 +160,7 @@
 #' mtcars %>%
 #'   summarise(over(dist_values(gear),
 #'                  ~ mean(gear == .x),
-#'                  .names = "gear_{vec}"))
+#'                  .names = "gear_{x}"))
 #' ```
 #'
 #' This is especially useful when working with grouped data. However, in this
@@ -183,7 +183,7 @@
 #'   group_by(cyl) %>%
 #'   summarise(over(dist_values(gear),
 #'                  ~ mean(gear == .x),
-#'                  .names = "gear_{vec}"))
+#'                  .names = "gear_{x}"))
 #' ```
 #'
 #' @export
@@ -225,14 +225,14 @@ over <- function(.x, .fns, ..., .names = NULL){
 
   }
 
-  n_vec <- length(x)
+  n_x <- length(x)
   n_fns <- length(fns)
-  seq_n_vec <- seq_len(n_vec)
+  seq_n_x <- seq_len(n_x)
   seq_fns <- seq_len(n_fns)
   k <- 1L
-  out <- vector("list", n_vec * n_fns)
+  out <- vector("list", n_x * n_fns)
 
-  for (i in seq_n_vec) {
+  for (i in seq_n_x) {
     xi <- x[[i]]
     for (j in seq_fns) {
       fn <- fns[[j]]
@@ -249,10 +249,9 @@ over <- function(.x, .fns, ..., .names = NULL){
 
 over_setup <- function(x1, fns, names, cnames) {
 
-  if(is.list(x1) && !rlang::is_named(x1)) {
-    rlang::abort(c("Problem with `over()` input `.x`.",
-                   i = "If `.x` is a list, it must be named.",
-                   x = "`.x` is an unnamed list."))
+  if (is.list(x1) && !rlang::is_named(x1)) {
+    alt_names <- as.character(seq_along(x1))
+    names(x1) <- vctrs::vec_as_names(alt_names, repair = "check_unique")
   }
 
   if (is.function(fns) || rlang::is_formula(fns)) {
