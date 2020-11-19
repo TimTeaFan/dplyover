@@ -1,20 +1,11 @@
 #' Loop two inputs simultaneaously over one or several functions in 'dplyr'
 #'
 #' @description
-#' `over()` makes it easy to create new colums inside a [dplyr::mutate()] or
-#' [dplyr::summarise()] call by applying a function (or a set of functions) to
-#' a vector using a syntax similar to [dplyr::across()]. The main difference is
-#' that [dplyr::across()] transforms or creates new columns based on existing ones,
-#' while `over()` creates new columns based on a vector to which it will apply one
-#' or several functions. Whereas [dplyr::across()] allows `tidy-selection` helpers
-#' to select columns, `over()` provides its own helper functions to select strings
-#' or values based on either (1) column names or (2) values of specified columns.
-#' See the examples below and the `vignette("over")` for more details.
+#' ...
 #'
-#' inherit .x from over
-#' inherit .fns from over
+#' @inheritParams over
 #'
-#' @param .y An atomic vector (expect 'raw' and 'complex') to apply functions to.
+#' @param .x,.y An atomic vector (expect 'raw' and 'complex') to apply functions to.
 #'   Instead of a vector a <[`selection helper`][selection_helpers]> or anything else
 #'   that is coercible to an atomic vector can be used. Note that `over()` must only
 #'   be used to create 'new' columns and will throw an error if `.x` contains
@@ -50,13 +41,13 @@
 #' @export
 over2 <- function(.x, .y, .fns, ..., .names = NULL){
 
-  data <- tryCatch({
+  .data <- tryCatch({
     dplyr::across()
   }, error = function(e) {
     rlang::abort("`over2()` must only be used inside dplyr verbs")
   })
 
-  .cnames <- names(data)
+  .cnames <- names(.data)
 
   check_keep()
 
@@ -167,11 +158,7 @@ over2_setup <- function(x1, y1, fns, names, cnames) {
   value
 }
 
-ll <- list(a = c("A1", "A2"),
-       b = c("B1", "B2", "B3"),
-       f = c("F1", "F2", "F3", "F4"))
-
-#' Loop two inputs simultaneaously over one or several functions in 'dplyr'
+#' Loop two nested inputs over one or several functions in 'dplyr'
 #'
 #' @description
 #' `over()` makes it easy to create new colums inside a [dplyr::mutate()] or
@@ -223,13 +210,13 @@ ll <- list(a = c("A1", "A2"),
 #' @export
 over2x <- function(.x, .y, .fns, ..., .names = NULL){
 
-  data <- tryCatch({
+  .data <- tryCatch({
     dplyr::across()
   }, error = function(e) {
     rlang::abort("`over2()` must only be used inside dplyr verbs")
   })
 
-  .cnames <- names(data)
+  .cnames <- names(.data)
 
   check_keep()
 

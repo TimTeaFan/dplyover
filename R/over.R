@@ -189,13 +189,13 @@
 #' @export
 over <- function(.x, .fns, ..., .names = NULL){
 
-  data <- tryCatch({
+  .data <- tryCatch({
     dplyr::across()
   }, error = function(e) {
     rlang::abort("`over()` must only be used inside dplyr verbs")
   })
 
-  .cnames <- names(data)
+  .cnames <- names(.data)
 
   check_keep()
 

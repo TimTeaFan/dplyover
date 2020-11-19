@@ -47,7 +47,7 @@ crossover <- function(.cols, .x, .fns, ..., .names = NULL){
     rlang::abort("`crossover()` must only be used inside dplyr verbs")
   })
 
-  .cnames <- names(data)
+  .cnames <- names(.data)
 
   check_keep()
 
