@@ -126,11 +126,11 @@ across2_setup <- function(cols1, cols2, fns, names, cnames, data) {
                               ", while ", length(vars2), " columns are selected in `.cols2`.")))
   }
 
-  names2 <- names
+  names2 <- names %||% ""
   pre1 <- NULL
   suf1 <- NULL
 
-  if (stringr::str_detect(names, "\\{pre\\}|\\{suf\\}")) {
+  if (stringr::str_detect(names2, "\\{pre\\}|\\{suf\\}")) {
 
     if (is.function(fns) || rlang::is_formula(fns)) {
       names2 <- "{col1}_{col2}"
@@ -156,14 +156,16 @@ across2_setup <- function(cols1, cols2, fns, names, cnames, data) {
       }
     }
 
-    names2 <- vctrs::vec_as_names(glue::glue(names2,
-                                            col1 = rep(vars1, each = length(fns)),
-                                            col2 = rep(vars2, each = length(fns)),
-                                            fn = rep(names_fns, length(cols1))),
-                                 repair = "check_unique")
+    # Instead construct list of lists with two elements var1 and var2
+    # names2 <- vctrs::vec_as_names(glue::glue(names2,
+    #                                         col1 = rep(vars1, each = length(fns)),
+    #                                         col2 = rep(vars2, each = length(fns)),
+    #                                         fn = rep(names_fns, length(cols1))),
+    #                              repair = "check_unique")
 
-    pre1 <- get_affix(names2, "right")
-    suf1 <- get_affix(names2, "left")
+    var_nms <- purrr::flatten(purrr::map2(vars1, vars2, ~ list(c(.x, .y))))
+    pre1 <- purrr::map_chr(var_nms, ~ get_affix(.x, "right"))
+    suf1 <- purrr::map_chr(var_nms, ~ get_affix(.x, "left"))
 
   }
 
@@ -201,3 +203,23 @@ across2_setup <- function(cols1, cols2, fns, names, cnames, data) {
   value <- list(vars1 = vars1, vars2 = vars2, fns = fns, names = names)
   value
 }
+
+# helper function for across2_setup
+# To-Do: not only length == 1 but also only get alphanumeric / stop at punct
+get_affix <- function(x, side = c("right", "left")) {
+
+  x <- stringr::str_pad(x, max(nchar(x)), side = side, pad = " ")
+  .variant <- purrr::transpose(strsplit(x, ""))
+  .variant <- purrr::map_dbl(purrr::map(.variant, unique), length)
+  .pre <- paste0(strsplit(x, "")[[1]][.variant == 1], collapse = "")
+  .pre <- stringr::str_remove_all(.pre, "[:punct:]*$") # turn this around to only get alphanumeric?
+  .pre <- stringr::str_remove_all(.pre, "^[:punct:]*") # turn this around to only get alphanumeric?
+  .pre
+
+}
+
+# test_str <- c("Sepal.Length", "Sepal.Width")
+# test_str <- c("Length.Sepal", "Width.Sepal")
+#
+# get_affix(test_str, "left")
+
