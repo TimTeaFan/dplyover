@@ -112,7 +112,6 @@ across2_setup <- function(cols1, cols2, fns, names, cnames, data) {
 
   cols1 <- rlang::enquo(cols1)
   cols2 <- rlang::enquo(cols2)
-  # group_vars <- names(dplyr::cur_group())
   vars1 <- tidyselect::eval_select(rlang::expr(!!cols1), data) # check data
   vars2 <- tidyselect::eval_select(rlang::expr(!!cols2), data)
   vars1 <- names(vars1)
@@ -130,7 +129,11 @@ across2_setup <- function(cols1, cols2, fns, names, cnames, data) {
   pre1 <- NULL
   suf1 <- NULL
 
-  if (stringr::str_detect(names2, "\\{pre\\}|\\{suf\\}")) {
+  # check pre and suf
+  check_pre <- stringr::str_detect(names2, "\\{pre\\}")
+  check_suf <- stringr::str_detect(names2, "\\{suf\\}")
+
+  if (check_pre || check_suf) {
 
     if (is.function(fns) || rlang::is_formula(fns)) {
       names2 <- "{col1}_{col2}"
@@ -139,34 +142,39 @@ across2_setup <- function(cols1, cols2, fns, names, cnames, data) {
       names2 <- "{col1}_{col2}_{fn}"
     }
 
-    if (!is.list(fns)) {
-      rlang::abort(c("Problem with `over()` input `.fns`.",
-                     i = "Input `.fns` must be a function or a list of functions"))
-    }
+    # if (!is.list(fns)) {
+    #   rlang::abort(c("Problem with `over()` input `.fns`.",
+    #                  i = "Input `.fns` must be a function or a list of functions"))
+    # }
 
-    fns <- purrr::map(fns, rlang::as_function)
-
-    if (is.null(names(fns))) {
-      names_fns <- seq_along(fns)
-    } else {
-      names_fns <- names(fns)
-      empties <- which(names_fns == "")
-      if (length(empties)) {
-        names_fns[empties] <- empties
-      }
-    }
-
-    # Instead construct list of lists with two elements var1 and var2
-    # names2 <- vctrs::vec_as_names(glue::glue(names2,
-    #                                         col1 = rep(vars1, each = length(fns)),
-    #                                         col2 = rep(vars2, each = length(fns)),
-    #                                         fn = rep(names_fns, length(cols1))),
-    #                              repair = "check_unique")
+    # fns <- purrr::map(fns, rlang::as_function)
+    #
+    # if (is.null(names(fns))) {
+    #   names_fns <- seq_along(fns)
+    # } else {
+    #   names_fns <- names(fns)
+    #   empties <- which(names_fns == "")
+    #   if (length(empties)) {
+    #     names_fns[empties] <- empties
+    #   }
+    # }
 
     var_nms <- purrr::flatten(purrr::map2(vars1, vars2, ~ list(c(.x, .y))))
-    pre1 <- purrr::map_chr(var_nms, ~ get_affix(.x, "right"))
-    suf1 <- purrr::map_chr(var_nms, ~ get_affix(.x, "left"))
+    pre1 <- purrr::map_chr(var_nms, ~ get_affix(.x, "prefix"))
+    suf1 <- purrr::map_chr(var_nms, ~ get_affix(.x, "suffix"))
 
+    if (check_pre && length(pre1) < 1) {
+      rlang::abort(c("Problem with `across2()` input `.names`.",
+                     i = "When `{pre}` is used inside `.names` the input variables in `.col1s` and `.cols2` must share a common prefix of length > 0.",
+                     x = "No shared prefix could be extracted.",
+                     i = "Use `test_prefix()` to check why the extraction doesn't yield the expected result."))
+    }
+    if (check_suf && length(suf1) < 1) {
+      rlang::abort(c("Problem with `across2()` input `.names`.",
+                     i = "When `{pre}` is used inside `.names` the input variables in `.col1s` and `.cols2` must share a common suffix of length > 0.",
+                     x = "No shared suffix could be extracted.",
+                     i = "Use `test_suffix()` to check why the extraction doesn't yield the expected result."))
+    }
   }
 
   if (is.function(fns) || rlang::is_formula(fns)) {
@@ -176,7 +184,7 @@ across2_setup <- function(cols1, cols2, fns, names, cnames, data) {
     names <- names %||% "{col1}_{col2}_{fn}"
   }
 
-  if (!stringr::str_detect(names, "\\{pre\\}|\\{suf\\}")) {
+  # if (!stringr::str_detect(names, "\\{pre\\}|\\{suf\\}")) {
 
   fns <- purrr::map(fns, rlang::as_function)
 
@@ -190,7 +198,7 @@ across2_setup <- function(cols1, cols2, fns, names, cnames, data) {
     }
   }
 
-  }
+  # }
 
   names <- vctrs::vec_as_names(glue::glue(names,
                                           col1 = rep(vars1, each = length(fns)),
@@ -204,46 +212,4 @@ across2_setup <- function(cols1, cols2, fns, names, cnames, data) {
   value
 }
 
-# helper function for across2_setup
-# To-Do: not only length == 1 but also only get alphanumeric / stop at punct
-get_affix <- function(x, type = c("prefix", "suffix")) {
 
-  side <- switch(type,
-                 "prefix" = "right",
-                 "suffix" = "left")
-
-  x <- stringr::str_pad(x, max(nchar(x)), side = side, pad = " ")
-  x_ls <- purrr::transpose(strsplit(x, ""))
-  x_ls_length <- purrr::map_dbl(purrr::map(x_ls, unique), length)
-  x_rle <- rle(x_ls_length)
-  if (side == "right") {
-    res <- stringr::str_sub(x[[1]],
-                            start = 1L,
-                            end = x_rle$length[1])
-
-  } else {
-    res_start <- sum(x_rle$length[-length(x_rle$length)])
-    res_length <- x_rle$length[length(x_rle$length)]
-    res_end <- res_start + res_length
-
-    res <- stringr::str_sub(x[[1]],
-                            start = res_start,
-                            end = res_end)
-  }
-  res <- stringr::str_remove_all(res, "[:punct:]*$")
-  res <- stringr::str_remove_all(res, "^[:punct:]*")
-
-  if (side == "right") {
-    res <- stringr::str_extract(res, "^[:alnum:]*")
-  } else {
-    res <- stringr::str_extract(res, "[:alnum:]*$")
-  }
-
-  res
-
-}
-
-# x <- c("Sepal.Length", "Sepal.Width")
-# x <- c("Length.Sepal", "Width.Sepal")
-# x <- c("Length.of.Sepal.here", "Length.no.Sepal.here")
-# get_affix(x, "prefix")
