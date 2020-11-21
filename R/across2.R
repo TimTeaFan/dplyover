@@ -206,20 +206,44 @@ across2_setup <- function(cols1, cols2, fns, names, cnames, data) {
 
 # helper function for across2_setup
 # To-Do: not only length == 1 but also only get alphanumeric / stop at punct
-get_affix <- function(x, side = c("right", "left")) {
+get_affix <- function(x, type = c("prefix", "suffix")) {
+
+  side <- switch(type,
+                 "prefix" = "right",
+                 "suffix" = "left")
 
   x <- stringr::str_pad(x, max(nchar(x)), side = side, pad = " ")
-  .variant <- purrr::transpose(strsplit(x, ""))
-  .variant <- purrr::map_dbl(purrr::map(.variant, unique), length)
-  .pre <- paste0(strsplit(x, "")[[1]][.variant == 1], collapse = "")
-  .pre <- stringr::str_remove_all(.pre, "[:punct:]*$") # turn this around to only get alphanumeric?
-  .pre <- stringr::str_remove_all(.pre, "^[:punct:]*") # turn this around to only get alphanumeric?
-  .pre
+  x_ls <- purrr::transpose(strsplit(x, ""))
+  x_ls_length <- purrr::map_dbl(purrr::map(x_ls, unique), length)
+  x_rle <- rle(x_ls_length)
+  if (side == "right") {
+    res <- stringr::str_sub(x[[1]],
+                            start = 1L,
+                            end = x_rle$length[1])
+
+  } else {
+    res_start <- sum(x_rle$length[-length(x_rle$length)])
+    res_length <- x_rle$length[length(x_rle$length)]
+    res_end <- res_start + res_length
+
+    res <- stringr::str_sub(x[[1]],
+                            start = res_start,
+                            end = res_end)
+  }
+  res <- stringr::str_remove_all(res, "[:punct:]*$")
+  res <- stringr::str_remove_all(res, "^[:punct:]*")
+
+  if (side == "right") {
+    res <- stringr::str_extract(res, "^[:alnum:]*")
+  } else {
+    res <- stringr::str_extract(res, "[:alnum:]*$")
+  }
+
+  res
 
 }
 
-# test_str <- c("Sepal.Length", "Sepal.Width")
-# test_str <- c("Length.Sepal", "Width.Sepal")
-#
-# get_affix(test_str, "left")
-
+# x <- c("Sepal.Length", "Sepal.Width")
+# x <- c("Length.Sepal", "Width.Sepal")
+# x <- c("Length.of.Sepal.here", "Length.no.Sepal.here")
+# get_affix(x, "prefix")
