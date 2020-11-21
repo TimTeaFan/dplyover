@@ -116,7 +116,6 @@ crossover <- function(.cols, .x, .fns, ..., .names = NULL){
 crossover_setup <- function(cols, x1, fns, names, cnames, data) {
 
   cols <- rlang::enquo(cols)
-  group_vars <- names(dplyr::cur_group())
   vars <- tidyselect::eval_select(rlang::expr(!!cols), data)
   vars <- names(vars)
 
