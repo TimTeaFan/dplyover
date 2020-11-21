@@ -112,8 +112,8 @@ across2_setup <- function(cols1, cols2, fns, names, cnames, data) {
 
   cols1 <- rlang::enquo(cols1)
   cols2 <- rlang::enquo(cols2)
-  group_vars <- names(dplyr::cur_group())
-  vars1 <- tidyselect::eval_select(rlang::expr(!!cols1), data)
+  # group_vars <- names(dplyr::cur_group())
+  vars1 <- tidyselect::eval_select(rlang::expr(!!cols1), data) # check data
   vars2 <- tidyselect::eval_select(rlang::expr(!!cols2), data)
   vars1 <- names(vars1)
   vars2 <- names(vars2)
@@ -122,8 +122,49 @@ across2_setup <- function(cols1, cols2, fns, names, cnames, data) {
   if (length(vars1) != length(vars2)) {
     rlang::abort(c("Problem with `across2()` input `.cols1` and `.cols2`.",
                    i = "Input `.cols1` and `.cols2` must use the same number of columns.",
-                   x = paste0(length(vars1), "columns are selected in `.cols1`, " , ,
+                   x = paste0(length(vars1), "columns are selected in `.cols1`, ",
                               ", while ", length(vars2), " columns are selected in `.cols2`.")))
+  }
+
+  names2 <- names
+  pre1 <- NULL
+  suf1 <- NULL
+
+  if (stringr::str_detect(names, "\\{pre\\}|\\{suf\\}")) {
+
+    if (is.function(fns) || rlang::is_formula(fns)) {
+      names2 <- "{col1}_{col2}"
+      fns <- list(`1` = fns)
+    } else {
+      names2 <- "{col1}_{col2}_{fn}"
+    }
+
+    if (!is.list(fns)) {
+      rlang::abort(c("Problem with `over()` input `.fns`.",
+                     i = "Input `.fns` must be a function or a list of functions"))
+    }
+
+    fns <- purrr::map(fns, rlang::as_function)
+
+    if (is.null(names(fns))) {
+      names_fns <- seq_along(fns)
+    } else {
+      names_fns <- names(fns)
+      empties <- which(names_fns == "")
+      if (length(empties)) {
+        names_fns[empties] <- empties
+      }
+    }
+
+    names2 <- vctrs::vec_as_names(glue::glue(names2,
+                                            col1 = rep(vars1, each = length(fns)),
+                                            col2 = rep(vars2, each = length(fns)),
+                                            fn = rep(names_fns, length(cols1))),
+                                 repair = "check_unique")
+
+    pre1 <- get_affix(names2, "right")
+    suf1 <- get_affix(names2, "left")
+
   }
 
   if (is.function(fns) || rlang::is_formula(fns)) {
@@ -133,10 +174,7 @@ across2_setup <- function(cols1, cols2, fns, names, cnames, data) {
     names <- names %||% "{col1}_{col2}_{fn}"
   }
 
-  if (!is.list(fns)) {
-    rlang::abort(c("Problem with `over()` input `.fns`.",
-                   i = "Input `.fns` must be a function or a list of functions"))
-  }
+  if (!stringr::str_detect(names, "\\{pre\\}|\\{suf\\}")) {
 
   fns <- purrr::map(fns, rlang::as_function)
 
@@ -150,11 +188,16 @@ across2_setup <- function(cols1, cols2, fns, names, cnames, data) {
     }
   }
 
+  }
+
   names <- vctrs::vec_as_names(glue::glue(names,
                                           col1 = rep(vars1, each = length(fns)),
                                           col2 = rep(vars2, each = length(fns)),
+                                          pre = rep(pre1, each = length(fns)),
+                                          suf = rep(suf1, each = length(fns)),
                                           fn = rep(names_fns, length(cols1))),
                                repair = "check_unique")
+
   value <- list(vars1 = vars1, vars2 = vars2, fns = fns, names = names)
   value
 }
