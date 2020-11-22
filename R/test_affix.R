@@ -1,19 +1,19 @@
-test_prefix <- function(.data, .cols1, .cols2) {
-  test_affix(data = .data,
+show_prefix <- function(.data, .cols1, .cols2) {
+  show_affix(data = .data,
              cols1 = .cols1,
              cols2 = .cols2,
              type = "prefix")
 }
 
-test_suffix <- function(.data, .cols1, .cols2) {
-  test_affix(data = .data,
+show_suffix <- function(.data, .cols1, .cols2) {
+  show_affix(data = .data,
              cols1 = .cols1,
              cols2 = .cols2,
              type = "suffix")
 }
 
 # test_affix()
-test_affix <- function(data, cols1, cols2, type = c("prefix", "suffix")) {
+show_affix <- function(data, cols1, cols2, type = c("prefix", "suffix")) {
 
   group_vars <- group_vars(data)
 
