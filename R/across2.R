@@ -121,7 +121,7 @@ across2_setup <- function(cols1, cols2, fns, names, cnames, data) {
   if (length(vars1) != length(vars2)) {
     rlang::abort(c("Problem with `across2()` input `.cols1` and `.cols2`.",
                    i = "Input `.cols1` and `.cols2` must use the same number of columns.",
-                   x = paste0(length(vars1), "columns are selected in `.cols1`, ",
+                   x = paste0(length(vars1), " columns are selected in `.cols1`, ",
                               ", while ", length(vars2), " columns are selected in `.cols2`.")))
   }
 
@@ -141,23 +141,6 @@ across2_setup <- function(cols1, cols2, fns, names, cnames, data) {
     } else {
       names2 <- "{col1}_{col2}_{fn}"
     }
-
-    # if (!is.list(fns)) {
-    #   rlang::abort(c("Problem with `over()` input `.fns`.",
-    #                  i = "Input `.fns` must be a function or a list of functions"))
-    # }
-
-    # fns <- purrr::map(fns, rlang::as_function)
-    #
-    # if (is.null(names(fns))) {
-    #   names_fns <- seq_along(fns)
-    # } else {
-    #   names_fns <- names(fns)
-    #   empties <- which(names_fns == "")
-    #   if (length(empties)) {
-    #     names_fns[empties] <- empties
-    #   }
-    # }
 
     var_nms <- purrr::flatten(purrr::map2(vars1, vars2, ~ list(c(.x, .y))))
     pre1 <- purrr::map_chr(var_nms, ~ get_affix(.x, "prefix"))
@@ -184,8 +167,6 @@ across2_setup <- function(cols1, cols2, fns, names, cnames, data) {
     names <- names %||% "{col1}_{col2}_{fn}"
   }
 
-  # if (!stringr::str_detect(names, "\\{pre\\}|\\{suf\\}")) {
-
   fns <- purrr::map(fns, rlang::as_function)
 
   if (is.null(names(fns))) {
@@ -197,8 +178,6 @@ across2_setup <- function(cols1, cols2, fns, names, cnames, data) {
       names_fns[empties] <- empties
     }
   }
-
-  # }
 
   names <- vctrs::vec_as_names(glue::glue(names,
                                           col1 = rep(vars1, each = length(fns)),

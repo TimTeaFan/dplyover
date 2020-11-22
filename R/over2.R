@@ -78,9 +78,9 @@ over2 <- function(.x, .y, .fns, ..., .names = NULL){
     dnames <- .cnames[.cnames %in% names]
     names_l <- ifelse(length(dnames) > 3, 3, length(dnames))
 
-    rlang::abort(c("Problem with `over()`.",
+    rlang::abort(c("Problem with `over2()`.",
                    i = "Output must not contain existing column names.",
-                   x = paste0("`over()` tried to create the following existing column names: ",
+                   x = paste0("`over2()` tried to create the following existing column names: ",
                               paste0(paste0("'", dnames[seq_along(1:names_l)], "'"), collapse = ", "),
                               ifelse(length(dnames) > 3, " etc. ", ".")),
                    i = "If you want to transform existing columns try using `across()`.",
@@ -113,14 +113,21 @@ over2 <- function(.x, .y, .fns, ..., .names = NULL){
 
 over2_setup <- function(x1, y1, fns, names, cnames) {
 
+  if (length(x1) != length(y1)) {
+    rlang::abort(c("Problem with `over2()` input `.x` and `.y`.",
+                   i = "Input `.x` and `.y` must have the same length.",
+                   x = paste0("`.x` is of length ", length(x1),
+                              ", while `.y` is of length ", length(y2), ".")))
+  }
+
   if(is.list(x1) && !rlang::is_named(x1)) {
-    rlang::abort(c("Problem with `over()` input `.x`.",
+    rlang::abort(c("Problem with `over2()` input `.x`.",
                    i = "If `.x` is a list, it must be named.",
                    x = "`.x` is an unnamed list."))
   }
 
   if(is.list(y1) && !rlang::is_named(y1)) {
-    rlang::abort(c("Problem with `over()` input `.y`.",
+    rlang::abort(c("Problem with `over2()` input `.y`.",
                    i = "If `.y` is a list, it must be named.",
                    x = "`.y` is an unnamed list."))
   }
@@ -133,7 +140,7 @@ over2_setup <- function(x1, y1, fns, names, cnames) {
   }
 
   if (!is.list(fns)) {
-    rlang::abort(c("Problem with `over()` input `.fns`.",
+    rlang::abort(c("Problem with `over2()` input `.fns`.",
                    i = "Input `.fns` must be a function or a list of functions"))
   }
 
@@ -213,7 +220,7 @@ over2x <- function(.x, .y, .fns, ..., .names = NULL){
   .data <- tryCatch({
     dplyr::across()
   }, error = function(e) {
-    rlang::abort("`over2()` must only be used inside dplyr verbs")
+    rlang::abort("`over2x()` must only be used inside dplyr verbs")
   })
 
   .cnames <- names(.data)
@@ -240,7 +247,7 @@ over2x <- function(.x, .y, .fns, ..., .names = NULL){
     dnames <- .cnames[.cnames %in% names]
     names_l <- ifelse(length(dnames) > 3, 3, length(dnames))
 
-    rlang::abort(c("Problem with `over()`.",
+    rlang::abort(c("Problem with `over2x()`.",
                    i = "Output must not contain existing column names.",
                    x = paste0("`over()` tried to create the following existing column names: ",
                               paste0(paste0("'", dnames[seq_along(1:names_l)], "'"), collapse = ", "),
@@ -280,13 +287,13 @@ over2x <- function(.x, .y, .fns, ..., .names = NULL){
 over2x_setup <- function(x1, y1, fns, names, cnames) {
 
   if(is.list(x1) && !rlang::is_named(x1)) {
-    rlang::abort(c("Problem with `over()` input `.x`.",
+    rlang::abort(c("Problem with `over2x()` input `.x`.",
                    i = "If `.x` is a list, it must be named.",
                    x = "`.x` is an unnamed list."))
   }
 
   if(is.list(y1) && !rlang::is_named(y1)) {
-    rlang::abort(c("Problem with `over()` input `.y`.",
+    rlang::abort(c("Problem with `over2x()` input `.y`.",
                    i = "If `.y` is a list, it must be named.",
                    x = "`.y` is an unnamed list."))
   }
@@ -299,7 +306,7 @@ over2x_setup <- function(x1, y1, fns, names, cnames) {
   }
 
   if (!is.list(fns)) {
-    rlang::abort(c("Problem with `over()` input `.fns`.",
+    rlang::abort(c("Problem with `over2x()` input `.fns`.",
                    i = "Input `.fns` must be a function or a list of functions"))
   }
 
