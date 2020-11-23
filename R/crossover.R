@@ -119,26 +119,46 @@ crossover_setup <- function(cols, x1, fns, names, cnames, data, each = FALSE) {
 
   cols <- rlang::enquo(cols)
   vars <- tidyselect::eval_select(rlang::expr(!!cols), data)
-  vars <- names(vars)
+  vars <- init_vars <- names(vars)
+
 
   if (is.function(x1) || rlang::is_formula(x1)) {
-  # call_x <- rlang::quo(x1)
-  name_x <- rlang::call_name(x1)
-  env_nm_x <- rlang::env_name(environment(rlang::call_fn(x1)))
-  x1 <- rlang::as_function(x1)
-  x1 <- purrr::map(dplyr::select(data, !! cols), x1)
+
+    # check functions
+    # if(is.function(x1)) {
+    #
+    #   env_nm_x <- rlang::env_name(environment(x1))
+    #   x_ls <- as.list(x1)
+    #
+    #   # was an anonymous function supplied?
+    #   if(length(x_ls[[1]]) == 0 & length(env_nm_x) == 0) {
+    #
+    #   rlang::abort(c("Problem with `crossover()` input `.x`.",
+    #                  i = "When supplying functions to `.x`, only bare function names (without quotation marks) or purrr-style lambda notation are allowed.",
+    #                  x = "An anonymous function was supplied to `.x`."))
+    #   }
+    # }
+    # expand x1
+    x1 <- rlang::as_function(x1)
+    x1 <- purrr::map(dplyr::select(data, !! cols), x1)
+    vars <- unlist(purrr::imap(x1, ~ rep(.y, length(.x))))
+    x1 <- unlist(x1, recursive = FALSE)
+    if (!is.list(x1)) x1 <- unname(x1)
+
+    # check length of x1 and warn when it seem not neccessary
+    if(length(init_vars) == length(vars)) {
+      rlang::warn(c("The output of the function supplied to `.x` is of equal length to the number of columns in `.cols`.",
+                                     i = "There is no need to use `crossover`()` for this operation. Please try `dplyr::across()`."))
+    } else {
+      each <- TRUE
+    }
   }
 
-  if (name_x == "each" && env_nm_x == "namespace:dplyover") {
-  vars <- unlist(purrr::imap(x1, ~ rep(.y, length(.x))))
-  x1 <- unlist(x1, recursive = FALSE)
-  if (!is.list(x1)) x1 <- unname(x1)
-  each <- TRUE
-  } else if (length(vars) != length(x1)) {
+  if (length(vars) != length(x1)) {
     rlang::abort(c("Problem with `crossover()` input `.cols` and `.x`.",
                    i = "The number of `.cols` must be equal to the number of elements in  `.x`.",
                    x = paste0(length(vars), " columns are selected in `.cols`, ",
-                              ", while `.x` contains ", length(x1), " elements.")))
+                              "while `.x` contains ", length(x1), " elements.")))
   }
 
   if (is.function(fns) || rlang::is_formula(fns)) {
@@ -287,12 +307,4 @@ crossXover_setup <- function(cols, x1, fns, names, cnames, data) {
                                repair = "check_unique")
   value <- list(vars = vars, x = x1, fns = fns, names = names)
   value
-}
-
-
-
-# helper ----
-
-each <- function(fn) {
-  eval(fn)
 }
