@@ -184,11 +184,111 @@ across2_setup <- function(cols1, cols2, fns, names, cnames, data) {
                                           col2 = rep(vars2, each = length(fns)),
                                           pre = rep(pre1, each = length(fns)),
                                           suf = rep(suf1, each = length(fns)),
-                                          fn = rep(names_fns, length(cols1))),
+                                          fn = rep(names_fns, length(cols1))), # here vars1 instead
                                repair = "check_unique")
 
   value <- list(vars1 = vars1, vars2 = vars2, fns = fns, names = names)
   value
 }
 
+
+across2x <- function(.cols1, .cols2, .fns, ..., .names = NULL){
+
+  .data <- tryCatch({
+    dplyr::across()
+  }, error = function(e) {
+    rlang::abort("`across2x()` must only be used inside dplyr verbs")
+  })
+
+  .cnames <- names(.data)
+
+  check_keep()
+
+  setup <- across2x_setup({{.cols1}},
+                         {{.cols2}},
+                         fns = .fns,
+                         names = .names,
+                         cnames = .cnames,
+                         data = .data)
+
+  vars1 <- setup$vars1
+  vars2 <- setup$vars2
+
+  if (length(vars1) == 0L && length(vars2)) {
+    return(tibble::new_tibble(list(), nrow = 1L))
+  }
+
+  fns <- setup$fns
+  names <- setup$names
+
+  data1 <- dplyr::select(dplyr::cur_data(), dplyr::all_of(vars1))
+  data2 <- dplyr::select(dplyr::cur_data(), dplyr::all_of(vars2))
+
+  n_cols1 <- length(data1)
+  n_cols2 <- length(data2)
+  n_fns <- length(fns)
+  seq_n_cols1 <- seq_len(n_cols1)
+  seq_n_cols2 <- seq_len(n_cols2)
+  seq_fns <- seq_len(n_fns)
+  k <- 1L
+  out <- vector("list", n_cols1 * n_cols2 * n_fns)
+
+  for (i in seq_n_cols1) {
+    col1 <- data1[[i]]
+    for(l in seq_n_cols2) {
+      col2 <- data2[[l]]
+      for (j in seq_fns) {
+        fn <- fns[[j]]
+        out[[k]] <- fn(col1, col2, ...)
+        k <- k + 1L
+      }
+    }
+  }
+
+  size <- vctrs::vec_size_common(!!!out)
+  out <- vctrs::vec_recycle_common(!!!out, .size = size)
+  names(out) <- names
+  tibble::new_tibble(out, nrow = size)
+}
+
+
+across2x_setup <- function(cols1, cols2, fns, names, cnames, data) {
+
+  cols1 <- rlang::enquo(cols1)
+  cols2 <- rlang::enquo(cols2)
+  vars1 <- tidyselect::eval_select(rlang::expr(!!cols1), data) # check data
+  vars2 <- tidyselect::eval_select(rlang::expr(!!cols2), data)
+  vars1 <- names(vars1)
+  vars2 <- names(vars2)
+
+  if (is.function(fns) || rlang::is_formula(fns)) {
+    names <- names %||% "{col1}_{col2}"
+    fns <- list(`1` = fns)
+  } else {
+    names <- names %||% "{col1}_{col2}_{fn}"
+  }
+
+  fns <- purrr::map(fns, rlang::as_function)
+
+  if (is.null(names(fns))) {
+    names_fns <- seq_along(fns)
+  } else {
+    names_fns <- names(fns)
+    empties <- which(names_fns == "")
+    if (length(empties)) {
+      names_fns[empties] <- empties
+    }
+  }
+
+  names <- vctrs::vec_as_names(glue::glue(names,
+                                          col1 = rep(vars1, each = length(vars2) * length(fns)),
+                                          col2 = rep(vars2, length(vars1) * length(fns)),
+                                          # pre = rep(pre1, each = length(fns)),
+                                          # suf = rep(suf1, each = length(fns)),
+                                          fn = rep(names_fns, length(cols1) * length(cols2))),
+                               repair = "unique")
+
+  value <- list(vars1 = vars1, vars2 = vars2, fns = fns, names = names)
+  value
+}
 
