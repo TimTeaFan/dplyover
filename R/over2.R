@@ -83,8 +83,8 @@ over2 <- function(.x, .y, .fns, ..., .names = NULL){
                    x = paste0("`over2()` tried to create the following existing column names: ",
                               paste0(paste0("'", dnames[seq_along(1:names_l)], "'"), collapse = ", "),
                               ifelse(length(dnames) > 3, " etc. ", ".")),
-                   i = "If you want to transform existing columns try using `across()`.",
-                   i = "If you want to change to output names use the `.names` argument"))
+                   i = "If you want to transform existing columns try using `across2()`.",
+                   i = "If you want to change the output names use the `.names` argument."))
 
   }
 
@@ -253,7 +253,7 @@ over2x <- function(.x, .y, .fns, ..., .names = NULL){
                               paste0(paste0("'", dnames[seq_along(1:names_l)], "'"), collapse = ", "),
                               ifelse(length(dnames) > 3, " etc. ", ".")),
                    i = "If you want to transform existing columns try using `across()`.",
-                   i = "If you want to change to output names use the `.names` argument"))
+                   i = "If you want to change the output names use the `.names` argument."))
 
   }
 
