@@ -11,11 +11,9 @@
 #' or values based on either (1) column names or (2) values of specified columns.
 #' See the examples below and the `vignette("over")` for more details.
 #'
-#' @param .x An atomic vector (expect 'raw' and 'complex') to apply functions to.
-#'   Instead of a vector a <[`selection helper`][selection_helpers]> or anything else
-#'   that is coercible to an atomic vector can be used. Note that `over()` must only
-#'   be used to create 'new' columns and will throw an error if `.x` contains
-#'   existing column names. To transform existing columns use [dplyr::across()].
+#' @param .x A vector or list to apply functions to. Instead of a vector a
+#'   <[`selection helper`][selection_helpers]> or anything else
+#'   that evaluates to a vector can be useed.
 #'
 #' @param .fns Functions to apply to each of the elements in `.x`. For
 #'   functions that expect variable names as input, the selected strings need to
@@ -44,6 +42,11 @@
 #'
 #' @returns
 #' A tibble with one column for each element in `.x` and each function in `.fns`;.
+#'
+#' @section Note:
+#' `over()` must only be used to create 'new' columns and will throw an error if
+#' the new columns created contain existing column names. To transform existing
+#' columns use [dplyr::across()] or [dplyover::across2()].
 #'
 #' @section Examples:
 #'
@@ -187,7 +190,7 @@
 #' ```
 #'
 #' @export
-over <- function(.x, .fns, ..., .names = NULL){
+over <- function(.x, .fns, ..., .names = NULL, .names_fn = NULL){
 
   .data <- tryCatch({
     dplyr::across()
@@ -197,12 +200,13 @@ over <- function(.x, .fns, ..., .names = NULL){
 
   .cnames <- names(.data)
 
-  check_keep()
+  check_keep(type = "keep")
 
   setup <- over_setup({{ .x }},
                       fns = .fns,
                       names = .names,
-                      cnames = .cnames)
+                      cnames = .cnames,
+                      names_fn = .names_fn)
 
   x <- setup$x
   if (length(x) == 0L) {
@@ -221,7 +225,7 @@ over <- function(.x, .fns, ..., .names = NULL){
                               paste0(paste0("'", dnames[seq_along(1:names_l)], "'"), collapse = ", "),
                               ifelse(length(dnames) > 3, " etc. ", ".")),
                    i = "If you want to transform existing columns try using `across()`.",
-                   i = "If you want to change to output names use the `.names` argument"))
+                   i = "If you want to change the output names use the `.names` argument"))
 
   }
 
@@ -247,11 +251,13 @@ over <- function(.x, .fns, ..., .names = NULL){
 }
 
 
-over_setup <- function(x1, fns, names, cnames) {
+over_setup <- function(x1, fns, names, cnames, names_fn) {
+
+  x1_nm <- names(x1)
+  x1_idx <- as.character(seq_along(x1))
 
   if (is.list(x1) && !rlang::is_named(x1)) {
-    alt_names <- as.character(seq_along(x1))
-    names(x1) <- vctrs::vec_as_names(alt_names, repair = "check_unique")
+    names(x1) <- x1_idx
   }
 
   if (is.function(fns) || rlang::is_formula(fns)) {
@@ -278,10 +284,36 @@ over_setup <- function(x1, fns, names, cnames) {
     }
   }
 
+  if (length(names) > 1) {
+
+    if (length(names) !=  length(x1) * length(fns)) {
+      rlang::abort(c("Problem with input `.names`.",
+                      i = "When more than one element is provided to `.names` its length must equal the number of new columns.",
+                      x = paste0(length(names), " elements provided to `.names`, but the number of new columns is ", length(x1) * length(fns))
+                     ))
+    }
+
+    if (!is.null(names_fn)) {
+      rlang::warn("`.names_fn` will be ignored, since more than one element is provided to `.names`.")
+    }
+
+  } else {
+
   names <- vctrs::vec_as_names(glue::glue(names,
                                           x = rep(names(x1) %||% x1, each = length(fns)),
+                                          x_nm = rep(x1_nm, each = length(fns)),
+                                          x_idx = rep(x1_idx, each = length(fns)),
                                           fn = rep(names_fns, length(x1))),
                                repair = "check_unique")
+
+  if (!is.null(names_fn)) {
+
+    nm_f <- rlang::as_function(names_fn)
+    names <- purrr::map_chr(names, nm_f)
+  }
+
+  }
+
   value <- list(x = x1, fns = fns, names = names)
   value
 }
