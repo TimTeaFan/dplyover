@@ -7,11 +7,8 @@ Authors@R:
            role = c("aut", "cre"),
            email = "mailme@tim-tiefenbach.de",
            comment = c(ORCID = "0000-0001-9443-2434"))
-Description: Extension of 'dplyr's functionality which allows to create new
-    columns in 'dplyr::mutate()' and 'dplyr::summarise()' by applying a function
-    (or a set of functions) to a vector using a syntax similar to 'dplyr::across()'.
-    Helper functions are provided to easily select and evaluate strings. Refer
-    to the documentation for examples and more information.
+Description: Extension of 'dplyr’s functionality that builds a family of functions
+    around dplyr::across().
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
