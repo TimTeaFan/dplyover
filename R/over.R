@@ -1,25 +1,25 @@
-#' Loop an object over one or several functions in 'dplyr'
+#' Loop a vector or list over one or several functions in 'dplyr'
 #'
 #' @description
 #' `over()` makes it easy to create new colums inside a [dplyr::mutate()] or
 #' [dplyr::summarise()] call by applying a function (or a set of functions) to
-#' a vector using a syntax similar to [dplyr::across()]. The main difference is
-#' that [dplyr::across()] transforms or creates new columns based on existing ones,
-#' while `over()` creates new columns based on a vector to which it will apply one
-#' or several functions. Whereas [dplyr::across()] allows `tidy-selection` helpers
-#' to select columns, `over()` provides its own helper functions to select strings
-#' or values based on either (1) column names or (2) values of specified columns.
-#' See the examples below and the `vignette("over")` for more details.
+#' an atomic vector or list using a syntax similar to [dplyr::across()].
+#' The main difference is that [dplyr::across()] transforms or creates new columns
+#' based on existing ones, while `over()` can only create new columns based on a
+#' vector or list to which it will apply one or several functions. Whereas [dplyr::across()]
+#' allows `tidy-selection` helpers to select columns, `over()` provides its own
+#' helper functions to select strings or values based on either (1) values of
+#' specified columns or (2) column names. See the examples below and the
+#' `vignette("over")` for more details.
 #'
-#' @param .x A vector or list to apply functions to. Instead of a vector a
-#'   <[`selection helper`][selection_helpers]> or anything else
-#'   that evaluates to a vector can be useed.
+#' @param .x An atomnic vector or list to apply functions to. Alternatively a
+#'   <[`selection helper`][selection_helpers]> can be useed to create a vector.
 #'
 #' @param .fns Functions to apply to each of the elements in `.x`. For
 #'   functions that expect variable names as input, the selected strings need to
-#'   be turned into symbols and evaluated. Note that <[`rlang's forcing operators`][rlang::nse-force]>
-#'   do not work as expected in regular dplyr calls. See the examples below and the `vignette("over")`
-#'   for `over()`'s genuine forcing function [`.()`].
+#'   be turned into symbols and evaluated. `dplyrover` comes with a genuine helper
+#'   function evaluates strings as names [`.()`]. Note that  <[`rlang's forcing operators`][rlang::nse-force]>
+#'   do not work as expected.
 #'
 #'   Possible values are:
 #'
@@ -30,7 +30,7 @@
 #'   For examples see below.
 #'
 #'   Note that, unlike `across()`, `over()` does not accept `NULL` as a
-#'   value to `.fns``.
+#'   value to `.fns`.
 #'
 #' @param ... Additional arguments for the function calls in `.fns`.
 #'
@@ -40,20 +40,47 @@
 #'   (`NULL`) is equivalent to `"{x}"` for the single function case and
 #'   `"{x}_{fn}"` for the case where a list is used for `.fns`.
 #'
+#'   Note that, depending on the nature of the underlying object in `.x`,
+#'   specifying `{x}` will yield different results:
+#'
+#'   (1) If `.x` is an unnamed atomic vector, `{x}` will represent each value.
+#'   (2) If `.x` is a named list or atomic vector, `{x}` will represent each name.
+#'   (3) If `.x` is an unnamed list, `{x}` will be the index number running from 1 to `length(x)`.
+#'
+#'   This standard behavior (interpretation of `{x}`) can be overwritten by
+#'   directly specifying:
+#'
+#'   - `{x_val}` for `.x`'s values
+#'   - `{x_nm}` for its names
+#'   - `{x_idx}` for its index numbers
+#'
+#'   Alternatively, a character vector of length equal to the number of columns to
+#'   be created can be supplied to `.names`. In this case, the above glue specification
+#'   is not supported.
+#'
+#' @param .names_fn Optionally, a function that is applied after the glue
+#'   specification in `.names` has been evaluated. This is, for example, helpful,
+#'   in case the resulting names need to be further cleaned or trimmed. Note that
+#'   this argument will be ignored if a character vector of length equal to
+#'   to the number of columns to be created is supplied to `.names`.
+#'
 #' @returns
 #' A tibble with one column for each element in `.x` and each function in `.fns`;.
 #'
 #' @section Note:
 #' `over()` must only be used to create 'new' columns and will throw an error if
 #' the new columns created contain existing column names. To transform existing
-#' columns use [dplyr::across()] or [dplyover::across2()].
+#' columns use [dplyr::across()] or [crossover()].
+#'
+#' @seealso [over2()] to apply a function to two objects.
+#' See also the other members of the <[`over-across`][over_across_fam]> function family.
 #'
 #' @section Examples:
 #'
 #' ```{r, child = "man/rmd/setup.Rmd"}
 #' ```
 #'
-#' `over()` can only be used inside `dplyr::mutate` or `dplyr::summarise`.
+#' `over()` can only be used inside `dplyr::mutate()` or `dplyr::summarise()`.
 #' It has two main use cases. They differ in how the elements in `.x`
 #' are used. Let's first attach `dplyr`:
 #'
@@ -65,6 +92,77 @@
 #' ```
 #'
 #' (1)
+#'
+#' @details ## (1) The General Use Case
+#' Here the values in `.x` are used as inputs to one or more functions in `.fns`.
+#' This is useful, when we want to create several new variables based on the same
+#' function with varying arguments. A good example is creating a bunch of lagged
+#' variables.
+#'
+#' ```{r, comment = "#>", collapse = TRUE}
+#' tibble(x = 1:25) %>%
+#'   mutate(over(c(1:3),
+#'               ~ lag(x, .x)))
+#' ```
+#'
+#' Lets create a dummy variable for each unique value in 'Species':
+#' ```{r, comment = "#>", collapse = TRUE}
+#' iris %>%
+#'   mutate(over(as.character(unique(Species)),
+#'              ~ if_else(Species == .x, 1, 0)),
+#'          .keep = "none")
+#' ```
+#'
+#' `dist_values()` gets the ... :
+#' ```{r, comment = "#>", collapse = TRUE}
+#' iris %>%
+#'   mutate(over(dist_values(Species),
+#'              ~ if_else(Species == .x, 1, 0)),
+#'          .keep = "none")
+#' ```
+#'
+#' #' `over()` also works on numeric variables, which is helpful to create several
+#' dummy variables with different thresholds:
+#' ```{r, comment = "#>", collapse = TRUE}
+#' iris %>%
+#' mutate(over(seq(4, 7, by = 1),
+#'             ~ if_else(Sepal.Length < .x, 1, 0),
+#'             .names = "Sepal.Length_{x}"),
+#'          .keep = "none")
+#' ```
+#'
+#' We can easily summarise the percent of each unique value of a variable:
+#' ```{r, comment = "#>", collapse = TRUE}
+#' mtcars %>%
+#'   summarise(over(dist_values(gear),
+#'                  ~ mean(gear == .x),
+#'                  .names = "gear_{x}"))
+#' ```
+#'
+#' This is especially useful when working with grouped data. However, in this
+#' case `dist_values()` should be called on factors, since it will require all
+#' values to be present in all groups. If that is not the case it will through
+#' an error.
+#'
+#' ```{r, error = TRUE}
+#' mtcars %>%
+#'   group_by(cyl) %>%
+#'   summarise(over(dist_values(gear),
+#'                  ~ mean(gear == .x)))
+#' ```
+#'
+#' If used on a factor variable it will work:
+#'
+#' ```{r, comment = "#>", collapse = TRUE}
+#' mtcars %>%
+#'   mutate(gear = as.factor(gear)) %>%
+#'   group_by(cyl) %>%
+#'   summarise(over(dist_values(gear),
+#'                  ~ mean(gear == .x),
+#'                  .names = "gear_{x}"))
+#' ```
+#'
+#' (2)
 #' Here strings a supplied to `.x` to construct column names (sharing the
 #' same stem). This allows us to dynamically use more than one column in the
 #' function calls in `.fns`. To work properly, the strings need to be
@@ -129,66 +227,7 @@
 #'
 #'
 #' (2)
-#' In the second use case the values in `.x` are used as input
-#' matched against conditions inside the functions in `.fns`.
-#'
-#' Lets create a dummy variable for each unique value in 'Species':
-#' ```{r, comment = "#>", collapse = TRUE}
-#' iris %>%
-#'   mutate(over(as.character(unique(Species)),
-#'              ~ if_else(Species == .x, 1, 0)),
-#'          .keep = "none")
-#' ```
-#'
-#' `dist_values()` gets the ... :
-#' ```{r, comment = "#>", collapse = TRUE}
-#' iris %>%
-#'   mutate(over(dist_values(Species),
-#'              ~ if_else(Species == .x, 1, 0)),
-#'          .keep = "none")
-#' ```
-#'
-#' #' `over()` also works on numeric variables, which is helpful to create several
-#' dummy variables with different thresholds:
-#' ```{r, comment = "#>", collapse = TRUE}
-#' iris %>%
-#' mutate(over(seq(4, 7, by = 1),
-#'             ~ if_else(Sepal.Length < .x, 1, 0),
-#'             .names = "Sepal.Length_{x}"),
-#'          .keep = "none")
-#' ```
-#'
-#' We can easily summarise the percent of each unique value of a variable:
-#' ```{r, comment = "#>", collapse = TRUE}
-#' mtcars %>%
-#'   summarise(over(dist_values(gear),
-#'                  ~ mean(gear == .x),
-#'                  .names = "gear_{x}"))
-#' ```
-#'
-#' This is especially useful when working with grouped data. However, in this
-#' case `dist_values()` should be called on factors, since it will require all
-#' values to be present in all groups. If that is not the case it will through
-#' an error.
-#'
-#' ```{r, error = TRUE}
-#' mtcars %>%
-#'   group_by(cyl) %>%
-#'   summarise(over(dist_values(gear),
-#'                  ~ mean(gear == .x)))
-#' ```
-#'
-#' If used on a factor variable it will work:
-#'
-#' ```{r, comment = "#>", collapse = TRUE}
-#' mtcars %>%
-#'   mutate(gear = as.factor(gear)) %>%
-#'   group_by(cyl) %>%
-#'   summarise(over(dist_values(gear),
-#'                  ~ mean(gear == .x),
-#'                  .names = "gear_{x}"))
-#' ```
-#'
+
 #' @export
 over <- function(.x, .fns, ..., .names = NULL, .names_fn = NULL){
 
@@ -255,6 +294,7 @@ over_setup <- function(x1, fns, names, cnames, names_fn) {
 
   x1_nm <- names(x1)
   x1_idx <- as.character(seq_along(x1))
+  x1_val <- if (!is.list(x1) & is.vector(x1)) x1 else NULL
 
   if (is.list(x1) && !rlang::is_named(x1)) {
     names(x1) <- x1_idx
@@ -301,6 +341,7 @@ over_setup <- function(x1, fns, names, cnames, names_fn) {
 
   names <- vctrs::vec_as_names(glue::glue(names,
                                           x = rep(names(x1) %||% x1, each = length(fns)),
+                                          x_val = rep(x1_val, each = length(fns)),
                                           x_nm = rep(x1_nm, each = length(fns)),
                                           x_idx = rep(x1_idx, each = length(fns)),
                                           fn = rep(names_fns, length(x1))),
