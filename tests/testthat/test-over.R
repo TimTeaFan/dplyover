@@ -1,7 +1,82 @@
 # over ------------------------------------------------------------------
 
+# over examples of basic functionality from the example section
+test_that("over() works on numeric vectors", {
 
-# over examples
+  df0 <- tibble(x = 1:25)
+
+  df1 <- df0 %>%
+    mutate(over(c(1:3),
+                ~ lag(x, .x)))
+
+  df2 <- df0 %>%
+    mutate(`1` = lag(x, 1),
+           `2` = lag(x, 2),
+           `3` = lag(x, 3))
+
+  expect_equal(df1, df2)
+
+})
+
+test_that("over() works on character vectors", {
+
+  df1 <- iris %>%
+    mutate(over(unique(Species),
+                ~ if_else(Species == .x, 1, 0)),
+                .keep = "none")
+
+  df2 <- iris %>%
+    mutate(setosa = if_else(Species == "setosa", 1, 0),
+           versicolor = if_else(Species == "versicolor", 1, 0),
+           virginica = if_else(Species == "virginica", 1, 0),
+           .keep = "none")
+
+  expect_equal(df1, df2)
+
+})
+
+test_that("over() works on numeric vectors & can control names", {
+
+  df1 <- iris %>%
+    mutate(over(seq(4, 7, by = 1),
+                ~ if_else(Sepal.Length < .x, 1, 0),
+               .names = "Sepal.Length_{x}"),
+               .keep = "none")
+
+  df2 <- iris %>%
+    mutate(over(seq(4, 7, by = 1),
+                ~ if_else(Sepal.Length < .x, 1, 0),
+                .names = "Sepal.Length_{x}"),
+           .keep = "none")
+
+  expect_equal(df1, df2)
+
+})
+
+test_that("over() works with dates & can transform names ", {
+
+
+  dat_tbl <- tibble(start = seq.Date(as.Date("2020-01-01"),
+                                     as.Date("2020-01-15"),
+                                     by = "days"),
+                    end = start + 10)
+
+  df1 <- dat_tbl %>%
+    mutate(over(seq(as.Date("2020-01-01"),
+                    as.Date("2020-01-21"),
+                    by = "weeks"),
+                ~ .x >= start & .x <= end,
+                .names = "day_{x}",
+                .names_fn = ~ gsub("-", "", .x)))
+
+  df2 <- dat_tbl %>%
+    mutate(day_20200101 = "2020-01-01" >= start & "2020-01-01" <= end,
+           day_20200108 = "2020-01-08" >= start & "2020-01-08" <= end,
+           day_20200115 = "2020-01-15" >= start & "2020-01-15" <= end)
+
+  expect_equal(df1, df2)
+
+})
 
 
 

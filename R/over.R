@@ -55,8 +55,8 @@
 #'   - `{x_idx}` for its index numbers
 #'
 #'   Alternatively, a character vector of length equal to the number of columns to
-#'   be created can be supplied to `.names`. In this case, the above glue specification
-#'   is not supported.
+#'   be created can be supplied to `.names`. Note that in this case, the glue
+#'   specification described above is not supported.
 #'
 #' @param .names_fn Optionally, a function that is applied after the glue
 #'   specification in `.names` has been evaluated. This is, for example, helpful,
@@ -108,21 +108,17 @@
 #' Lets create a dummy variable for each unique value in 'Species':
 #' ```{r, comment = "#>", collapse = TRUE}
 #' iris %>%
-#'   mutate(over(as.character(unique(Species)),
+#'   mutate(over(unique(Species),
 #'              ~ if_else(Species == .x, 1, 0)),
 #'          .keep = "none")
 #' ```
+#' Note that `dplyover` comes with a helper function similar to `unique` called
+#' [`dist_values()`] which will handle `NA`s differently.
 #'
-#' `dist_values()` gets the ... :
-#' ```{r, comment = "#>", collapse = TRUE}
-#' iris %>%
-#'   mutate(over(dist_values(Species),
-#'              ~ if_else(Species == .x, 1, 0)),
-#'          .keep = "none")
-#' ```
+#' With `over()` it is also possible to create several dummy variables with
+#' different thresholds. We can use the `.names` argument to control the output
+#' names:
 #'
-#' #' `over()` also works on numeric variables, which is helpful to create several
-#' dummy variables with different thresholds:
 #' ```{r, comment = "#>", collapse = TRUE}
 #' iris %>%
 #' mutate(over(seq(4, 7, by = 1),
@@ -131,46 +127,36 @@
 #'          .keep = "none")
 #' ```
 #'
-#' We can easily summarise the percent of each unique value of a variable:
-#' ```{r, comment = "#>", collapse = TRUE}
-#' mtcars %>%
-#'   summarise(over(dist_values(gear),
-#'                  ~ mean(gear == .x),
-#'                  .names = "gear_{x}"))
-#' ```
-#'
-#' This is especially useful when working with grouped data. However, in this
-#' case `dist_values()` should be called on factors, since it will require all
-#' values to be present in all groups. If that is not the case it will through
-#' an error.
-#'
-#' ```{r, error = TRUE}
-#' mtcars %>%
-#'   group_by(cyl) %>%
-#'   summarise(over(dist_values(gear),
-#'                  ~ mean(gear == .x)))
-#' ```
-#'
-#' If used on a factor variable it will work:
+#' A similar approach can be used with dates. Below we loop over a date
+#' sequence to check whether the date falls within a given start and end
+#' date. We can use the `.names_fn` argument to clean the resulting output
+#' names:
 #'
 #' ```{r, comment = "#>", collapse = TRUE}
-#' mtcars %>%
-#'   mutate(gear = as.factor(gear)) %>%
-#'   group_by(cyl) %>%
-#'   summarise(over(dist_values(gear),
-#'                  ~ mean(gear == .x),
-#'                  .names = "gear_{x}"))
+#' # some dates
+#' dat_tbl <- tibble(start = seq.Date(as.Date("2020-01-01"),
+#'                                    as.Date("2020-01-15"),
+#'                                    by = "days"),
+#'                   end = start + 10)
+#'
+#' dat_tbl %>%
+#'   mutate(over(seq(as.Date("2020-01-01"),
+#'                   as.Date("2020-01-21"),
+#'                   by = "weeks"),
+#'               ~ .x >= start & .x <= end,
+#'               .names = "day_{x}",
+#'               .names_fn = ~ gsub("-", "", .x)))
 #' ```
 #'
-#' (2)
-#' Here strings a supplied to `.x` to construct column names (sharing the
+#' @details ## (2) A Very Specific Use Case
+#' Here strings are supplied to `.x` to construct column names (sharing the
 #' same stem). This allows us to dynamically use more than one column in the
 #' function calls in `.fns`. To work properly, the strings need to be
-#' turned into symbols and evaluated. `over()`'s genuine forcing function
-#' `.()` helps to declutter the otherwise rather verbose code. `.()` supports
-#' glue syntax and takes a string as argument:
+#' turned into symbols and evaluated. For this `dplyover` provides a genuine helper
+#' function `.()` that helps to declutter the otherwise rather verbose code.
+#' `.()` supports glue syntax and takes a string as argument:
 #'
-#' Consider this example of a purrr-style formula in `.fns` with `.()`:
+#' Consider the following example of a purrr-style formula in `.fns` using `.()`:
 #'
 #' ```{r, comment = "#>", collapse = TRUE}
 #' iris %>%
@@ -197,7 +183,7 @@
 #'               ))
 #' ```
 #'
-#' `.()` also works with anonymous functions
+#' `.()` also works with anonymous functions:
 #' ```{r, comment = "#>", collapse = TRUE}
 #' iris %>%
 #'   summarise(over(c("Sepal", "Petal"),
@@ -205,7 +191,7 @@
 #'                 ))
 #' ```
 #'
-#' A named list of functions
+#' A named list of functions:
 #' ```{r, comment = "#>", collapse = TRUE}
 #' iris %>%
 #'   mutate(over(c("Sepal", "Petal"),
@@ -215,7 +201,7 @@
 #'          .keep = "none")
 #' ```
 #'
-#' Use the `.names` argument to control the output names
+#' Again, use the `.names` argument to control the output names:
 #' ```{r, comment = "#>", collapse = TRUE}
 #' iris %>%
 #'   mutate(over(c("Sepal", "Petal"),
