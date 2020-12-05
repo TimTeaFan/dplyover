@@ -91,7 +91,7 @@
 #' iris %>%
 #'   mutate(over(seq_range(Sepal.Length, 1),
 #'               ~ if_else(Sepal.Length > .x, 1, 0),
-#'               .names = "Sepal.Length.{vec}"),
+#'               .names = "Sepal.Length.{x}"),
 #'          .keep = "none")
 #' ```
 #'
@@ -106,7 +106,7 @@
 #'                   round(max(Sepal.Length), 0),
 #'                   1),
 #'               ~ if_else(Sepal.Length > .x, 1, 0),
-#'               .names = "Sepal.Length.{vec}"),
+#'               .names = "Sepal.Length.{x}"),
 #'          .keep = "none")
 #' ```
 #'

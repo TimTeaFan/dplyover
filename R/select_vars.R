@@ -89,12 +89,12 @@
 #' iris %>%
 #' mutate(over(cut_names(".Width"),
 #'             ~ .("{.x}.Width") * .("{.x}.Length"),
-#'             .names = "Product_{vec}"))
+#'             .names = "Product_{x}"))
 #'
 #' iris %>%
 #'   mutate(over(extract_names("Length|Width"),
 #'               ~.("Petal.{.x}") * .("Sepal.{.x}"),
-#'              .names = "Product_{vec}"))
+#'              .names = "Product_{x}"))
 #' ```
 #'
 #' What problem does `cut_names()` solve?
