@@ -134,7 +134,7 @@ cut_names <- function(.pattern, .select = NULL, .vars = NULL) {
 
   .varn <- .vars
 
-  if (is.null(.vars) && sys.call(sys.nframe() - 2)[[1]] == "over_setup") {
+  if (is.null(.vars) && sys.call(sys.nframe() - 1)[[1]] == "over_setup") {
     .varn <- names(dplyr::across())
   }
 
@@ -173,7 +173,7 @@ extract_names <- function(.pattern, .select = NULL, .vars = NULL) {
 
    .varn <- .vars
 
-  if (is.null(.vars) && sys.call(sys.nframe() - 2)[[1]] == "over_setup") {
+  if (is.null(.vars) && sys.call(sys.nframe() - 1)[[1]] == "over_setup") {
     .varn <- names(dplyr::across())
   }
 
