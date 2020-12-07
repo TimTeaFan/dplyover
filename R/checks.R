@@ -7,6 +7,8 @@ is.date <- function(x) {
 # some help from https://stackoverflow.com/questions/62746607/
 check_keep <- function(type = c("keep", "summarise")) {
 
+  type <- match.arg(type)
+
   call_st <- sys.calls()
 
   calling_fn <- call_st[[sys.nframe() - 1]][[1]]
