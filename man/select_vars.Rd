@@ -15,7 +15,7 @@ extract_names(.pattern, .select = NULL, .vars = NULL)
 
 \item{.select}{Pattern to further select and narrow down the variable names
 provided in \code{.vars}. When this argument is provided the variables names in
-\code{.vars} will be narrowed down to those who match the pattern specified in
+\code{.vars} will be narrowed down to those which match the pattern specified in
 \code{.select}.}
 
 \item{.vars}{A character vector with variables names. When used inside \code{over}
@@ -49,12 +49,12 @@ library(stringr)
 iris <- as_tibble(iris)
 }\if{html}{\out{</div>}}
 
-Let's first compare \code{\link[=cut_names]{cut_names()}} and \code{\link[=extract_names]{extract_names()}}  to their {stringr}
+Let's first compare \code{cut_names()} and \code{extract_names()}  to their {stringr}
 equivalents \code{stringr::str_remove_all()} and \code{stringr::str_extract()}:
 
 We can observe two main differences:
 
-(1)  \code{\link[=cut_names]{cut_names()}} and \code{\link[=extract_names]{extract_names()}} only return strings where the function
+(1)  \code{cut_names()} and \code{extract_names()} only return strings where the function
 was applied successfully (when characters have actually been removed or
 extracted). \code{stringr::str_remove_all()} returns unmatched strings as is, while
 \code{stringr::str_extract()} returns \code{NA}.\if{html}{\out{<div class="r">}}\preformatted{cut_names("Width", .vars = names(iris))
@@ -69,7 +69,7 @@ str_extract(rep(names(iris), 2), "Length|Width")
 #>  [9] "Width"  NA
 }\if{html}{\out{</div>}}
 
-(2) \code{\link[=cut_names]{cut_names()}} and \code{\link[=extract_names]{extract_names()}} return only unique values:\if{html}{\out{<div class="r">}}\preformatted{cut_names("Width", .vars = rep(names(iris), 2))
+(2) \code{cut_names()} and \code{extract_names()} return only unique values:\if{html}{\out{<div class="r">}}\preformatted{cut_names("Width", .vars = rep(names(iris), 2))
 #> [1] "Sepal." "Petal."
 str_remove_all(rep(names(iris), 2), "Width")
 #>  [1] "Sepal.Length" "Sepal."       "Petal.Length" "Petal."       "Species"     
@@ -82,8 +82,8 @@ str_extract(rep(names(iris), 2), "Length|Width")
 #>  [9] "Width"  NA
 }\if{html}{\out{</div>}}
 
-The examples above do not show that \code{\link[=cut_names]{cut_names()}} removes \emph{all} strings matching
-the \code{.pattern} argument, while \code{\link[=extract_names]{extract_names()}} does only extract the \code{.pattern}
+The examples above do not show that \code{cut_names()} removes \emph{all} strings matching
+the \code{.pattern} argument, while \code{extract_names()} does only extract the \code{.pattern}
 \emph{one} time:\if{html}{\out{<div class="r">}}\preformatted{cut_names("Width", .vars = "Width.Petal.Width")
 #> [1] ".Petal."
 str_remove_all("Width.Petal.Width", "Width")
@@ -95,11 +95,11 @@ str_extract("Width.Petal.Width", "Width")
 #> [1] "Width"
 }\if{html}{\out{</div>}}
 
-Within \code{\link[=over]{over()}} \code{\link[=cut_names]{cut_names()}} and \code{\link[=extract_names]{extract_names()}} automatically use the
+Within \code{\link[=over]{over()}} \code{cut_names()} and \code{extract_names()} automatically use the
 column names of the underlying data:\if{html}{\out{<div class="r">}}\preformatted{iris \%>\%
 mutate(over(cut_names(".Width"),
             ~ .("\{.x\}.Width") * .("\{.x\}.Length"),
-            .names = "Product_\{vec\}"))
+            .names = "Product_\{x\}"))
 #> # A tibble: 150 x 7
 #>   Sepal.Length Sepal.Width Petal.Length Petal.Width Species Product_Sepal
 #>          <dbl>       <dbl>        <dbl>       <dbl> <fct>           <dbl>
@@ -112,7 +112,7 @@ mutate(over(cut_names(".Width"),
 iris \%>\%
   mutate(over(extract_names("Length|Width"),
               ~.("Petal.\{.x\}") * .("Sepal.\{.x\}"),
-             .names = "Product_\{vec\}"))
+             .names = "Product_\{x\}"))
 #> # A tibble: 150 x 7
 #>   Sepal.Length Sepal.Width Petal.Length Petal.Width Species Product_Length
 #>          <dbl>       <dbl>        <dbl>       <dbl> <fct>            <dbl>
@@ -123,14 +123,14 @@ iris \%>\%
 #> # ... with 146 more rows, and 1 more variable: Product_Width <dbl>
 }\if{html}{\out{</div>}}
 
-What problem does \code{\link[=cut_names]{cut_names()}} solve?
-In the example above using \code{\link[=cut_names]{cut_names()}} might not seem helpful, since we could easily
+What problem does \code{cut_names()} solve?
+In the example above using \code{cut_names()} might not seem helpful, since we could easily
 use \code{c("Sepal", "Petal")} instead. However, there are cases where we have
 data with a lot of similar pairs of variables sharing a common prefix or
-suffix. If we want to loop over them using \code{over()} then \code{\link[=cut_names]{cut_names()}} comes
+suffix. If we want to loop over them using \code{over()} then \code{cut_names()} comes
 in handy.
 
-The usage of \code{\link[=extract_names]{extract_names()}} might be less obvious. Lets look at raw data
+The usage of \code{extract_names()} might be less obvious. Lets look at raw data
 from a customer satifsaction survey which contains the following variables.\if{html}{\out{<div class="r">}}\preformatted{csatraw \%>\% glimpse(width = 50)
 #> Rows: 150
 #> Columns: 14
@@ -152,10 +152,10 @@ from a customer satifsaction survey which contains the following variables.\if{h
 
 The survey has several \code{item}s consisting of two sub-questions / variables \code{a}
 and \code{b}. Lets say we want to calculate the product of those two variables for
-each item. \code{\link[=extract_names]{extract_names()}} helps us to select all variables containing
+each item. \code{extract_names()} helps us to select all variables containing
 \code{"item"} followed by a digit using as regex \code{"item\\\\d"} as \code{.pattern}.
 However, there is \code{item1} which is only one variable not followed by \code{a} and
-\code{b}. \code{\link[=extract_names]{extract_names()}} lets us exclude this item by setting the \code{.select}
+\code{b}. \code{extract_names()} lets us exclude this item by setting the \code{.select}
 argument to \verb{[^item1]}:\if{html}{\out{<div class="r">}}\preformatted{csatraw \%>\%
  transmute(over(extract_names("item\\\\d", "[^item1]"),
                 ~ .("\{.x\}a") * .("\{.x\}b"))

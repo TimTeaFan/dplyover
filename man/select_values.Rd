@@ -98,7 +98,7 @@ values of its input variable. This is helpful when creating many dummy
 variables with varying thresholds.\if{html}{\out{<div class="r">}}\preformatted{iris \%>\%
   mutate(over(seq_range(Sepal.Length, 1),
               ~ if_else(Sepal.Length > .x, 1, 0),
-              .names = "Sepal.Length.\{vec\}"),
+              .names = "Sepal.Length.\{x\}"),
          .keep = "none")
 #> # A tibble: 150 x 3
 #>   Sepal.Length.5 Sepal.Length.6 Sepal.Length.7
@@ -118,7 +118,7 @@ example above:\if{html}{\out{<div class="r">}}\preformatted{iris \%>\%
                   round(max(Sepal.Length), 0),
                   1),
               ~ if_else(Sepal.Length > .x, 1, 0),
-              .names = "Sepal.Length.\{vec\}"),
+              .names = "Sepal.Length.\{x\}"),
          .keep = "none")
 #> # A tibble: 150 x 5
 #>   Sepal.Length.4 Sepal.Length.5 Sepal.Length.6 Sepal.Length.7 Sepal.Length.8

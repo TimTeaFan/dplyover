@@ -18,8 +18,8 @@
 #' @param .fns Functions to apply to each of the elements in `.x`. For
 #'   functions that expect variable names as input, the selected strings need to
 #'   be turned into symbols and evaluated. `dplyrover` comes with a genuine helper
-#'   function evaluates strings as names [`.()`]. Note that  <[`rlang's forcing operators`][rlang::nse-force]>
-#'   do not work as expected.
+#'   function that evaluates strings as names [`.()`]. Note that <[`rlang's forcing operators`][rlang::nse-force]>
+#'   are not supported in `over()`.
 #'
 #'   Possible values are:
 #'
@@ -27,7 +27,7 @@
 #'   - A purrr-style lambda
 #'   - A list of functions/lambdas
 #'
-#'   For examples see below.
+#'   For examples see the example section below.
 #'
 #'   Note that, unlike `across()`, `over()` does not accept `NULL` as a
 #'   value to `.fns`.
@@ -43,9 +43,9 @@
 #'   Note that, depending on the nature of the underlying object in `.x`,
 #'   specifying `{x}` will yield different results:
 #'
-#'   (1) If `.x` is an unnamed atomic vector, `{x}` will represent each value.
-#'   (2) If `.x` is a named list or atomic vector, `{x}` will represent each name.
-#'   (3) If `.x` is an unnamed list, `{x}` will be the index number running from 1 to `length(x)`.
+#'   - If `.x` is an unnamed atomic vector, `{x}` will represent each value.
+#'   - If `.x` is a named list or atomic vector, `{x}` will represent each name.
+#'   - If `.x` is an unnamed list, `{x}` will be the index number running from 1 to `length(x)`.
 #'
 #'   This standard behavior (interpretation of `{x}`) can be overwritten by
 #'   directly specifying:
@@ -72,15 +72,18 @@
 #' the new columns created contain existing column names. To transform existing
 #' columns use [dplyr::across()] or [crossover()].
 #'
-#' @seealso [over2()] to apply a function to two objects.
-#' See also the other members of the <[`over-across`][over_across_fam]> function family.
+#' Similar to `dplyr::across()` `over()` works only inside dplyr verbs.
+#'
+#' @seealso
+#' [over2()] to apply a function to two objects.
+#'
+#' All members of the <[`over-across function family`][over_across_family]>.
 #'
 #' @section Examples:
 #'
 #' ```{r, child = "man/rmd/setup.Rmd"}
 #' ```
 #'
-#' `over()` can only be used inside `dplyr::mutate()` or `dplyr::summarise()`.
 #' It has two main use cases. They differ in how the elements in `.x`
 #' are used. Let's first attach `dplyr`:
 #'
@@ -91,9 +94,8 @@
 #' iris <- as_tibble(iris)
 #' ```
 #'
-#' (1)
 #'
-#' @details ## (1) The General Use Case
+#' ## (1) The General Use Case
 #' Here the values in `.x` are used as inputs to one or more functions in `.fns`.
 #' This is useful, when we want to create several new variables based on the same
 #' function with varying arguments. A good example is creating a bunch of lagged
@@ -148,7 +150,41 @@
 #'               .names_fn = ~ gsub("-", "", .x)))
 #' ```
 #'
-#' @details ## (2) A Very Specific Use Case
+#' `over()` can summarise data in wide format. In the example below, we want to
+#' know for each group of customers (`new`, `existing`, `reactivate`), how much
+#' percent of the respondents gave which rating on a five point likert scale (`item1`).
+#' A usual approach in the tidyverse would be to use `count %>% group_by %>% mutate`,
+#' which yields the same result in the usually prefered long format. Sometimes, however,
+#' we might want this kind of summary in the wide format, and in this case `over()`
+#' comes in handy:
+#'
+#' ```{r, comment = "#>", collapse = TRUE}
+#' csatraw %>%
+#'   group_by(type) %>%
+#'   summarise(over(c(1:5),
+#'                  ~ mean(item1 == .x)))
+#' ```
+#'
+#' Instead of a vector we can provide a named list of vectors to calculate the
+#' top two and bottom two categories on the fly:
+#'
+#' ```{r, comment = "#>", collapse = TRUE}
+#' csatraw %>%
+#'   group_by(type) %>%
+#'   summarise(over(list(bot2 = c(1:2),
+#'                       mid  = 3,
+#'                       top2 = c(4:5)),
+#'                  ~ mean(item1 %in% .x)))
+#' ```
+#'
+#'
+#'
+#'
+#'
+#'
+#'
+#'
+#' ## (2) A Very Specific Use Case
 #' Here strings are supplied to `.x` to construct column names (sharing the
 #' same stem). This allows us to dynamically use more than one column in the
 #' function calls in `.fns`. To work properly, the strings need to be
@@ -210,10 +246,6 @@
 #'               .names = "{fn}_{x}"),
 #'          .keep = "none")
 #' ```
-#'
-#'
-#' (2)
-
 #' @export
 over <- function(.x, .fns, ..., .names = NULL, .names_fn = NULL){
 
