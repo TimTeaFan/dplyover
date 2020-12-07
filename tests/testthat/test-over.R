@@ -35,7 +35,7 @@ test_that("over() works on character vectors", {
 
 })
 
-test_that("over() works on numeric vectors & can control names", {
+test_that("over() can control names", {
 
   df1 <- iris %>%
     mutate(over(seq(4, 7, by = 1),
@@ -56,10 +56,10 @@ test_that("over() works on numeric vectors & can control names", {
 test_that("over() works with dates & can transform names ", {
 
 
-  dat_tbl <- tibble(start = seq.Date(as.Date("2020-01-01"),
+  dat_tbl <- tibble::tibble(start = seq.Date(as.Date("2020-01-01"),
                                      as.Date("2020-01-15"),
                                      by = "days"),
-                    end = start + 10)
+                            end = start + 10)
 
   df1 <- dat_tbl %>%
     mutate(over(seq(as.Date("2020-01-01"),
@@ -79,6 +79,51 @@ test_that("over() works with dates & can transform names ", {
 })
 
 
+test_that("over() works with summarise", {
+
+df1 <- csatraw %>%
+  group_by(type) %>%
+  summarise(over(c(1:5),
+                 ~ mean(item1 == .x)))
+
+df2 <- csatraw %>%
+  group_by(type) %>%
+  summarise(`1` = mean(item1 == 1),
+            `2` = mean(item1 == 2),
+            `3` = mean(item1 == 3),
+            `4` = mean(item1 == 4),
+            `5` = mean(item1 == 5))
+
+expect_equal(df1, df2)
+
+})
+
+test_that("over() works with named lists", {
+
+  df1 <- csatraw %>%
+    group_by(type) %>%
+    summarise(over(list(bot2 = c(1:2),
+                        mid  = 3,
+                        top2 = c(4:5)),
+                   ~ mean(item1 %in% .x)))
+
+  df2 <- csatraw %>%
+    group_by(type) %>%
+    summarise(`bot2` = mean(item1 %in% 1:2),
+              `mid`  = mean(item1 %in% 3),
+              `top2` = mean(item1 %in% 4:5))
+
+  expect_equal(df1, df2)
+
+})
+
+test_that("over() works with a data.frame", {
+
+
+
+  expect_equal(df1, df2)
+
+})
 
 # tests adaoted from across
 test_that("across() works on one column data.frame", {
