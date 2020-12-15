@@ -1,55 +1,56 @@
 # over ------------------------------------------------------------------
+library(dplyr)
 
 # over examples of basic functionality from the example section
 test_that("over() works on numeric vectors", {
 
   df0 <- tibble(x = 1:25)
 
-  df1 <- df0 %>%
+  df_over <- df0 %>%
     mutate(over(c(1:3),
                 ~ lag(x, .x)))
 
-  df2 <- df0 %>%
+  df_expect <- df0 %>%
     mutate(`1` = lag(x, 1),
            `2` = lag(x, 2),
            `3` = lag(x, 3))
 
-  expect_equal(df1, df2)
+  expect_equal(df_over, df_expect)
 
 })
 
 test_that("over() works on character vectors", {
 
-  df1 <- iris %>%
+  df_over <- iris %>%
     mutate(over(unique(Species),
                 ~ if_else(Species == .x, 1, 0)),
                 .keep = "none")
 
-  df2 <- iris %>%
+  df_expect <- iris %>%
     mutate(setosa = if_else(Species == "setosa", 1, 0),
            versicolor = if_else(Species == "versicolor", 1, 0),
            virginica = if_else(Species == "virginica", 1, 0),
            .keep = "none")
 
-  expect_equal(df1, df2)
+  expect_equal(df_over, df_expect)
 
 })
 
 test_that("over() can control names", {
 
-  df1 <- iris %>%
+  df_over <- iris %>%
     mutate(over(seq(4, 7, by = 1),
                 ~ if_else(Sepal.Length < .x, 1, 0),
                .names = "Sepal.Length_{x}"),
                .keep = "none")
 
-  df2 <- iris %>%
+  df_expect <- iris %>%
     mutate(over(seq(4, 7, by = 1),
                 ~ if_else(Sepal.Length < .x, 1, 0),
                 .names = "Sepal.Length_{x}"),
            .keep = "none")
 
-  expect_equal(df1, df2)
+  expect_equal(df_over, df_expect)
 
 })
 
@@ -61,7 +62,7 @@ test_that("over() works with dates & can transform names ", {
                                      by = "days"),
                             end = start + 10)
 
-  df1 <- dat_tbl %>%
+  df_over <- dat_tbl %>%
     mutate(over(seq(as.Date("2020-01-01"),
                     as.Date("2020-01-21"),
                     by = "weeks"),
@@ -69,24 +70,24 @@ test_that("over() works with dates & can transform names ", {
                 .names = "day_{x}",
                 .names_fn = ~ gsub("-", "", .x)))
 
-  df2 <- dat_tbl %>%
+  df_expect <- dat_tbl %>%
     mutate(day_20200101 = "2020-01-01" >= start & "2020-01-01" <= end,
            day_20200108 = "2020-01-08" >= start & "2020-01-08" <= end,
            day_20200115 = "2020-01-15" >= start & "2020-01-15" <= end)
 
-  expect_equal(df1, df2)
+  expect_equal(df_over, df_expect)
 
 })
 
 
 test_that("over() works with summarise", {
 
-df1 <- csatraw %>%
+df_over <- csatraw %>%
   group_by(type) %>%
   summarise(over(c(1:5),
                  ~ mean(item1 == .x)))
 
-df2 <- csatraw %>%
+df_expect <- csatraw %>%
   group_by(type) %>%
   summarise(`1` = mean(item1 == 1),
             `2` = mean(item1 == 2),
@@ -94,38 +95,62 @@ df2 <- csatraw %>%
             `4` = mean(item1 == 4),
             `5` = mean(item1 == 5))
 
-expect_equal(df1, df2)
+expect_equal(df_over, df_expect)
 
 })
 
 test_that("over() works with named lists", {
 
-  df1 <- csatraw %>%
+  df_over <- csatraw %>%
     group_by(type) %>%
     summarise(over(list(bot2 = c(1:2),
                         mid  = 3,
                         top2 = c(4:5)),
                    ~ mean(item1 %in% .x)))
 
-  df2 <- csatraw %>%
+  df_expect <- csatraw %>%
     group_by(type) %>%
     summarise(`bot2` = mean(item1 %in% 1:2),
               `mid`  = mean(item1 %in% 3),
               `top2` = mean(item1 %in% 4:5))
 
-  expect_equal(df1, df2)
+  expect_equal(df_over, df_expect)
 
 })
 
 test_that("over() works with a data.frame", {
 
+  recode_df <- data.frame(old  = c(1, 2, 3, 4, 5),
+                          top1 = c(0, 0, 0, 0, 1),
+                          top2 = c(0, 0, 0, 1, 1),
+                          bot1 = c(1, 0, 0, 0, 0),
+                          bot2 = c(1, 1, 0, 0, 0))
 
 
-  expect_equal(df1, df2)
+  df_over <- csatraw %>%
+    transmute(over(recode_df[,-1],
+                   ~ .x[match(item1, recode_df[, 1])],
+                   .names = "item1_{x}"))
+
+  df_expect <- csatraw %>%
+    transmute(
+      item1_top1 = recode(item1, `1` = 0, `2` = 0, `3` = 0, `4` = 0, `5` = 1),
+      item1_top2 = recode(item1, `1` = 0, `2` = 0, `3` = 0, `4` = 1, `5` = 1),
+      item1_bot1 = recode(item1, `1` = 1, `2` = 0, `3` = 0, `4` = 0, `5` = 0),
+      item1_bot2 = recode(item1, `1` = 1, `2` = 1, `3` = 0, `4` = 0, `5` = 0)
+      )
+
+  expect_equal(df_over, df_expect)
 
 })
 
-# tests adaoted from across
+## To-Do: Examples from sepcific use case -------
+
+
+
+
+
+# tests adopted from across
 test_that("across() works on one column data.frame", {
   df <- data.frame(x = 1)
 
@@ -319,3 +344,10 @@ test_that("across(<empty set>) returns a data frame with 1 row (#5204)", {
     res
   })
 })
+
+
+# expected errors
+
+
+
+# other edge cases

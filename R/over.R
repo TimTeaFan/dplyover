@@ -177,11 +177,27 @@
 #'                  ~ mean(item1 %in% .x)))
 #' ```
 #'
+#' `over()` can also loop over columns of a data.frame. In the example below we
+#' want to create four different dummy variables out  `item1`: (i) the top and (ii)
+#' bottom category as well as (iii) the top two and (iv) the bottom two categories.
+#' We can create a lookup data.frame and use all columns but the first as input to
+#' `over()`. In the function call we make use of base R's `match()`, where `.x`
+#' represents the new values and `recode_df[, 1]` refers to the old values.
 #'
+#' ```{r, comment = "#>", collapse = TRUE}
 #'
+#' recode_df <- data.frame(old  = c(1, 2, 3, 4, 5),
+#'                         top1 = c(0, 0, 0, 0, 1),
+#'                         top2 = c(0, 0, 0, 1, 1),
+#'                         bot1 = c(1, 0, 0, 0, 0),
+#'                         bot2 = c(1, 1, 0, 0, 0))
 #'
-#'
-#'
+#' csatraw %>%
+#'   mutate(over(recode_df[,-1],
+#'               ~ .x[match(item1, recode_df[, 1])],
+#'               .names = "item1_{x}")) %>%
+#'   select(starts_with("item1))
+#' ```
 #'
 #'
 #' ## (2) A Very Specific Use Case
@@ -189,8 +205,8 @@
 #' same stem). This allows us to dynamically use more than one column in the
 #' function calls in `.fns`. To work properly, the strings need to be
 #' turned into symbols and evaluated. For this `dplyover` provides a genuine helper
-#' function `.()` that helps to declutter the otherwise rather verbose code.
-#' `.()` supports glue syntax and takes a string as argument:
+#' function `.()` that evaluates strings and helps to declutter the otherwise rather
+#' verbose code. `.()` supports glue syntax and takes a string as argument:
 #'
 #' Consider the following example of a purrr-style formula in `.fns` using `.()`:
 #'
