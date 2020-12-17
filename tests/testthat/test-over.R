@@ -144,67 +144,268 @@ test_that("over() works with a data.frame", {
 
 })
 
-## To-Do: Examples from sepcific use case -------
+test_that("over() works with list-columns", {
+
+  df_over <- csat %>%
+    transmute(over(unique(unlist(csat_open)),
+                ~ as.integer(grepl(.x, csat_open)),
+                .names = "rsp_{x}",
+                .names_fn = ~ gsub("\\s", "_", .x)))
 
 
+  df_expect <- csat %>%
+    select(cust_id, csat_open) %>%
+    unnest(csat_open) %>%
+    mutate(val = 1L) %>%
+    tidyr::pivot_wider(id_cols = cust_id,
+                       names_from = csat_open,
+                       values_from = val,
+                       values_fill = 0L) %>%
+    select(-cust_id) %>%
+    rename_with(~ paste0("rsp_", gsub("\\s", "_", .x)))
+
+  expect_equal(df_over, df_expect)
+
+})
 
 
+test_that("over() works string evaluation", {
+
+  df_over <- iris %>%
+    mutate(over(c("Sepal", "Petal"),
+                ~ .("{.x}.Width") + .("{.x}.Length")
+                ))
+
+  df_expect <- iris %>%
+    mutate(
+      Sepal = Sepal.Width + Sepal.Length,
+      Petal = Petal.Width + Petal.Length
+    )
+
+  expect_equal(df_over, df_expect)
+
+  df_over2 <- iris %>%
+    mutate(over(c("Sepal", "Petal"),
+                ~ eval(sym(paste0(.x, ".Width"))) +
+                  eval(sym(paste0(.x, ".Length")))
+    ))
+
+  expect_equal(df_over2, df_expect)
+
+})
+
+test_that("over() works with anonymous functions", {
+
+  df_over <-  iris %>%
+    summarise(over(c("Sepal", "Petal"),
+                   function(x) mean(.("{x}.Width"))
+                   ))
+
+  df_expect <- iris %>%
+    summarise(
+      Sepal = mean(Sepal.Width),
+      Petal = mean(Petal.Width)
+    )
+
+  expect_equal(df_over, df_expect)
+
+})
+
+test_that("over() works named lists", {
+
+  df_over <-  iris %>%
+    mutate(over(c("Sepal", "Petal"),
+                list(product = ~ .("{.x}.Width") * .("{.x}.Length"),
+                     sum = ~ .("{.x}.Width") + .("{.x}.Length"))),
+           .keep = "none")
+
+  df_expect <- iris %>%
+    mutate(
+      Sepal_product = Sepal.Width * Sepal.Length,
+      Sepal_sum = Sepal.Width + Sepal.Length,
+      Petal_product = Petal.Width * Petal.Length,
+      Petal_sum = Petal.Width + Petal.Length,
+      .keep = "none"
+    )
+
+  expect_equal(df_over, df_expect)
+
+})
+
+test_that("over() works named lists", {
+
+  df_over <-  iris %>%
+    mutate(over(c("Sepal", "Petal"),
+                list(product = ~ .("{.x}.Width") * .("{.x}.Length"),
+                     sum = ~ .("{.x}.Width") + .("{.x}.Length"))),
+           .keep = "none")
+
+  df_expect <- iris %>%
+    mutate(
+      Sepal_product = Sepal.Width * Sepal.Length,
+      Sepal_sum = Sepal.Width + Sepal.Length,
+      Petal_product = Petal.Width * Petal.Length,
+      Petal_sum = Petal.Width + Petal.Length,
+      .keep = "none"
+    )
+
+  expect_equal(df_over, df_expect)
+
+})
+
+test_that("over() can control names", {
+
+  df_over <-  iris %>%
+    mutate(over(c("Sepal", "Petal"),
+                list(product = ~ .("{.x}.Width") * .("{.x}.Length"),
+                     sum = ~ .("{.x}.Width") + .("{.x}.Length")),
+                .names = "{fn}_{x}"),
+           .keep = "none")
+
+  df_expect <- iris %>%
+    mutate(
+      product_Sepal = Sepal.Width * Sepal.Length,
+      sum_Sepal = Sepal.Width + Sepal.Length,
+      product_Petal = Petal.Width * Petal.Length,
+      sum_Petal = Petal.Width + Petal.Length,
+      .keep = "none"
+    )
+
+  expect_equal(df_over, df_expect)
+
+})
 
 # tests adopted from across
-test_that("across() works on one column data.frame", {
-  df <- data.frame(x = 1)
+test_that("over() works on one column data.frame", {
 
-  out <- df %>% mutate(across())
-  expect_equal(out, df)
+  df0 <- data.frame(x = 1)
+
+  df_over <- df0 %>%
+    mutate(over(1, ~ x * .x))
+
+  df_exepect <- df0 %>%
+    mutate(`1` = x * 1)
+
+  expect_equal(df_over, df_exepect)
+
 })
 
-test_that("across() does not select grouping variables", {
-  df <- data.frame(g = 1, x = 1)
+test_that("over() does not select grouping variables", {
 
-  out <- df %>% group_by(g) %>% summarise(x = across(everything())) %>% pull()
-  expect_equal(out, tibble(x = 1))
+  df0 <- data.frame(g = 1, x = 1)
+
+  df_over <- df0 %>%
+    group_by(g) %>%
+    summarise(x = over(1, ~ x * .x)) %>%
+    pull()
+
+  expect_equal(df_over, tibble(`1` = 1))
+
 })
 
-test_that("across() correctly names output columns", {
+# resume from here
+test_that("over() correctly names output columns", {
   gf <- tibble(x = 1, y = 2, z = 3, s = "") %>% group_by(x)
 
   expect_named(
-    summarise(gf, across()),
-    c("x", "y", "z", "s")
+    mutate(gf, over(1, ~ x * .x)),
+    c("x", "y", "z", "s", "1")
   )
   expect_named(
-    summarise(gf, across(.names = "id_{col}")),
-    c("x", "id_y", "id_z", "id_s")
+    mutate(gf, over(1, ~ x * .x, .names = "id_{x}")),
+    c("x", "y", "z", "s", "id_1")
   )
   expect_named(
-    summarise(gf, across(where(is.numeric), mean)),
-    c("x", "y", "z")
+    summarise(gf, over(1, ~ mean(x + .x), .names = "mean_{x}")),
+    c("x", "mean_1")
   )
   expect_named(
-    summarise(gf, across(where(is.numeric), mean, .names = "mean_{col}")),
-    c("x", "mean_y", "mean_z")
+    summarise(gf, over(1, list(mean = mean, sum = sum))),
+    c("x", "1_mean", "1_sum")
   )
   expect_named(
-    summarise(gf, across(where(is.numeric), list(mean = mean, sum = sum))),
-    c("x", "y_mean", "y_sum", "z_mean", "z_sum")
+    summarise(gf, over(1, list(mean = mean, sum))),
+    c("x", "1_mean", "1_2")
   )
   expect_named(
-    summarise(gf, across(where(is.numeric), list(mean = mean, sum))),
-    c("x", "y_mean", "y_2", "z_mean", "z_2")
+    summarise(gf, over(1, list(mean, sum = sum))),
+    c("x", "1_1", "1_sum")
   )
   expect_named(
-    summarise(gf, across(where(is.numeric), list(mean, sum = sum))),
-    c("x", "y_1", "y_sum", "z_1", "z_sum")
+    summarise(gf, over(1, list(mean, sum))),
+    c("x", "1_1", "1_2")
   )
   expect_named(
-    summarise(gf, across(where(is.numeric), list(mean, sum))),
-    c("x", "y_1", "y_2", "z_1", "z_2")
+    summarise(gf, over(1, list(mean = mean, sum = sum), .names = "{fn}_{x}")),
+    c("x", "mean_1", "sum_1")
+  )
+  # further added over()'s x_val, x_idx, x_nm
+  expect_named(
+    summarise(gf, over(list(a = 5, b = 6, c = 7),
+                       list(mean = mean, sum = sum),
+                       .names = "{fn}_{x_val}")),
+    c("x", "mean_5", "sum_5",  "mean_6", "sum_6", "mean_7", "sum_7")
+  )
+  expect_warning(
+    summarise(gf, over(list(a = 5:6, b = 6, c = 7),
+                       list(mean = mean, sum = sum),
+                       .names = "{fn}_{x_val}"))
+  )
+  expect_warning(
+    summarise(gf, over(data.frame(a = 5:6, b = 6:7, c = 7:8),
+                       list(mean = mean, sum = sum),
+                       .names = "{fn}_{x_val}"))
   )
   expect_named(
-    summarise(gf, across(where(is.numeric), list(mean = mean, sum = sum), .names = "{fn}_{col}")),
-    c("x", "mean_y", "sum_y", "mean_z", "sum_z")
+    summarise(gf, over(list(a = 5, b = 6, c = 7),
+                       list(mean = mean, sum = sum),
+                       .names = "{fn}_{x_nm}")),
+    c("x", "mean_a", "sum_a",  "mean_b", "sum_b", "mean_c", "sum_c")
   )
+  expect_warning(
+    summarise(gf, over(list(5, 6, 7),
+                       list(mean = mean, sum = sum),
+                       .names = "{fn}_{x_nm}"))
+  )
+  expect_named(
+    summarise(gf, over(list(a = 5, b = 6, c = 7),
+                       list(mean = mean, sum = sum),
+                       .names = "{fn}_{x_idx}")),
+    c("x", "mean_1", "sum_1",  "mean_2", "sum_2", "mean_3", "sum_3")
+  )
+  # further added external vector
+  col_nm_vec <- c("one", "two", "three", "four", "five", "six")
+  expect_named(
+    summarise(gf, over(list(a = 5, b = 6, c = 7),
+                       list(mean = mean, sum = sum),
+                       .names = col_nm_vec)),
+    c("x", "one", "two", "three", "four", "five", "six")
+  )
+  # test that external vector throws error when too short
+  col_nm_vec2 <- c("one", "two", "three")
+  expect_error(
+    summarise(gf, over(list(a = 5, b = 6, c = 7),
+                       list(mean = mean, sum = sum),
+                       .names = col_nm_vec2))
+  )
+  # test that external vector throws error when too long
+  col_nm_vec3 <- c("one", "two", "three", "four", "five", "six", "seven")
+  expect_error(
+    summarise(gf, over(list(a = 5, b = 6, c = 7),
+                       list(mean = mean, sum = sum),
+                       .names = col_nm_vec3))
+  )
+  # test that external vectors throws error when it contains non-unique names
+  col_nm_vec4 <- rep(col_nm_vec2 <- c("one", "two", "three"), 2)
+  expect_error(
+    summarise(gf, over(list(a = 5, b = 6, c = 7),
+                       list(mean = mean, sum = sum),
+                       .names = col_nm_vec4))
+  )
+
 })
+
+# Resume here
 
 test_that("across() result locations are aligned with column names (#4967)", {
   df <- tibble(x = 1:2, y = c("a", "b"))

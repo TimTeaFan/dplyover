@@ -199,6 +199,18 @@
 #'   select(starts_with("item1))
 #' ```
 #'
+#' `over()` does also work with list-columns. In the example below, the colum
+#' `csat_open` contains one or more reasons why a specific Customer Satisfaction
+#' Rating was given. We can easily create a column for each response category:
+#'
+#' ```{r, comment = "#>", collapse = TRUE}
+#' csat %>%
+#'   mutate(over(unique(unlist(csat_open)),
+#'               ~ as.integer(grepl(.x, csat_open)),
+#'               .names = "rsp_{x}",
+#'               .names_fn = ~ gsub("\\s", "_", .x)))
+#' ```
+#'
 #'
 #' ## (2) A Very Specific Use Case
 #' Here strings are supplied to `.x` to construct column names (sharing the
@@ -328,7 +340,14 @@ over_setup <- function(x1, fns, names, cnames, names_fn) {
 
   x1_nm <- names(x1)
   x1_idx <- as.character(seq_along(x1))
-  x1_val <- if (!is.list(x1) & is.vector(x1)) x1 else NULL
+  x1_val <- if (is.data.frame(x1) && nrow(x1) != 1) {
+    NULL
+  } else if (is.list(x1) && is.vector(x1) &&
+             any(purrr::map_lgl(x1, ~ length(.x) != 1))) {
+    NULL
+  } else {
+    x1
+  }
 
   if (is.list(x1) && !rlang::is_named(x1)) {
     names(x1) <- x1_idx
@@ -361,10 +380,25 @@ over_setup <- function(x1, fns, names, cnames, names_fn) {
   if (length(names) > 1) {
 
     if (length(names) !=  length(x1) * length(fns)) {
-      rlang::abort(c("Problem with input `.names`.",
+      rlang::abort(c("Problem with `over()`  input `.names`.",
                       i = "When more than one element is provided to `.names` its length must equal the number of new columns.",
-                      x = paste0(length(names), " elements provided to `.names`, but the number of new columns is ", length(x1) * length(fns))
+                      x = paste0(length(names), " elements provided to `.names`, but the number of new columns is ", length(x1) * length(fns)), "."
                      ))
+    }
+
+    if (length(names) != length(unique(names))) {
+
+      d_names <- names[duplicated(names)]
+      d_names_l <- ifelse(length(d_names) > 3, 3, length(d_names))
+## PROBLEM HERE
+      rlang::abort(c("Problem with `over()` input `.names`.",
+                     i = "When more than one element is provided to `.names` all elements must be unique.",
+                     x = paste0("The following names are not unique: ",
+                                paste(paste0("'", d_names[seq_along(1:d_names_l)], "'"), collapse = ", "),
+                                ifelse(length(d_names) > 3, " etc. ", ".")
+                         )
+      ))
+
     }
 
     if (!is.null(names_fn)) {
@@ -373,10 +407,18 @@ over_setup <- function(x1, fns, names, cnames, names_fn) {
 
   } else {
 
+    if (is.null(x1_val) && grepl("{x_val}", names, perl = TRUE)) {
+      rlang::warn("in `over()` `.names`: used 'x_idx' instead of 'x_val'. The latter only works with lists if all elements are length 1.")
+    }
+
+    if (is.null(x1_nm) && grepl("{x_nm}", names, perl = TRUE)) {
+      rlang::warn("in `over()` `.names`: used 'x_idx' instead of 'x_nm', since the input object is unnamed.")
+    }
+
   names <- vctrs::vec_as_names(glue::glue(names,
                                           x = rep(names(x1) %||% x1, each = length(fns)),
-                                          x_val = rep(x1_val, each = length(fns)),
-                                          x_nm = rep(x1_nm, each = length(fns)),
+                                          x_val = rep(x1_val %||% x1_idx, each = length(fns)),
+                                          x_nm = rep(x1_nm %||% x1_idx, each = length(fns)),
                                           x_idx = rep(x1_idx, each = length(fns)),
                                           fn = rep(names_fns, length(x1))),
                                repair = "check_unique")
