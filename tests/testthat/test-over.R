@@ -155,7 +155,7 @@ test_that("over() works with list-columns", {
 
   df_expect <- csat %>%
     select(cust_id, csat_open) %>%
-    unnest(csat_open) %>%
+    tidyr::unnest(csat_open) %>%
     mutate(val = 1L) %>%
     tidyr::pivot_wider(id_cols = cust_id,
                        names_from = csat_open,
@@ -405,51 +405,71 @@ test_that("over() correctly names output columns", {
 
 })
 
-# Resume here
+test_that("over() result locations are aligned with .fn list names", {
 
-test_that("across() result locations are aligned with column names (#4967)", {
-  df <- tibble(x = 1:2, y = c("a", "b"))
-  expect <- tibble(x_cls = "integer", x_type = TRUE, y_cls = "character", y_type = FALSE)
+  df <- tibble(x = 1:2)
 
-  x <- summarise(df, across(everything(), list(cls = class, type = is.numeric)))
+  expect <- tibble(`1_cls` = "integer", `1_type` = TRUE,
+                   `2_cls` = "integer", `2_type` = TRUE)
 
+  x <- summarise(df, over(1:2, list(cls = ~ class(x + .x),
+                                    type = ~ is.numeric(x + .x))))
   expect_identical(x, expect)
 })
 
-test_that("across() passes ... to functions", {
-  df <- tibble(x = c(1, NA))
-  expect_equal(
-    summarise(df, across(everything(), mean, na.rm = TRUE)),
-    tibble(x = 1)
-  )
-  expect_equal(
-    summarise(df, across(everything(), list(mean = mean, median = median), na.rm = TRUE)),
-    tibble(x_mean = 1, x_median = 1)
-  )
-})
+test_that("over() passes ... to functions", {
 
-test_that("across() passes unnamed arguments following .fns as ... (#4965)", {
   df <- tibble(x = 1)
-  expect_equal(mutate(df, across(x, `+`, 1)), tibble(x = 2))
-})
 
-test_that("across() avoids simple argument name collisions with ... (#4965)", {
-  df <- tibble(x = c(1, 2))
-  expect_equal(summarize(df, across(x, tail, n = 1)), tibble(x = 2))
-})
-
-test_that("across() works sequentially (#4907)", {
-  df <- tibble(a = 1)
   expect_equal(
-    mutate(df, x = ncol(across(where(is.numeric))), y = ncol(across(where(is.numeric)))),
+    summarise(df, over(list(a = c(1,NA)), mean, na.rm = TRUE)),
+    tibble(a = 1)
+  )
+
+  expect_equal(
+    summarise(df, over(list(a = c(1,NA)), list(mean = mean, median = median), na.rm = TRUE)),
+    tibble(a_mean = 1, a_median = 1)
+  )
+})
+
+test_that("over() passes unnamed arguments following .fns as ...", {
+
+  df <- tibble(x = 1)
+
+  expect_equal(mutate(df, over(2, `+`, 1)),
+               tibble(x = 1, `2` = 3))
+})
+
+test_that("over() avoids simple argument name collisions with ... ", {
+
+  df <- tibble(x = c(1, 2))
+
+  expect_equal(summarize(df, over(list(a = c(1:10)), tail, n = 1)),
+               tibble(`a` = 10))
+})
+
+test_that("over() works sequentially", {
+
+  df <- tibble(a = 1)
+
+  expect_equal(
+    mutate(df,
+           x = ncol(over(1, mean)),
+           y = ncol(over(1:2, mean))),
     tibble(a = 1, x = 1L, y = 2L)
   )
+
   expect_equal(
-    mutate(df, a = "x", y = ncol(across(where(is.numeric)))),
-    tibble(a = "x", y = 0L)
+    mutate(df,
+           a = "x",
+           y = ncol(over(1, mean))),
+    tibble(a = "x", y = 1L)
   )
+
   expect_equal(
-    mutate(df, x = 1, y = ncol(across(where(is.numeric)))),
+    mutate(df,
+           x = 1,
+           y = ncol(over(1:2, mean))),
     tibble(a = 1, x = 1, y = 2L)
   )
 })
@@ -459,38 +479,39 @@ test_that("across() retains original ordering", {
   expect_named(mutate(df, a = 2, x = across())$x, c("a", "b"))
 })
 
-test_that("across() gives meaningful messages", {
-  verify_output(test_path("test-across-errors.txt"), {
-    tibble(x = 1) %>%
-      summarise(res = across(where(is.numeric), 42))
+test_that("over() gives meaningful messages", {
 
-    across()
-    c_across()
-  })
+  expect_snapshot_error({
+        summarise(tibble(x = 1), over(1, 42))})
+
+  expect_snapshot_error(over())
+
 })
 
-test_that("monitoring cache - across() can be used twice in the same expression", {
+test_that("monitoring cache - over() can be used twice in the same expression", {
   df <- tibble(a = 1, b = 2)
   expect_equal(
-    mutate(df, x = ncol(across(where(is.numeric))) + ncol(across(a))),
-    tibble(a = 1, b = 2, x = 3)
+    mutate(df, x = ncol(over(1, mean) + ncol(over(1, mean)))),
+    tibble(a = 1, b = 2, x = 1)
   )
 })
 
-test_that("monitoring cache - across() can be used in separate expressions", {
+test_that("monitoring cache - over() can be used in separate expressions", {
   df <- tibble(a = 1, b = 2)
   expect_equal(
-    mutate(df, x = ncol(across(where(is.numeric))), y = ncol(across(a))),
+    mutate(df,
+           x = ncol(over(1:2, mean)),
+           y = ncol(over(1, mean))),
     tibble(a = 1, b = 2, x = 2, y = 1)
   )
 })
 
-test_that("monitoring cache - across() usage can depend on the group id", {
+test_that("monitoring cache - over() usage can depend on the group id", {
   df <- tibble(g = 1:2, a = 1:2, b = 3:4)
   df <- group_by(df, g)
 
   switcher <- function() {
-    if_else(cur_group_id() == 1L, across(a)$a, across(b)$b)
+    if_else(cur_group_id() == 1L, over(1L:2L, mean)$`1`, over(3L:4L, mean)$`4`)
   }
 
   expect <- df
@@ -502,45 +523,49 @@ test_that("monitoring cache - across() usage can depend on the group id", {
   )
 })
 
-test_that("monitoring cache - across() internal cache key depends on all inputs", {
+# resume here
+
+test_that("monitoring cache - over() internal cache key depends on all inputs", {
   df <- tibble(g = rep(1:2, each = 2), a = 1:4)
   df <- group_by(df, g)
 
   expect_identical(
-    mutate(df, tibble(x = across(where(is.numeric), mean)$a, y = across(where(is.numeric), max)$a)),
-    mutate(df, x = mean(a), y = max(a))
+    mutate(df,
+           tibble(x = over(1, ~ mean(.x + a))$`1`,
+                  y = over(list(b = 1:2), ~ max(.x + a))$b)),
+    mutate(df, x = mean(a + 1), y = max(a + 1:2))
   )
 })
 
-test_that("across() rejects non vectors", {
+test_that("over() rejects non vectors", {
   expect_error(
-    data.frame(x = 1) %>% summarise(across(everything(), ~sym("foo")))
+    data.frame(x = 1) %>% summarise(over(1, ~sym("foo")))
   )
 })
 
-test_that("across() uses tidy recycling rules", {
+test_that("over() uses tidy recycling rules", {
   expect_equal(
-    data.frame(x = 1, y = 2) %>% summarise(across(everything(), ~rep(42, .))),
-    data.frame(x = rep(42, 2), y = rep(42, 2))
+    tibble::tibble(x = 1, y = 2) %>% summarise(over(1:2, ~ rep(42, .))),
+    tibble::tibble(`1` = rep(42, 2), `2` = rep(42, 2))
   )
 
   expect_error(
-    data.frame(x = 2, y = 3) %>% summarise(across(everything(), ~rep(42, .)))
+    data.frame(x = 2, y = 3) %>% summarise(over(1:3, ~rep(42, .)))
   )
 })
 
-test_that("across(<empty set>) returns a data frame with 1 row (#5204)", {
+test_that("over(<empty set>, foo) returns a data frame with 1 row", {
   df <- tibble(x = 1:42)
   expect_equal(
-    mutate(df, across(c(), as.factor)),
+    mutate(df, over(c(), mean)),
     df
   )
   expect_equal(
-    mutate(df, y = across(c(), as.factor))$y,
+    mutate(df, y = over(c(), mean))$y,
     tibble::new_tibble(list(), nrow = 42)
   )
   mutate(df, {
-    res <- across(c(), as.factor)
+    res <- over(c(), mean)
     expect_equal(nrow(res), 1L)
     res
   })

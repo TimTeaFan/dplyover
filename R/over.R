@@ -390,7 +390,7 @@ over_setup <- function(x1, fns, names, cnames, names_fn) {
 
       d_names <- names[duplicated(names)]
       d_names_l <- ifelse(length(d_names) > 3, 3, length(d_names))
-## PROBLEM HERE
+
       rlang::abort(c("Problem with `over()` input `.names`.",
                      i = "When more than one element is provided to `.names` all elements must be unique.",
                      x = paste0("The following names are not unique: ",
