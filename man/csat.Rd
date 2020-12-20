@@ -11,6 +11,9 @@ A tibble with 150 rows and 15 variables:
 \item{type}{Type of customer: "new", "existing" or "reactive"}
 \item{product}{The type of product: "basic", "advanced" or "premium"}
 \item{csat}{The overall Customer Satisfaction Score}
+\item{csat_open}{Follow-up question why the respondent gave this specific
+Customer Satisfaction rating. The open-ended answers have been coded into six
+categories (multiple answers possible).}
 \item{postal_contact, phone_contact, email_contact, website_contact,
 shop_contact}{When did the customer have last contact via given channel?}
 \item{postal_rating, phone_rating, email_rating, website_rating,

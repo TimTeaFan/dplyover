@@ -10,8 +10,8 @@ across2(.cols1, .cols2, .fns, ..., .names = NULL)
 \item{.fns}{Functions to apply to each of the elements in \code{.x}. For
 functions that expect variable names as input, the selected strings need to
 be turned into symbols and evaluated. \code{dplyrover} comes with a genuine helper
-function evaluates strings as names \code{\link[=.]{.()}}. Note that  <\code{\link[rlang:nse-force]{rlang's forcing operators}}>
-do not work as expected.
+function that evaluates strings as names \code{\link[=.]{.()}}. Note that <\code{\link[rlang:nse-force]{rlang's forcing operators}}>
+are not supported in \code{over()}.
 
 Possible values are:
 \itemize{
@@ -20,7 +20,7 @@ Possible values are:
 \item A list of functions/lambdas
 }
 
-For examples see below.
+For examples see the example section below.
 
 Note that, unlike \code{across()}, \code{over()} does not accept \code{NULL} as a
 value to \code{.fns}.}

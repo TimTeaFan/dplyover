@@ -13,8 +13,8 @@ over(.x, .fns, ..., .names = NULL, .names_fn = NULL)
 \item{.fns}{Functions to apply to each of the elements in \code{.x}. For
 functions that expect variable names as input, the selected strings need to
 be turned into symbols and evaluated. \code{dplyrover} comes with a genuine helper
-function evaluates strings as names \code{\link[=.]{.()}}. Note that  <\code{\link[rlang:nse-force]{rlang's forcing operators}}>
-do not work as expected.
+function that evaluates strings as names \code{\link[=.]{.()}}. Note that <\code{\link[rlang:nse-force]{rlang's forcing operators}}>
+are not supported in \code{over()}.
 
 Possible values are:
 \itemize{
@@ -23,7 +23,7 @@ Possible values are:
 \item A list of functions/lambdas
 }
 
-For examples see below.
+For examples see the example section below.
 
 Note that, unlike \code{across()}, \code{over()} does not accept \code{NULL} as a
 value to \code{.fns}.}
@@ -82,12 +82,13 @@ specified columns or (2) column names. See the examples below and the
 \code{over()} must only be used to create 'new' columns and will throw an error if
 the new columns created contain existing column names. To transform existing
 columns use \code{\link[dplyr:across]{dplyr::across()}} or \code{\link[=crossover]{crossover()}}.
+
+Similar to \code{dplyr::across()} \code{over()} works only inside dplyr verbs.
 }
 
 \section{Examples}{
 
 
-\code{over()} can only be used inside \code{dplyr::mutate()} or \code{dplyr::summarise()}.
 It has two main use cases. They differ in how the elements in \code{.x}
 are used. Let's first attach \code{dplyr}:\if{html}{\out{<div class="r">}}\preformatted{library(dplyr)
 
@@ -181,6 +182,86 @@ dat_tbl \%>\%
 #> 14 2020-01-14 2020-01-24 FALSE        FALSE        TRUE        
 #> 15 2020-01-15 2020-01-25 FALSE        FALSE        TRUE
 }\if{html}{\out{</div>}}
+
+\code{over()} can summarise data in wide format. In the example below, we want to
+know for each group of customers (\code{new}, \code{existing}, \code{reactivate}), how much
+percent of the respondents gave which rating on a five point likert scale (\code{item1}).
+A usual approach in the tidyverse would be to use \code{count \%>\% group_by \%>\% mutate},
+which yields the same result in the usually prefered long format. Sometimes, however,
+we might want this kind of summary in the wide format, and in this case \code{over()}
+comes in handy:\if{html}{\out{<div class="r">}}\preformatted{csatraw \%>\%
+  group_by(type) \%>\%
+  summarise(over(c(1:5),
+                 ~ mean(item1 == .x)))
+#> # A tibble: 3 x 6
+#>   type          `1`   `2`   `3`   `4`    `5`
+#>   <chr>       <dbl> <dbl> <dbl> <dbl>  <dbl>
+#> 1 existing   0.156  0.234 0.234 0.266 0.109 
+#> 2 new        0.0714 0.268 0.357 0.214 0.0893
+#> 3 reactivate 0.0667 0.267 0.133 0.4   0.133
+}\if{html}{\out{</div>}}
+
+Instead of a vector we can provide a named list of vectors to calculate the
+top two and bottom two categories on the fly:\if{html}{\out{<div class="r">}}\preformatted{csatraw \%>\%
+  group_by(type) \%>\%
+  summarise(over(list(bot2 = c(1:2),
+                      mid  = 3,
+                      top2 = c(4:5)),
+                 ~ mean(item1 \%in\% .x)))
+#> # A tibble: 3 x 4
+#>   type        bot2   mid  top2
+#>   <chr>      <dbl> <dbl> <dbl>
+#> 1 existing   0.391 0.234 0.375
+#> 2 new        0.339 0.357 0.304
+#> 3 reactivate 0.333 0.133 0.533
+}\if{html}{\out{</div>}}
+
+\code{over()} can also loop over columns of a data.frame. In the example below we
+want to create four different dummy variables out  \code{item1}: (i) the top and (ii)
+bottom category as well as (iii) the top two and (iv) the bottom two categories.
+We can create a lookup data.frame and use all columns but the first as input to
+\code{over()}. In the function call we make use of base R's \code{match()}, where \code{.x}
+represents the new values and \code{recode_df[, 1]} refers to the old values.\if{html}{\out{<div class="r">}}\preformatted{
+recode_df <- data.frame(old  = c(1, 2, 3, 4, 5),
+                        top1 = c(0, 0, 0, 0, 1),
+                        top2 = c(0, 0, 0, 1, 1),
+                        bot1 = c(1, 0, 0, 0, 0),
+                        bot2 = c(1, 1, 0, 0, 0))
+
+csatraw \%>\%
+  mutate(over(recode_df[,-1],
+              ~ .x[match(item1, recode_df[, 1])],
+              .names = "item1_\{x\}")) \%>\%
+  select(starts_with("item1"))
+#> # A tibble: 150 x 6
+#>   item1 item1_open item1_top1 item1_top2 item1_bot1 item1_bot2
+#>   <dbl> <list>          <dbl>      <dbl>      <dbl>      <dbl>
+#> 1     3 <int [1]>           0          0          0          0
+#> 2     2 <int [1]>           0          0          0          1
+#> 3     2 <int [3]>           0          0          0          1
+#> 4     4 <int [3]>           0          1          0          0
+#> # ... with 146 more rows
+}\if{html}{\out{</div>}}
+
+\code{over()} does also work with list-columns. In the example below, the colum
+\code{csat_open} contains one or more reasons why a specific Customer Satisfaction
+Rating was given. We can easily create a column for each response category:\if{html}{\out{<div class="r">}}\preformatted{csat \%>\%
+  mutate(over(unique(unlist(csat_open)),
+              ~ as.integer(grepl(.x, csat_open)),
+              .names = "rsp_\{x\}",
+              .names_fn = ~ gsub("\\\\s", "_", .x)))
+#> # A tibble: 150 x 21
+#>   cust_id type  product csat  csat_open postal_contact postal_rating
+#>   <chr>   <fct> <fct>   <chr> <list>    <chr>          <chr>        
+#> 1 61297   exis~ advanc~ Neut~ <chr [1]> within 1 to 3~ Neutral      
+#> 2 07545   exis~ advanc~ Unsa~ <chr [1]> within 1 to 3~ Unsatisfied  
+#> 3 03822   exis~ premium Unsa~ <chr [3]> within 1 to 3~ Very Satisfi~
+#> 4 88219   reac~ basic   Sati~ <chr [3]> within last y~ Very Satisfi~
+#> # ... with 146 more rows, and 14 more variables: phone_contact <chr>,
+#> #   phone_rating <chr>, email_contact <chr>, email_rating <chr>,
+#> #   website_contact <chr>, website_rating <chr>, shop_contact <chr>,
+#> #   shop_rating <chr>, ...
+}\if{html}{\out{</div>}}
 }
 
 \subsection{(2) A Very Specific Use Case}{
@@ -189,8 +270,8 @@ Here strings are supplied to \code{.x} to construct column names (sharing the
 same stem). This allows us to dynamically use more than one column in the
 function calls in \code{.fns}. To work properly, the strings need to be
 turned into symbols and evaluated. For this \code{dplyover} provides a genuine helper
-function \code{.()} that helps to declutter the otherwise rather verbose code.
-\code{.()} supports glue syntax and takes a string as argument:
+function \code{.()} that evaluates strings and helps to declutter the otherwise rather
+verbose code. \code{.()} supports glue syntax and takes a string as argument:
 
 Consider the following example of a purrr-style formula in \code{.fns} using \code{.()}:\if{html}{\out{<div class="r">}}\preformatted{iris \%>\%
   mutate(over(c("Sepal", "Petal"),
@@ -275,4 +356,6 @@ Again, use the \code{.names} argument to control the output names:\if{html}{\out
 
 \seealso{
 \code{\link[=over2]{over2()}} to apply a function to two objects.
+
+All members of the <\code{\link[=over_across_family]{over-across function family}}>.
 }
