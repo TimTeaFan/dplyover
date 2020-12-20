@@ -121,7 +121,7 @@
 #'
 #' ```{r, comment = "#>", collapse = TRUE}
 #' csatraw %>%
-#'  transmute(over(extract_names("item\\d", "[^item1]"),
+#'  transmute(over(extract_names("item[2-6]"),
 #'                 ~ .("{.x}a") * .("{.x}b"))
 #'  )
 #' ```
