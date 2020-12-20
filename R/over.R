@@ -287,16 +287,18 @@ over <- function(.x, .fns, ..., .names = NULL, .names_fn = NULL){
 
   check_keep(type = "keep")
 
-  setup <- over_setup({{ .x }},
+  setup <- over_setup(.x,
                       fns = .fns,
                       names = .names,
                       cnames = .cnames,
                       names_fn = .names_fn)
 
   x <- setup$x
+
   if (length(x) == 0L) {
     return(tibble::new_tibble(list(), nrow = 1L))
   }
+
   fns <- setup$fns
   names <- setup$names
 
@@ -309,7 +311,7 @@ over <- function(.x, .fns, ..., .names = NULL, .names_fn = NULL){
                    x = paste0("`over()` tried to create the following existing column names: ",
                               paste0(paste0("'", dnames[seq_along(1:names_l)], "'"), collapse = ", "),
                               ifelse(length(dnames) > 3, " etc. ", ".")),
-                   i = "If you want to transform existing columns try using `across()`.",
+                   i = "If you want to transform existing columns try using `dplyr::across()`.",
                    i = "If you want to change the output names use the `.names` argument."))
 
   }
