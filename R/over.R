@@ -196,7 +196,7 @@
 #'   mutate(over(recode_df[,-1],
 #'               ~ .x[match(item1, recode_df[, 1])],
 #'               .names = "item1_{x}")) %>%
-#'   select(starts_with("item1))
+#'   select(starts_with("item1"))
 #' ```
 #'
 #' `over()` does also work with list-columns. In the example below, the colum
@@ -310,7 +310,7 @@ over <- function(.x, .fns, ..., .names = NULL, .names_fn = NULL){
                               paste0(paste0("'", dnames[seq_along(1:names_l)], "'"), collapse = ", "),
                               ifelse(length(dnames) > 3, " etc. ", ".")),
                    i = "If you want to transform existing columns try using `across()`.",
-                   i = "If you want to change the output names use the `.names` argument"))
+                   i = "If you want to change the output names use the `.names` argument."))
 
   }
 
@@ -362,7 +362,7 @@ over_setup <- function(x1, fns, names, cnames, names_fn) {
 
   if (!is.list(fns)) {
     rlang::abort(c("Problem with `over()` input `.fns`.",
-            i = "Input `.fns` must be a function or a list of functions"))
+            i = "Input `.fns` must be a function, a formula, or a list of functions/formulas."))
   }
 
   fns <- purrr::map(fns, rlang::as_function)
@@ -382,7 +382,7 @@ over_setup <- function(x1, fns, names, cnames, names_fn) {
     if (length(names) !=  length(x1) * length(fns)) {
       rlang::abort(c("Problem with `over()`  input `.names`.",
                       i = "When more than one element is provided to `.names` its length must equal the number of new columns.",
-                      x = paste0(length(names), " elements provided to `.names`, but the number of new columns is ", length(x1) * length(fns)), "."
+                      x = paste0(length(names), " elements provided to `.names`, but the number of new columns is ", length(x1) * length(fns), ".")
                      ))
     }
 

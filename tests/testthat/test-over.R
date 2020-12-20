@@ -481,10 +481,59 @@ test_that("across() retains original ordering", {
 
 test_that("over() gives meaningful messages", {
 
-  expect_snapshot_error({
-        summarise(tibble(x = 1), over(1, 42))})
-
+  # inside dplyr
   expect_snapshot_error(over())
+
+  # .fns must be function
+  expect_snapshot_error(
+    summarise(tibble(x = 1), over(1, 42))
+  )
+
+  # check keep used
+  expect_snapshot_error(
+    mutate(tibble(x = 1),
+           over(1, mean),
+           .keep = "used")
+  )
+
+  # check keep unused
+  expect_snapshot_error(
+    mutate(tibble(x = 1),
+           over(1, mean),
+           .keep = "unused")
+  )
+
+  # no existing colnames
+  expect_snapshot_error(
+    mutate(iris, over("Sepal.Length", paste))
+  )
+
+  # vector to .names too short
+  expect_snapshot_error({
+    gf <- tibble(x = 1, y = 2, z = 3, s = "") %>% group_by(x)
+    col_nm_vec2 <- c("one", "two", "three")
+    summarise(gf, over(list(a = 5, b = 6, c = 7),
+                       list(mean = mean, sum = sum),
+                       .names = col_nm_vec2))
+  })
+
+  # vector to .names too long
+  expect_snapshot_error({
+    gf <- tibble(x = 1, y = 2, z = 3, s = "") %>% group_by(x)
+    col_nm_vec3 <- c("one", "two", "three", "four", "five", "six", "seven")
+    summarise(gf, over(list(a = 5, b = 6, c = 7),
+                       list(mean = mean, sum = sum),
+                       .names = col_nm_vec3))
+  })
+
+  # vector to .names duplicate names
+  expect_snapshot_error({
+    gf <- tibble(x = 1, y = 2, z = 3, s = "") %>% group_by(x)
+    col_nm_vec4 <- rep(col_nm_vec2 <- c("one", "two", "three"), 2)
+    summarise(gf, over(list(a = 5, b = 6, c = 7),
+                       list(mean = mean, sum = sum),
+                       .names = col_nm_vec4))
+  })
 
 })
 
@@ -493,7 +542,7 @@ test_that("monitoring cache - over() can be used twice in the same expression", 
   expect_equal(
     mutate(df, x = ncol(over(1, mean) + ncol(over(1, mean)))),
     tibble(a = 1, b = 2, x = 1)
-  )
+    )
 })
 
 test_that("monitoring cache - over() can be used in separate expressions", {
@@ -522,8 +571,6 @@ test_that("monitoring cache - over() usage can depend on the group id", {
     expect
   )
 })
-
-# resume here
 
 test_that("monitoring cache - over() internal cache key depends on all inputs", {
   df <- tibble(g = rep(1:2, each = 2), a = 1:4)
@@ -574,6 +621,35 @@ test_that("over(<empty set>, foo) returns a data frame with 1 row", {
 
 # expected errors
 
+test_that("over() custom errors", {
 
+  # inside dplyr
+  expect_error(over())
+
+  # .fns must be function
+    expect_error(
+    summarise(tibble(x = 1), over(1, 42))
+  )
+
+  # check keep used
+    expect_error(
+    mutate(tibble(x = 1),
+           over(1, mean),
+           .keep = "used")
+  )
+
+  # check keep unused
+    expect_error(
+    mutate(tibble(x = 1),
+           over(1, mean),
+           .keep = "unused")
+  )
+
+  # no existing colnames
+    expect_error(
+    mutate(iris, over("Sepal.Length", paste))
+  )
+
+})
 
 # other edge cases
