@@ -1,42 +1,95 @@
-#' Loop two inputs simultaneaously over one or several functions in 'dplyr'
+#' Loop two inputs over one or several functions in 'dplyr'
 #'
 #' @description
-#' `over2()` and `over2x()` are variants of [over()] that iterate over multiple
-#' arguments simultaneously. w
+#' `over2()` and `over2x()` are variants of [over()] that iterate over two
+#' arguments simultaneously. `over2()` is equivalent to `purrr::map2()` in that it
+#' processes its inputs in parallel (not in the sense of multicore computing). It
+#' is basically a simple loop with two inputs. `over2x()`, on the other hand, is
+#' a nested loop, which takes each combination of its inputs and loops it over one
+#' or more functions.
 #'
 #' @inheritParams over
 #'
-#' @param .x,.y An atomic vector (expect 'raw' and 'complex') to apply functions to.
-#'   Instead of a vector a <[`selection helper`][selection_helpers]> or anything else
-#'   that is coercible to an atomic vector can be used. Note that `over()` must only
-#'   be used to create 'new' columns and will throw an error if `.x` contains
-#'   existing column names. To transform existing columns use [dplyr::across()].
-#'
-#' @param ... Additional arguments for the function calls in `.fns`.
+#' @param .x,.y An atomic vector or list to apply functions to. Alternatively a
+#'   <[`selection helper`][selection_helpers]> can be useed to create a vector.
+#'   `over2()` requires `.x` and `.y` to be of the same length.
 #'
 #' @param .names A glue specification that describes how to name the output
-#'   columns. This can use `{vec}` to stand for the selected vector element, and
-#'   `{fn}` to stand for the name of the function being applied. The default
-#'   (`NULL`) is equivalent to `"{vec}"` for the single function case and
-#'   `"{vec}_{fn}"` for the case where a list is used for `.fns`.
+#'   columns. This can use `{x}` and `{y}` to stand for the selected vector element,
+#'   and `{fn}` to stand for the name of the function being applied. The default
+#'   (`NULL`) is equivalent to `"{x}_{y}"` for the single function case and
+#'   `"{x}_{y}_{fn}"` for the case where a list is used for `.fns`.
+#'
+#'   Note that, depending on the nature of the underlying object in `.x` and `.y`,
+#'   specifying `{x}/{y}` will yield different results:
+#'
+#'   - If `.x/.y` is an unnamed atomic vector, `{x}/{y}` will represent each value.
+#'   - If `.x/.y` is a named list or atomic vector, `{x}/{y}` will represent each name.
+#'   - If `.x/.y` is an unnamed list, `{x}/{y}` will be the index number running
+#'   from 1 to `length(x)` or `length(y)` respectively.
+#'
+#'   This standard behavior (interpretation of `{x}/{y}`) can be overwritten by
+#'   directly specifying:
+#'
+#'   - `{x_val}/{y_val}` for `.x`'s or  `.y`'s values
+#'   - `{x_nm}/{y_nm}` for their names
+#'   - `{x_idx}/{y_idx}` for their index numbers
+#'
+#'   Alternatively, a character vector of length equal to the number of columns to
+#'   be created can be supplied to `.names`. Note that in this case, the glue
+#'   specification described above is not supported.
 #'
 #' @returns
-#' A tibble with one column for each element in `.x` and each function in `.fns`;.
+#' `over2()` returns a tibble with one column for each pair of elements in `.x`
+#' and `.y` combined with each function in `.fns`.
+#'
+#' `over2x()` returns a tibble with one column for each combination of elements
+#' in `.x`, `.y` and `.fns`.
 #'
 #' @section Examples:
 #'
 #' ```{r, child = "man/rmd/setup.Rmd"}
 #' ```
 #'
-#' `over()` can only be used inside `dplyr::mutate` or `dplyr::summarise`.
-#' It has two main use cases. They differ in how the elements in `.x`
-#' are used. Let's first attach `dplyr`:
+#' For the basic functionality please refer to the examples in [over()].
 #'
 #' ```{r, comment = "#>", collapse = TRUE}
 #' library(dplyr)
 #'
 #' # For better printing
 #' iris <- as_tibble(iris)
+#' ```
+#'
+#' When doing exploratory analysis, it is often helpful to transform continious variables
+#' into several categorial variables. Below we use `over2()` to loop over two lists
+#' containing "breaks" and "labels" arguments, which we then use in a call to `cut()`:
+#'
+#' ```{r, comment = "#>", collapse = TRUE}
+#' brks <- list(b1 = 3:8,
+#'              b2 = seq(3, 9, by = 2))
+#'
+#' labs <- list(l1 = c("3 to 4", "4 to 5", "5 to 6",
+#'                    "6 to 7", "7 to 8"),
+#'             l2 = c("3 to 5", "5 to 7", "7 to 9"))
+#'
+#' iris %>%
+#'   transmute(over2(brks, labs,
+#'                   ~ cut(Sepal.Length,
+#'                         breaks = .x,
+#'                         labels = .y),
+#'                   .names = "Sepal.Length.cut{x_idx}"))
+#' ```
+#'
+#' `over2x()` makes it possible to create dummy variables for interaction effects
+#' of two variables. In the example below, each customer 'type' is combined with
+#' each 'product' type:
+#'
+#' ```{r, comment = "#>", collapse = TRUE}
+#' csat %>%
+#'   transmute(over2x(unique(type),
+#'                    unique(product),
+#'                    ~ type == .x & product == .y)) %>%
+#'   glimpse
 #' ```
 #'
 #' @export
@@ -51,13 +104,6 @@ over2 <- function(.x, .y, .fns, ..., .names = NULL, .names_fn = NULL){
   .cnames <- names(.data)
 
   check_keep(type = "keep")
-
-  # check later
-  if (length(.x) != length(.y)) {
-    inp <- vctrs::vec_recycle_common(.x, .y)
-    .x <- inp[[1]]
-    .y <- inp[[2]]
-  }
 
   setup <- over2_setup(.x,
                        .y,
@@ -115,7 +161,6 @@ over2 <- function(.x, .y, .fns, ..., .names = NULL, .names_fn = NULL){
 
 over2_setup <- function(x1, y1, fns, names, cnames, names_fn) {
 
-  # ?? still needed ??
   if (length(x1) != length(y1)) {
     rlang::abort(c("Problem with `over2()` input `.x` and `.y`.",
                    i = "Input `.x` and `.y` must have the same length.",

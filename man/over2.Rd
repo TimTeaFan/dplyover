@@ -2,16 +2,17 @@
 % Please edit documentation in R/over2.R
 \name{over2}
 \alias{over2}
-\title{Loop two inputs simultaneaously over one or several functions in 'dplyr'}
+\alias{over2x}
+\title{Loop two inputs over one or several functions in 'dplyr'}
 \usage{
-over2(.x, .y, .fns, ..., .names = NULL)
+over2(.x, .y, .fns, ..., .names = NULL, .names_fn = NULL)
+
+over2x(.x, .y, .fns, ..., .names = NULL, .names_fn = NULL)
 }
 \arguments{
-\item{.x, .y}{An atomic vector (expect 'raw' and 'complex') to apply functions to.
-Instead of a vector a <\code{\link[=selection_helpers]{selection helper}}> or anything else
-that is coercible to an atomic vector can be used. Note that \code{over()} must only
-be used to create 'new' columns and will throw an error if \code{.x} contains
-existing column names. To transform existing columns use \code{\link[dplyr:across]{dplyr::across()}}.}
+\item{.x, .y}{An atomic vector or list to apply functions to. Alternatively a
+<\code{\link[=selection_helpers]{selection helper}}> can be useed to create a vector.
+\code{over2()} requires \code{.x} and \code{.y} to be of the same length.}
 
 \item{.fns}{Functions to apply to each of the elements in \code{.x}. For
 functions that expect variable names as input, the selected strings need to
@@ -34,26 +35,105 @@ value to \code{.fns}.}
 \item{...}{Additional arguments for the function calls in \code{.fns}.}
 
 \item{.names}{A glue specification that describes how to name the output
-columns. This can use \code{{vec}} to stand for the selected vector element, and
-\code{{fn}} to stand for the name of the function being applied. The default
-(\code{NULL}) is equivalent to \code{"{vec}"} for the single function case and
-\code{"{vec}_{fn}"} for the case where a list is used for \code{.fns}.}
+columns. This can use \code{{x}} and \code{{y}} to stand for the selected vector element,
+and \code{{fn}} to stand for the name of the function being applied. The default
+(\code{NULL}) is equivalent to \code{"{x}_{y}"} for the single function case and
+\code{"{x}_{y}_{fn}"} for the case where a list is used for \code{.fns}.
+
+Note that, depending on the nature of the underlying object in \code{.x} and \code{.y},
+specifying \code{{x}/{y}} will yield different results:
+\itemize{
+\item If \code{.x/.y} is an unnamed atomic vector, \code{{x}/{y}} will represent each value.
+\item If \code{.x/.y} is a named list or atomic vector, \code{{x}/{y}} will represent each name.
+\item If \code{.x/.y} is an unnamed list, \code{{x}/{y}} will be the index number running
+from 1 to \code{length(x)} or \code{length(y)} respectively.
+}
+
+This standard behavior (interpretation of \code{{x}/{y}}) can be overwritten by
+directly specifying:
+\itemize{
+\item \code{{x_val}/{y_val}} for \code{.x}'s or  \code{.y}'s values
+\item \code{{x_nm}/{y_nm}} for their names
+\item \code{{x_idx}/{y_idx}} for their index numbers
+}
+
+Alternatively, a character vector of length equal to the number of columns to
+be created can be supplied to \code{.names}. Note that in this case, the glue
+specification described above is not supported.}
+
+\item{.names_fn}{Optionally, a function that is applied after the glue
+specification in \code{.names} has been evaluated. This is, for example, helpful,
+in case the resulting names need to be further cleaned or trimmed. Note that
+this argument will be ignored if a character vector of length equal to
+to the number of columns to be created is supplied to \code{.names}.}
 }
 \value{
-A tibble with one column for each element in \code{.x} and each function in \code{.fns};.
+\code{over2()} returns a tibble with one column for each pair of elements in \code{.x}
+and \code{.y} combined with each function in \code{.fns}.
+
+\code{over2x()} returns a tibble with one column for each combination of elements
+in \code{.x}, \code{.y} and \code{.fns}.
 }
 \description{
-...
+\code{over2()} and \code{over2x()} are variants of \code{\link[=over]{over()}} that iterate over two
+arguments simultaneously. \code{over2()} is equivalent to \code{purrr::map2()} in that it
+processes its inputs in parallel (not in the sense of multicore computing). It
+is basically a simple loop with two inputs. \code{over2x()}, on the other hand, is
+a nested loop, which takes each combination of its inputs and loops it over one
+or more functions.
 }
 \section{Examples}{
 
 
-\code{over()} can only be used inside \code{dplyr::mutate} or \code{dplyr::summarise}.
-It has two main use cases. They differ in how the elements in \code{.x}
-are used. Let's first attach \code{dplyr}:\if{html}{\out{<div class="r">}}\preformatted{library(dplyr)
+For the basic functionality please refer to the examples in \code{\link[=over]{over()}}.\if{html}{\out{<div class="r">}}\preformatted{library(dplyr)
 
 # For better printing
 iris <- as_tibble(iris)
+}\if{html}{\out{</div>}}
+
+When doing exploratory analysis, it is often helpful to transform continious variables
+into several categorial variables. Below we use \code{over2()} to loop over two lists
+containing "breaks" and "labels" argument, which we then use in a call to \code{cut()}:\if{html}{\out{<div class="r">}}\preformatted{brks <- list(b1 = 3:8,
+             b2 = seq(3, 9, by = 2))
+
+labs <- list(l1 = c("3 to 4", "4 to 5", "5 to 6",
+                   "6 to 7", "7 to 8"),
+            l2 = c("3 to 5", "5 to 7", "7 to 9"))
+
+iris \%>\%
+  transmute(over2(brks, labs,
+                  ~ cut(Sepal.Length,
+                        breaks = .x,
+                        labels = .y),
+                  .names = "Sepal.Length.cut\{x_idx\}"))
+#> # A tibble: 150 x 2
+#>   Sepal.Length.cut1 Sepal.Length.cut2
+#>   <fct>             <fct>            
+#> 1 5 to 6            5 to 7           
+#> 2 4 to 5            3 to 5           
+#> 3 4 to 5            3 to 5           
+#> 4 4 to 5            3 to 5           
+#> # ... with 146 more rows
+}\if{html}{\out{</div>}}
+
+\code{over2x()} makes it possible to create dummy variables for interaction effects
+of two variables. In the example below, each customer 'type' is combined with
+each 'product' type:\if{html}{\out{<div class="r">}}\preformatted{csat \%>\%
+  transmute(over2x(unique(type),
+                   unique(product),
+                   ~ type == .x & product == .y)) \%>\%
+  glimpse
+#> Rows: 150
+#> Columns: 9
+#> $ existing_advanced   <lgl> TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, TRUE, F...
+#> $ existing_premium    <lgl> FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, FALSE,...
+#> $ existing_basic      <lgl> FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE...
+#> $ reactivate_advanced <lgl> FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE...
+#> $ reactivate_premium  <lgl> FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE...
+#> $ reactivate_basic    <lgl> FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE,...
+#> $ new_advanced        <lgl> FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE...
+#> $ new_premium         <lgl> FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE...
+#> $ new_basic           <lgl> FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, FALSE, ...
 }\if{html}{\out{</div>}}
 }
 
