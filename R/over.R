@@ -12,7 +12,7 @@
 #' specified columns or (2) column names. See the examples below and the
 #' `vignette("over")` for more details.
 #'
-#' @param .x An atomnic vector or list to apply functions to. Alternatively a
+#' @param .x An atomic vector or list to apply functions to. Alternatively a
 #'   <[`selection helper`][selection_helpers]> can be useed to create a vector.
 #'
 #' @param .fns Functions to apply to each of the elements in `.x`. For
