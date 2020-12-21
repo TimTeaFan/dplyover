@@ -484,6 +484,20 @@ test_that("over() gives meaningful messages", {
   # inside dplyr
   expect_snapshot_error(over())
 
+  # mutate .keep = "used"
+  expect_snapshot_error(
+    mutate(tibble(x = 1),
+           over(1, mean),
+           .keep = "used")
+    )
+
+  # mutate .keep = "unused"
+  expect_snapshot_error(
+    mutate(tibble(x = 1),
+           over(1, mean),
+           .keep = "unused")
+  )
+
   # .fns must be function
   expect_snapshot_error(
     summarise(tibble(x = 1), over(1, 42))
