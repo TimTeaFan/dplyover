@@ -303,7 +303,6 @@ test_that("over() does not select grouping variables", {
 
 })
 
-# resume from here
 test_that("over() correctly names output columns", {
   gf <- tibble(x = 1, y = 2, z = 3, s = "") %>% group_by(x)
 
@@ -372,6 +371,20 @@ test_that("over() correctly names output columns", {
                        list(mean = mean, sum = sum),
                        .names = "{fn}_{x_idx}")),
     c("x", "mean_1", "sum_1",  "mean_2", "sum_2", "mean_3", "sum_3")
+  )
+  expect_error(
+    summarise(gf, over(list(a = 5, b = 5, c = 7),
+                       list(mean = mean, sum = sum),
+                       .names = "{fn}_{x_val}"))
+  )
+  expect_error(
+    summarise(gf, over(list(a = 5, a = 6, c = 7),
+                       list(mean = mean, sum = sum),
+                       .names = "{fn}_{x_nm}"))
+  )
+  expect_error(
+    summarise(gf, over(list(a = 5, a = 6, c = 7),
+                       list(mean = mean, sum = sum)))
   )
   # further added external vector
   col_nm_vec <- c("one", "two", "three", "four", "five", "six")
@@ -631,6 +644,63 @@ test_that("over(<empty set>, foo) returns a data frame with 1 row", {
     res
   })
 })
+
+
+# issues not adapted in over code yet
+
+# test_that("over(.names=) can use local variables in addition to {col} and {fn}", {
+#   res <- local({
+#     prefix <- "MEAN"
+#     data.frame(x = 42) %>%
+#       summarise(over(0, ~ mean(x + .x), .names = "{prefix}_{x}"))
+#   })
+#   expect_identical(res, data.frame(MEAN_x = 42))
+# })
+#
+# test_that("over() uses environment from the current quosure (#5460)", {
+#   # If the data frame `y` is selected, causes a subscript conversion
+#   # error since it is fractional
+#   df <- data.frame(x = 1, y = 2.4)
+#   y <- "x"
+#   expect_equal(df %>% summarise(over(.env$y, mean, .names = "x_idx")), data.frame(x = 1))
+#   expect_equal(df %>% mutate(over(all_of(y), mean)), df)
+#   expect_equal(df %>% filter(over(all_of(y), ~ .x < 2)), df)
+#
+#   # Recursive case fails because the `y` column has precedence (#5498)
+#   expect_error(df %>% summarise(summarise(across(), across(all_of(y), mean))))
+#
+#   # Inherited case
+#   out <- df %>% summarise(local(across(all_of(y), mean)))
+#   expect_equal(out, data.frame(x = 1))
+# })
+
+# test_that("across() sees columns in the recursive case (#5498)", {
+#   df <- tibble(
+#     vars = list("foo"),
+#     data = list(data.frame(foo = 1, bar = 2))
+#   )
+#
+#   out <- df %>% mutate(data = purrr::map2(data, vars, ~ {
+#     .x %>% mutate(across(all_of(.y), ~ NA))
+#   }))
+#   exp <- tibble(
+#     vars = list("foo"),
+#     data = list(data.frame(foo = NA, bar = 2))
+#   )
+#   expect_identical(out, exp)
+#
+#   out <- df %>% mutate(data = purrr::map2(data, vars, ~ {
+#     local({
+#       .y <- "bar"
+#       .x %>% mutate(across(all_of(.y), ~ NA))
+#     })
+#   }))
+#   exp <- tibble(
+#     vars = list("foo"),
+#     data = list(data.frame(foo = 1, bar = NA))
+#   )
+#   expect_identical(out, exp)
+# })
 
 
 # expected errors
