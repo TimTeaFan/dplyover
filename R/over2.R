@@ -412,10 +412,10 @@ over2x_setup <- function(x1, y1, fns, names, cnames, names_fn) {
 
   if (length(names) > 1) {
 
-    if (length(names) !=  length(x1) * length(fns)) {
+    if (length(names) !=  length(x1) * length(y1) * length(fns)) {
       rlang::abort(c("Problem with `over2x()`  input `.names`.",
                      i = "When more than one element is provided to `.names` its length must equal the number of new columns.",
-                     x = paste0(length(names), " elements provided to `.names`, but the number of new columns is ", length(x1) * length(fns), ".")
+                     x = paste0(length(names), " elements provided to `.names`, but the number of new columns is ", length(x1) * length(y1) * length(fns), ".")
       ))
     }
 
@@ -456,19 +456,53 @@ over2x_setup <- function(x1, y1, fns, names, cnames, names_fn) {
       rlang::warn("in `over2x()` `.names`: used 'y_idx' instead of 'y_nm', since the input object is unnamed.")
     }
 
-  names <- vctrs::vec_as_names(glue::glue(names,
-                                          x = rep(names(x1) %||% x1, each = length(y1) * length(fns)),
-                                          x_val = rep(x1_val %||% x1_idx, each = length(y1) * length(fns)),
-                                          x_nm = rep(x1_nm %||% x1_idx, each = length(y1) * length(fns)),
-                                          x_idx = rep(x1_idx, each = length(y1) * length(fns)),
 
-                                          y = rep(names(y1) %||% y1, length(x1) * length(fns)),
-                                          y_val = rep(y1_val %||% y1_idx, each = length(x1) * length(fns)),
-                                          y_nm = rep(y1_nm %||% y1_idx, each = length(x1) * length(fns)),
-                                          y_idx = rep(y1_idx, each = length(x1) * length(fns)),
+    tidyr::crossing()
 
-                                          fn = rep(names_fns, length(x1) * length(y1))),
-                               repair = "check_unique")
+    n_x1 <- length(x1)
+    n_y1 <- length(y1)
+    n_nm_fns <- length(names_fns)
+    seq_n_x1 <- seq_len(n_x1)
+    seq_n_y1 <- seq_len(n_y1)
+    seq_nm_fns <- seq_len(n_nm_fns)
+    k <- 1L
+    out <- vector("character", n_x1 * n_y1 * n_nm_fns)
+
+    for (i in seq_n_x1) {
+      # xi <- x1[[i]]
+      for(l in seq_n_y1) {
+        # yl <- y1[[l]]
+        for (j in seq_nm_fns) {
+          # fn <- names_fns[[j]]
+          out[[k]] <- glue::glue(names,
+                                 x = names(x1)[[i]] %||% x1[[i]],
+                                 x_val = x1_val[[i]] %||% x1_idx[[i]],
+                                 x_nm = x1_nm[[i]] %||% x1_idx[[i]],
+                                 x_idx = x1_idx[[i]],
+                                 y = names(y1)[[l]] %||% y1[[l]],
+                                 y_val = y1_val[[l]] %||% y1_idx[[l]],
+                                 y_nm = y1_nm[[l]] %||% y1_idx[[l]],
+                                 y_idx = y1_idx[[l]],
+                                 fn = names_fns[[j]])
+          k <- k + 1L
+        }
+      }
+    }
+
+  names <- vctrs::vec_as_names(out, repair = "check_unique")
+  # names <- vctrs::vec_as_names(glue::glue(names,
+  #                                         x = rep(names(x1) %||% x1, each = length(y1) * length(fns)),
+  #                                         x_val = rep(x1_val %||% x1_idx, each = length(y1) * length(fns)),
+  #                                         x_nm = rep(x1_nm %||% x1_idx, each = length(y1) * length(fns)),
+  #                                         x_idx = rep(x1_idx, each = length(y1) * length(fns)),
+  #
+  #                                         y = rep(rep(names(y1) %||% y1, each = length(x1)), length(fns)),
+  #                                         y_val = rep(y1_val %||% y1_idx, each = length(x1) * length(fns)),
+  #                                         y_nm = rep(y1_nm %||% y1_idx, each = length(x1) * length(fns)),
+  #                                         y_idx = rep(y1_idx, each = length(x1) * length(fns)),
+  #
+  #                                         fn = rep(names_fns, length(x1) * length(y1))),
+  #                              repair = "check_unique")
 
     if (!is.null(names_fn)) {
 
