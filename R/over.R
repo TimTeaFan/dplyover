@@ -340,6 +340,7 @@ over <- function(.x, .fns, ..., .names = NULL, .names_fn = NULL){
 
 over_setup <- function(x1, fns, names, cnames, names_fn) {
 
+  # setup name variants
   x1_nm <- names(x1)
   x1_idx <- as.character(seq_along(x1))
   x1_val <- if (is.data.frame(x1) && nrow(x1) != 1) {
@@ -351,10 +352,7 @@ over_setup <- function(x1, fns, names, cnames, names_fn) {
     x1
   }
 
-  if (is.list(x1) && !rlang::is_named(x1)) {
-    names(x1) <- x1_idx
-  }
-
+  # apply `.names` smart default
   if (is.function(fns) || rlang::is_formula(fns)) {
     names <- names %||% "{x}"
     fns <- list(`1` = fns)
@@ -367,8 +365,15 @@ over_setup <- function(x1, fns, names, cnames, names_fn) {
             i = "Input `.fns` must be a function, a formula, or a list of functions/formulas."))
   }
 
+  # use index for unnamed lists
+  if (is.list(x1) && !rlang::is_named(x1)) {
+    names(x1) <- x1_idx
+  }
+
+  # handle formulas
   fns <- purrr::map(fns, rlang::as_function)
 
+  # make sure fns has names, use number to replace unnamed
   if (is.null(names(fns))) {
     names_fns <- seq_along(fns)
   } else {
@@ -379,36 +384,21 @@ over_setup <- function(x1, fns, names, cnames, names_fn) {
     }
   }
 
-  if (length(names) > 1) {
+  # setup control flow:
+  vars_no <- length(x1) * length(fns)
+  maybe_glue <- any(grepl("{.*}", names, perl = TRUE))
+  is_glue <- any(grepl("{(x|x_val|x_nm|x_idx|fn)}", names, perl = TRUE))
 
-    if (length(names) !=  length(x1) * length(fns)) {
-      rlang::abort(c("Problem with `over()`  input `.names`.",
-                      i = "When more than one element is provided to `.names` its length must equal the number of new columns.",
-                      x = paste0(length(names), " elements provided to `.names`, but the number of new columns is ", length(x1) * length(fns), ".")
-                     ))
-    }
+  # if .names use glue syntax:
+  if (is_glue) {
 
-    if (length(names) != length(unique(names))) {
-
-      d_names <- names[duplicated(names)]
-      d_names_l <- ifelse(length(d_names) > 3, 3, length(d_names))
-
+    if (length(names) > 1) {
       rlang::abort(c("Problem with `over()` input `.names`.",
-                     i = "When more than one element is provided to `.names` all elements must be unique.",
-                     x = paste0("The following names are not unique: ",
-                                paste(paste0("'", d_names[seq_along(1:d_names_l)], "'"), collapse = ", "),
-                                ifelse(length(d_names) > 3, " etc. ", ".")
-                         )
-      ))
-
+                     i = "Glue specification must be a character vector of length == 1.",
+                     x = paste0("`.names` is of length: ", length(names), ".")))
     }
 
-    if (!is.null(names_fn)) {
-      rlang::warn("`.names_fn` will be ignored, since more than one element is provided to `.names`.")
-    }
-
-  } else {
-
+    # warn and use default values if conditions not met
     if (is.null(x1_val) && grepl("{x_val}", names, perl = TRUE)) {
       rlang::warn("in `over()` `.names`: used 'x_idx' instead of 'x_val'. The latter only works with lists if all elements are length 1.")
     }
@@ -417,19 +407,57 @@ over_setup <- function(x1, fns, names, cnames, names_fn) {
       rlang::warn("in `over()` `.names`: used 'x_idx' instead of 'x_nm', since the input object is unnamed.")
     }
 
-  names <- vctrs::vec_as_names(glue::glue(names,
-                                          x = rep(names(x1) %||% x1, each = length(fns)),
-                                          x_val = rep(x1_val %||% x1_idx, each = length(fns)),
-                                          x_nm = rep(x1_nm %||% x1_idx, each = length(fns)),
-                                          x_idx = rep(x1_idx, each = length(fns)),
-                                          fn = rep(names_fns, length(x1))),
-                               repair = "check_unique")
+    names <- vctrs::vec_as_names(glue::glue(names,
+                                            x = rep(names(x1) %||% x1, each = length(fns)),
+                                            x_val = rep(x1_val %||% x1_idx, each = length(fns)),
+                                            x_nm = rep(x1_nm %||% x1_idx, each = length(fns)),
+                                            x_idx = rep(x1_idx, each = length(fns)),
+                                            fn = rep(names_fns, length(x1))),
+                                 repair = "check_unique")
+    # apply names_fn
+    if (!is.null(names_fn)) {
+      nm_f <- rlang::as_function(names_fn)
+      names <- purrr::map_chr(names, nm_f)
+    }
 
-  if (!is.null(names_fn)) {
+  # glue syntax maybe wrong
+  } else if (maybe_glue) {
 
-    nm_f <- rlang::as_function(names_fn)
-    names <- purrr::map_chr(names, nm_f)
+    if (length(names) == 1 && vars_no > 1) {
+      rlang::abort(c("Problem with `over()`  input `.names`.",
+                     x = "Unrecognized glue specification `{...}` detected in `.names`.",
+                     i = "`.names` only supports the following expressions: '{x}', '{x_val}', '{x_nm}', '{x_idx}' or '{fn}'."
+      ))
+    }
+  # no glue syntax
+  } else {
+    # reconsider place and wording
+    if (!is.null(names_fn)) {
+      rlang::warn("`.names_fn` will be ignored, since more than one element is provided to `.names`.")
+    }
   }
+
+  # check number of names
+  if (length(names) !=  vars_no) {
+    rlang::abort(c("Problem with `over()`  input `.names`.",
+                   i = "The number of elements in `.names` must equal the number of new columns.",
+                   x = paste0(length(names), " elements provided to `.names`, but the number of new columns is ", vars_no, ".")
+    ))
+  }
+
+  # check if names are unique
+  if (length(names) != length(unique(names))) {
+
+    d_names <- names[duplicated(names)]
+    d_names_l <- ifelse(length(d_names) > 3, 3, length(d_names))
+
+    rlang::abort(c("Problem with `over()` input `.names`.",
+                   i = "All elements in `.names` must be unique.",
+                   x = paste0("The following names are not unique: ",
+                              paste(paste0("'", d_names[seq_along(1:d_names_l)], "'"), collapse = ", "),
+                              ifelse(length(d_names) > 3, " etc. ", ".")
+                   )
+    ))
 
   }
 

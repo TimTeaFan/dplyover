@@ -408,6 +408,11 @@ test_that("over() correctly names output columns", {
                        list(mean = mean, sum = sum),
                        .names = col_nm_vec3))
   )
+  expect_error(
+    summarise(gf, over(list(a = 5, b = 6),
+                       list(mean = mean),
+                       .names = "new"))
+  )
   # test that external vectors throws error when it contains non-unique names
   col_nm_vec4 <- rep(col_nm_vec2 <- c("one", "two", "three"), 2)
   expect_error(
@@ -604,19 +609,6 @@ test_that("monitoring cache - over() usage can depend on the group id", {
   )
 })
 
-# TEST
-# test_that("monitoring cache - over() internal cache key depends on all inputs", {
-#   df <- tibble(g = rep(1:2, each = 2), a = 1:4)
-#   df <- group_by(df, g)
-#
-#   expect_identical(
-#     mutate(df,
-#            tibble(x = over(.env$a, mean, .names = "c")$c,
-#                   y = over(.env$a, max, .names = "c")$c)),
-#     mutate(df, x = mean(a + 1), y = max(a + 1:2))
-#   )
-# })
-
 test_that("over() rejects non vectors", {
   expect_error(
     data.frame(x = 1) %>% summarise(over(1, ~sym("foo")))
@@ -654,6 +646,17 @@ test_that("over(<empty set>, foo) returns a data frame with 1 row", {
 
 # issues not adapted in over code yet
 
+#
+# test_that("monitoring cache - across() internal cache key depends on all inputs", {
+#   df <- tibble(g = rep(1:2, each = 2), a = 1:4)
+#   df <- group_by(df, g)
+#
+#   expect_identical(
+#     mutate(df, tibble(x = across(where(is.numeric), mean)$a, y = across(where(is.numeric), max)$a)),
+#     mutate(df, x = mean(a), y = max(a))
+#   )
+# })
+#
 # test_that("over(.names=) can use local variables in addition to {col} and {fn}", {
 #   res <- local({
 #     prefix <- "MEAN"
@@ -663,22 +666,22 @@ test_that("over(<empty set>, foo) returns a data frame with 1 row", {
 #   expect_identical(res, data.frame(MEAN_x = 42))
 # })
 #
-test_that("over() uses environment from the current quosure (#5460)", {
-  # If the data frame `y` is selected, causes a subscript conversion
-  # error since it is fractional
-  df <- data.frame(x = 1, y = 2.4)
-  y <- "x"
-  expect_equal(df %>% summarise(over(.env$y, mean, .names = "x_idx")), data.frame(x = 1))
-  expect_equal(df %>% mutate(over(all_of(y), mean)), df)
-  expect_equal(df %>% filter(over(all_of(y), ~ .x < 2)), df)
-
-  # Recursive case fails because the `y` column has precedence (#5498)
-  expect_error(df %>% summarise(summarise(across(), across(all_of(y), mean))))
-
-  # Inherited case
-  out <- df %>% summarise(local(across(all_of(y), mean)))
-  expect_equal(out, data.frame(x = 1))
-})
+# test_that("over() uses environment from the current quosure (#5460)", {
+#   # If the data frame `y` is selected, causes a subscript conversion
+#   # error since it is fractional
+#   df <- data.frame(x = 1, y = 2.4)
+#   y <- "x"
+#   expect_equal(df %>% summarise(over(.env$y, mean, .names = "x_idx")), data.frame(x = 1))
+#   expect_equal(df %>% mutate(over(all_of(y), mean)), df)
+#   expect_equal(df %>% filter(over(all_of(y), ~ .x < 2)), df)
+#
+#   # Recursive case fails because the `y` column has precedence (#5498)
+#   expect_error(df %>% summarise(summarise(across(), across(all_of(y), mean))))
+#
+#   # Inherited case
+#   out <- df %>% summarise(local(across(all_of(y), mean)))
+#   expect_equal(out, data.frame(x = 1))
+# })
 
 # test_that("across() sees columns in the recursive case (#5498)", {
 #   df <- tibble(

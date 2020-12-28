@@ -59,26 +59,26 @@
 
     Problem with `summarise()` input `..1`.
     x Problem with `over()`  input `.names`.
-    i When more than one element is provided to `.names` its length must equal the number of new columns.
+    i The number of elements in `.names` must equal the number of new columns.
     x 3 elements provided to `.names`, but the number of new columns is 6.
     i Input `..1` is `over(...)`.
-    i The error occured in group 1: x = 1.
+    i The error occurred in group 1: x = 1.
 
 ---
 
     Problem with `summarise()` input `..1`.
     x Problem with `over()`  input `.names`.
-    i When more than one element is provided to `.names` its length must equal the number of new columns.
+    i The number of elements in `.names` must equal the number of new columns.
     x 7 elements provided to `.names`, but the number of new columns is 6.
     i Input `..1` is `over(...)`.
-    i The error occured in group 1: x = 1.
+    i The error occurred in group 1: x = 1.
 
 ---
 
     Problem with `summarise()` input `..1`.
     x Problem with `over()` input `.names`.
-    i When more than one element is provided to `.names` all elements must be unique.
+    i All elements in `.names` must be unique.
     x The following names are not unique: 'one', 'two', 'three'.
     i Input `..1` is `over(...)`.
-    i The error occured in group 1: x = 1.
+    i The error occurred in group 1: x = 1.
 
