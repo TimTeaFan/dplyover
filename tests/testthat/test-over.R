@@ -522,20 +522,6 @@ test_that("over() gives meaningful messages", {
     summarise(tibble(x = 1), over(1, 42))
   )
 
-  # check keep used
-  expect_snapshot_error(
-    mutate(tibble(x = 1),
-           over(1, mean),
-           .keep = "used")
-  )
-
-  # check keep unused
-  expect_snapshot_error(
-    mutate(tibble(x = 1),
-           over(1, mean),
-           .keep = "unused")
-  )
-
   # no existing colnames
   expect_snapshot_error(
     mutate(iris, over("Sepal.Length", paste))
