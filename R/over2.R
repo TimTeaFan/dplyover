@@ -328,7 +328,7 @@ over2x <- function(.x, .y, .fns, ..., .names = NULL, .names_fn = NULL){
                    x = paste0("`over2x()` tried to create the following existing column names: ",
                               paste0(paste0("'", dnames[seq_along(1:names_l)], "'"), collapse = ", "),
                               ifelse(length(dnames) > 3, " etc. ", ".")),
-                   i = "If you want to transform existing columns try using `crossover()`, `dplyr::across()` or `across2.",
+                   i = "If you want to transform existing columns try using `crossover()`, `dplyr::across()` or `across2()`.",
                    i = "If you want to change the output names use the `.names` argument."))
 
   }
