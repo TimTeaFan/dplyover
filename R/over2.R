@@ -131,7 +131,7 @@ over2 <- function(.x, .y, .fns, ..., .names = NULL, .names_fn = NULL){
                    x = paste0("`over2()` tried to create the following existing column names: ",
                               paste0(paste0("'", dnames[seq_along(1:names_l)], "'"), collapse = ", "),
                               ifelse(length(dnames) > 3, " etc. ", ".")),
-                   i = "If you want to transform existing columns try using `crossover()`, `dplyr::across()` or `across2()`.",
+                   i = "If you want to transform existing columns try using `crossover()` or `across2()`.",
                    i = "If you want to change the output names use the `.names` argument."))
 
   }
@@ -168,6 +168,7 @@ over2_setup <- function(x1, y1, fns, names, cnames, names_fn) {
                               ", while `.y` is of length ", length(y1), ".")))
   }
 
+  # setup name variants
   x1_nm <- names(x1)
   y1_nm <- names(y1)
 
@@ -192,6 +193,7 @@ over2_setup <- function(x1, y1, fns, names, cnames, names_fn) {
     y1
   }
 
+  # apply `.names` smart default
   if (is.function(fns) || rlang::is_formula(fns)) {
     names <- names %||% "{x}_{y}"
     fns <- list(`1` = fns)
@@ -204,8 +206,18 @@ over2_setup <- function(x1, y1, fns, names, cnames, names_fn) {
                    i = "Input `.fns` must be a function, a formula, or a list of functions/formulas."))
   }
 
+  # use index for unnamed lists
+  if (is.list(x1) && !rlang::is_named(x1)) {
+    names(x1) <- x1_idx
+  }
+  if (is.list(y1) && !rlang::is_named(y1)) {
+    names(y1) <- y1_idx
+  }
+
+  # handle formulas
   fns <- purrr::map(fns, rlang::as_function)
 
+  # make sure fns has names, use number to replace unnamed
   if (is.null(names(fns))) {
     names_fns <- seq_along(fns)
   } else {
@@ -216,36 +228,15 @@ over2_setup <- function(x1, y1, fns, names, cnames, names_fn) {
     }
   }
 
-  if (length(names) > 1) {
+  # setup control flow:
+  vars_no <- length(x1) * length(fns)
+  maybe_glue <- any(grepl("{.*}", names, perl = TRUE))
+  is_glue <- any(grepl("{(x|x_val|x_nm|x_idx|y|y_val|y_nm|y_idx|fn)}", names, perl = TRUE))
 
-    if (length(names) !=  length(x1) * length(fns)) {
-      rlang::abort(c("Problem with `over2()`  input `.names`.",
-                     i = "When more than one element is provided to `.names` its length must equal the number of new columns.",
-                     x = paste0(length(names), " elements provided to `.names`, but the number of new columns is ", length(x1) * length(fns), ".")
-      ))
-    }
+  # if .names use glue syntax:
+  if (is_glue) {
 
-    if (length(names) != length(unique(names))) {
-
-      d_names <- names[duplicated(names)]
-      d_names_l <- ifelse(length(d_names) > 3, 3, length(d_names))
-
-      rlang::abort(c("Problem with `over2()` input `.names`.",
-                     i = "When more than one element is provided to `.names` all elements must be unique.",
-                     x = paste0("The following names are not unique: ",
-                                paste(paste0("'", d_names[seq_along(1:d_names_l)], "'"), collapse = ", "),
-                                ifelse(length(d_names) > 3, " etc. ", ".")
-                     )
-      ))
-
-    }
-
-    if (!is.null(names_fn)) {
-      rlang::warn("`.names_fn` will be ignored, since more than one element is provided to `.names`.")
-    }
-
-  } else {
-
+    # warn that default values are used if conditions not met
     if (is.null(x1_val) && grepl("{x_val}", names, perl = TRUE)) {
       rlang::warn("in `over2()` `.names`: used 'x_idx' instead of 'x_val'. The latter only works with lists if all elements are length 1.")
     }
@@ -262,27 +253,61 @@ over2_setup <- function(x1, y1, fns, names, cnames, names_fn) {
       rlang::warn("in `over2()` `.names`: used 'y_idx' instead of 'y_nm', since the input object is unnamed.")
     }
 
-  names <- vctrs::vec_as_names(glue::glue(names,
-                                          x = rep(names(x1) %||% x1, each = length(fns)),
-                                          x_val = rep(x1_val %||% x1_idx, each = length(fns)),
-                                          x_nm = rep(x1_nm %||% x1_idx, each = length(fns)),
-                                          x_idx = rep(x1_idx, each = length(fns)),
+    names <- vctrs::vec_as_names(glue::glue(names,
+                                            x = rep(names(x1) %||% x1, each = length(fns)),
+                                            x_val = rep(x1_val %||% x1_idx, each = length(fns)),
+                                            x_nm = rep(x1_nm %||% x1_idx, each = length(fns)),
+                                            x_idx = rep(x1_idx, each = length(fns)),
 
-                                          y = rep(names(y1) %||% y1, each = length(fns)),
-                                          y_val = rep(y1_val %||% y1_idx, each = length(fns)),
-                                          y_nm = rep(y1_nm %||% y1_idx, each = length(fns)),
-                                          y_idx = rep(y1_idx, each = length(fns)),
+                                            y = rep(names(y1) %||% y1, each = length(fns)),
+                                            y_val = rep(y1_val %||% y1_idx, each = length(fns)),
+                                            y_nm = rep(y1_nm %||% y1_idx, each = length(fns)),
+                                            y_idx = rep(y1_idx, each = length(fns)),
 
-                                          fn = rep(names_fns, length(x1))),
-                               repair = "check_unique")
+                                            fn = rep(names_fns, length(x1))),
+                                 repair = "check_unique")
 
+  # no correct glue syntax detected
+  } else {
+
+    if (maybe_glue && length(names) == 1 && vars_no > 1) {
+      rlang::abort(c("Problem with `over2()`  input `.names`.",
+                     x = "Unrecognized glue specification `{...}` detected in `.names`.",
+                     i = "`.names` only supports the following expressions: '{x}', '{x_val}', '{x_nm}', '{x_idx}',  '{fn}', '{y}', '{y_val}', '{y_nm}', '{y_idx}' or '{fn}'."
+      ))
+    }
+  }
+
+  # apply names_fn
   if (!is.null(names_fn)) {
 
     nm_f <- rlang::as_function(names_fn)
     names <- purrr::map_chr(names, nm_f)
   }
 
-  }
+   # check number of names
+   if (length(names) !=  vars_no) {
+     rlang::abort(c("Problem with `over2()`  input `.names`.",
+                    i = "The number of elements in `.names` must equal the number of new columns.",
+                    x = paste0(length(names), " elements provided to `.names`, but the number of new columns is ", vars_no, ".")
+     ))
+   }
+
+    # check if names are unique
+    if (length(names) != length(unique(names))) {
+
+      d_names <- names[duplicated(names)]
+      d_names_l <- ifelse(length(d_names) > 3, 3, length(d_names))
+
+      rlang::abort(c("Problem with `over2()` input `.names`.",
+                     i = "All elements in `.names` must be unique.",
+                     x = paste0("The following names are not unique: ",
+                                paste(paste0("'", d_names[seq_along(1:d_names_l)], "'"), collapse = ", "),
+                                ifelse(length(d_names) > 3, " etc. ", ".")
+                     )
+      ))
+
+    }
 
   value <- list(x = x1, y = y1, fns = fns, names = names)
   value
@@ -362,6 +387,7 @@ over2x <- function(.x, .y, .fns, ..., .names = NULL, .names_fn = NULL){
 
 over2x_setup <- function(x1, y1, fns, names, cnames, names_fn) {
 
+  # setup name variants
   x1_nm <- names(x1)
   y1_nm <- names(y1)
 
@@ -386,6 +412,7 @@ over2x_setup <- function(x1, y1, fns, names, cnames, names_fn) {
     y1
   }
 
+  # apply `.names` smart default
   if (is.function(fns) || rlang::is_formula(fns)) {
     names <- names %||% "{x}_{y}"
     fns <- list(`1` = fns)
@@ -398,8 +425,18 @@ over2x_setup <- function(x1, y1, fns, names, cnames, names_fn) {
                    i = "Input `.fns` must be a function, a formula, or a list of functions/formulas."))
   }
 
+  # use index for unnamed lists
+  if (is.list(x1) && !rlang::is_named(x1)) {
+    names(x1) <- x1_idx
+  }
+  if (is.list(y1) && !rlang::is_named(y1)) {
+    names(y1) <- y1_idx
+  }
+
+  # handle formulas
   fns <- purrr::map(fns, rlang::as_function)
 
+  # make sure fns has names, use number to replace unnamed
   if (is.null(names(fns))) {
     names_fns <- seq_along(fns)
   } else {
@@ -410,36 +447,21 @@ over2x_setup <- function(x1, y1, fns, names, cnames, names_fn) {
     }
   }
 
-  if (length(names) > 1) {
+  # setup control flow:
+  vars_no <- length(x1) * length(y1) * length(fns)
+  maybe_glue <- any(grepl("{.*}", names, perl = TRUE))
+  is_glue <- any(grepl("{(x|x_val|x_nm|x_idx|fn)}", names, perl = TRUE))
 
-    if (length(names) !=  length(x1) * length(y1) * length(fns)) {
-      rlang::abort(c("Problem with `over2x()`  input `.names`.",
-                     i = "When more than one element is provided to `.names` its length must equal the number of new columns.",
-                     x = paste0(length(names), " elements provided to `.names`, but the number of new columns is ", length(x1) * length(y1) * length(fns), ".")
-      ))
-    }
+  # if .names use glue syntax:
+  if (is_glue) {
 
-    if (length(names) != length(unique(names))) {
-
-      d_names <- names[duplicated(names)]
-      d_names_l <- ifelse(length(d_names) > 3, 3, length(d_names))
-
+    if (length(names) > 1) {
       rlang::abort(c("Problem with `over2x()` input `.names`.",
-                     i = "When more than one element is provided to `.names` all elements must be unique.",
-                     x = paste0("The following names are not unique: ",
-                                paste(paste0("'", d_names[seq_along(1:d_names_l)], "'"), collapse = ", "),
-                                ifelse(length(d_names) > 3, " etc. ", ".")
-                     )
-      ))
-
+                     i = "Glue specification must be a character vector of length == 1.",
+                     x = paste0("`.names` is of length: ", length(names), ".")))
     }
 
-    if (!is.null(names_fn)) {
-      rlang::warn("`.names_fn` will be ignored, since more than one element is provided to `.names`.")
-    }
-
-  } else {
-
+    # warn that default values are used if conditions not met
     if (is.null(x1_val) && grepl("{x_val}", names, perl = TRUE)) {
       rlang::warn("in `over2x()` `.names`: used 'x_idx' instead of 'x_val'. The latter only works with lists if all elements are length 1.")
     }
@@ -456,9 +478,6 @@ over2x_setup <- function(x1, y1, fns, names, cnames, names_fn) {
       rlang::warn("in `over2x()` `.names`: used 'y_idx' instead of 'y_nm', since the input object is unnamed.")
     }
 
-
-    tidyr::crossing()
-
     n_x1 <- length(x1)
     n_y1 <- length(y1)
     n_nm_fns <- length(names_fns)
@@ -469,11 +488,8 @@ over2x_setup <- function(x1, y1, fns, names, cnames, names_fn) {
     out <- vector("character", n_x1 * n_y1 * n_nm_fns)
 
     for (i in seq_n_x1) {
-      # xi <- x1[[i]]
       for(l in seq_n_y1) {
-        # yl <- y1[[l]]
         for (j in seq_nm_fns) {
-          # fn <- names_fns[[j]]
           out[[k]] <- glue::glue(names,
                                  x = names(x1)[[i]] %||% x1[[i]],
                                  x_val = x1_val[[i]] %||% x1_idx[[i]],
@@ -489,28 +505,48 @@ over2x_setup <- function(x1, y1, fns, names, cnames, names_fn) {
       }
     }
 
-  names <- vctrs::vec_as_names(out, repair = "check_unique")
-  # names <- vctrs::vec_as_names(glue::glue(names,
-  #                                         x = rep(names(x1) %||% x1, each = length(y1) * length(fns)),
-  #                                         x_val = rep(x1_val %||% x1_idx, each = length(y1) * length(fns)),
-  #                                         x_nm = rep(x1_nm %||% x1_idx, each = length(y1) * length(fns)),
-  #                                         x_idx = rep(x1_idx, each = length(y1) * length(fns)),
-  #
-  #                                         y = rep(rep(names(y1) %||% y1, each = length(x1)), length(fns)),
-  #                                         y_val = rep(y1_val %||% y1_idx, each = length(x1) * length(fns)),
-  #                                         y_nm = rep(y1_nm %||% y1_idx, each = length(x1) * length(fns)),
-  #                                         y_idx = rep(y1_idx, each = length(x1) * length(fns)),
-  #
-  #                                         fn = rep(names_fns, length(x1) * length(y1))),
-  #                              repair = "check_unique")
+    names <- vctrs::vec_as_names(out, repair = "check_unique")
 
-    if (!is.null(names_fn)) {
+  } else {
+    # glue syntax might be wrong
+    if (maybe_glue && length(names) == 1 && vars_no > 1) {
+      rlang::abort(c("Problem with `over2x()`  input `.names`.",
+                     x = "Unrecognized glue specification `{...}` detected in `.names`.",
+                     i = "`.names` only supports the following expressions: '{x}', '{x_val}', '{x_nm}', '{x_idx}',  '{fn}', '{y}', '{y_val}', '{y_nm}', '{y_idx}' or '{fn}'."
+      ))
+    }
+  }
 
+  # apply names_fn
+  if (!is.null(names_fn)) {
     nm_f <- rlang::as_function(names_fn)
     names <- purrr::map_chr(names, nm_f)
   }
 
+  # check number of names
+  if (length(names) !=  vars_no) {
+    rlang::abort(c("Problem with `over2x()`  input `.names`.",
+                   i = "The number of elements in `.names` must equal the number of new columns.",
+                   x = paste0(length(names), " elements provided to `.names`, but the number of new columns is ", vars_no, ".")
+    ))
   }
+
+  # check if names are unique
+  if (length(names) != length(unique(names))) {
+
+    d_names <- names[duplicated(names)]
+    d_names_l <- ifelse(length(d_names) > 3, 3, length(d_names))
+
+    rlang::abort(c("Problem with `over2x()` input `.names`.",
+                   i = "When more than one element is provided to `.names` all elements must be unique.",
+                   x = paste0("The following names are not unique: ",
+                              paste(paste0("'", d_names[seq_along(1:d_names_l)], "'"), collapse = ", "),
+                              ifelse(length(d_names) > 3, " etc. ", ".")
+                   )
+    ))
+
+  }
+
   value <- list(x = x1, y = y1, fns = fns, names = names)
   value
 }
