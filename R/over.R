@@ -398,7 +398,7 @@ over_setup <- function(x1, fns, names, cnames, names_fn) {
                      x = paste0("`.names` is of length: ", length(names), ".")))
     }
 
-    # warn and use default values if conditions not met
+    # warn that default values are used if conditions not met
     if (is.null(x1_val) && grepl("{x_val}", names, perl = TRUE)) {
       rlang::warn("in `over()` `.names`: used 'x_idx' instead of 'x_val'. The latter only works with lists if all elements are length 1.")
     }
@@ -414,27 +414,22 @@ over_setup <- function(x1, fns, names, cnames, names_fn) {
                                             x_idx = rep(x1_idx, each = length(fns)),
                                             fn = rep(names_fns, length(x1))),
                                  repair = "check_unique")
-    # apply names_fn
-    if (!is.null(names_fn)) {
-      nm_f <- rlang::as_function(names_fn)
-      names <- purrr::map_chr(names, nm_f)
-    }
 
-  # glue syntax maybe wrong
-  } else if (maybe_glue) {
-
-    if (length(names) == 1 && vars_no > 1) {
+  # no correct glue syntax detected
+  } else {
+    # glue syntax might be wrong
+    if (maybe_glue && length(names) == 1 && vars_no > 1) {
       rlang::abort(c("Problem with `over()`  input `.names`.",
                      x = "Unrecognized glue specification `{...}` detected in `.names`.",
                      i = "`.names` only supports the following expressions: '{x}', '{x_val}', '{x_nm}', '{x_idx}' or '{fn}'."
       ))
     }
-  # no glue syntax
-  } else {
-    # reconsider place and wording
-    if (!is.null(names_fn)) {
-      rlang::warn("`.names_fn` will be ignored, since more than one element is provided to `.names`.")
-    }
+  }
+
+  # apply names_fn
+  if (!is.null(names_fn)) {
+    nm_f <- rlang::as_function(names_fn)
+    names <- purrr::map_chr(names, nm_f)
   }
 
   # check number of names
