@@ -60,9 +60,7 @@
 #'
 #' @param .names_fn Optionally, a function that is applied after the glue
 #'   specification in `.names` has been evaluated. This is, for example, helpful,
-#'   in case the resulting names need to be further cleaned or trimmed. Note that
-#'   this argument will be ignored if a character vector of length equal to
-#'   to the number of columns to be created is supplied to `.names`.
+#'   in case the resulting names need to be further cleaned or trimmed.
 #'
 #' @returns
 #' A tibble with one column for each element in `.x` and each function in `.fns`;.
