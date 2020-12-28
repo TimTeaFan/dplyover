@@ -168,6 +168,12 @@ test_that("over2() correctly names output columns", {
                         .names = "{fn}_{x_nm}"))
   )
   expect_named(
+    summarise(gf, over2(list(5, 6, 7),
+                        list(1, 2, 3),
+                        list(sum = sum))),
+    c("x", "1_1_sum", "2_2_sum", "3_3_sum")
+  )
+  expect_named(
     summarise(gf, over2(list(a = 5, b = 6, c = 7),
                         list(x = 1, y = 2, z = 3),
                         list(mean = mean, sum = sum),
@@ -215,6 +221,12 @@ test_that("over2() correctly names output columns", {
                         list(x = 1, x = 1, z = 3),
                         list(mean = mean, sum = sum),
                         .names = col_nm_vec3))
+  )
+  expect_error(
+    summarise(gf, over2(list(a = 5, b = 6),
+                       list(x = 1, z = 3),
+                       list(sum = sum),
+                       .names = "new"))
   )
   # test that external vectors throws error when it contains non-unique names
   col_nm_vec4 <- rep(col_nm_vec2 <- c("one", "two", "three"), 2)
@@ -302,6 +314,12 @@ test_that("over2x() correctly names output columns", {
                          .names = "{fn}_{x_nm}_{y_nm}"))
   ))
   expect_named(
+    summarise(gf, over2x(list(5, 6),
+                         list(1, 2),
+                         list(sum = sum))),
+    c("x", "1_1_sum", "1_2_sum", "2_1_sum", "2_2_sum")
+  )
+  expect_named(
     summarise(gf, over2x(list(a = 5, b = 6),
                          list(x = 1, y = 2),
                          list(mean = mean, sum = sum),
@@ -350,6 +368,12 @@ test_that("over2x() correctly names output columns", {
                          list(mean = mean, sum = sum),
                          .names = col_nm_vec3))
   )
+  expect_error(
+    summarise(gf, over2x(list(a = 5),
+                        list(a = 1, b = 3),
+                        list(sum = sum),
+                        .names = "new"))
+  )
   # test that external vectors throws error when it contains non-unique names
   col_nm_vec4 <- rep(col_nm_vec2 <- c("one", "two", "three", "four"), 2)
   expect_error(
@@ -361,7 +385,7 @@ test_that("over2x() correctly names output columns", {
 })
 
 
-test_that("over2x() result locations are aligned with .fn list names", {
+test_that("over2() result locations are aligned with .fn list names", {
 
   df <- tibble(x = 1:2)
 
@@ -369,7 +393,7 @@ test_that("over2x() result locations are aligned with .fn list names", {
                     `2_4_cls` = "integer", `2_4_type` = TRUE)
 
   df_over2 <- summarise(df,
-                        over2x(1:2, 3:4,
+                        over2(1:2, 3:4,
                               list(cls = ~ class(x + .x),
                               type = ~ is.numeric(x + .x))))
 
@@ -389,252 +413,152 @@ test_that("over2x() result locations are aligned with .fn list names", {
 
 })
 
-# up to here
+
 test_that("over2() passes ... to functions", {
 
   df <- tibble(x = 1)
 
   expect_equal(
-    summarise(df, over(list(a = c(1,NA)), mean, na.rm = TRUE)),
-    tibble(a = 1)
+    summarise(df, over2(list(a = c(1,NA), b = c(2, NA)),
+                        list(y = c(10, NA), z = (c(20, NA))),
+                        sum,
+                        na.rm = TRUE)),
+    tibble(a_y = 11, b_z = 22)
   )
 
   expect_equal(
-    summarise(df, over(list(a = c(1,NA)), list(mean = mean, median = median), na.rm = TRUE)),
-    tibble(a_mean = 1, a_median = 1)
+    summarise(df, over2x(list(a = c(1,NA), b = c(2, NA)),
+                         list(y = c(10, NA), z = (c(20, NA))),
+                         sum,
+                         na.rm = TRUE)),
+    tibble(a_y = 11, a_z = 21, b_y = 12, b_z = 22)
   )
+
+  mean2 <- function(x, y, ...) {
+    mean(c(x,y), ...)
+  }
+
+  expect_equal(
+    summarise(df, over2(c(1,NA), c(NA,2),
+                       list(sum = sum, mean = mean2), na.rm = TRUE)),
+    tibble(`1_NA_sum` = 1, `1_NA_mean` = 1,
+           NA_2_sum = 2, NA_2_mean = 2)
+  )
+
+  expect_equal(
+    summarise(df, over2x(c(1,NA), c(NA,2),
+                         list(sum = sum, mean = mean2), na.rm = TRUE)),
+    tibble(`1_NA_sum` = 1, `1_NA_mean` = 1,
+           `1_2_sum` = 3, `1_2_mean` = 1.5,
+           NA_NA_sum = 0, NA_NA_mean = NaN,
+           NA_2_sum = 2, NA_2_mean = 2)
+  )
+
 })
 
-test_that("over() passes unnamed arguments following .fns as ...", {
+test_that("over2() passes unnamed arguments following .fns as ...", {
 
   df <- tibble(x = 1)
 
-  expect_equal(mutate(df, over(2, `+`, 1)),
-               tibble(x = 1, `2` = 3))
+  expect_equal(mutate(df, over2(2, NA_integer_, sum, na.rm = TRUE)),
+               tibble(x = 1, `2_NA` = 2))
+
+  expect_equal(mutate(df, over2x(2, c(2, NA_integer_), sum, na.rm = TRUE)),
+               tibble(x = 1, `2_2` = 4,  `2_NA` = 2))
 })
 
-test_that("over() avoids simple argument name collisions with ... ", {
+# test_that("over() works sequentially", {
+#
+#   df <- tibble(a = 1)
+#
+#   expect_equal(
+#     mutate(df,
+#            x = ncol(over(1, mean)),
+#            y = ncol(over(1:2, mean))),
+#     tibble(a = 1, x = 1L, y = 2L)
+#   )
+#
+#   expect_equal(
+#     mutate(df,
+#            a = "x",
+#            y = ncol(over(1, mean))),
+#     tibble(a = "x", y = 1L)
+#   )
+#
+#   expect_equal(
+#     mutate(df,
+#            x = 1,
+#            y = ncol(over(1:2, mean))),
+#     tibble(a = 1, x = 1, y = 2L)
+#   )
+# })
 
-  df <- tibble(x = c(1, 2))
+test_that("over2() retains original ordering", {
+  df <- tibble(a = c(1:2), b = c(3:4))
 
-  expect_equal(summarize(df, over(list(a = c(1:10)), tail, n = 1)),
-               tibble(`a` = 10))
+  expect_named(mutate(df, a = c(5:6), x = over2(.data$a, .data$b, mean))$x,
+               c("5_3", "6_4"))
+
+  expect_named(mutate(df, a = c(5:6), x = over2x(.data$a, .data$b, mean))$x,
+               c("5_3", "5_4", "6_3", "6_4"))
+
 })
 
-test_that("over() works sequentially", {
+test_that("over2() gives meaningful messages", {
 
-  df <- tibble(a = 1)
+  # only over2, over2x specific error messages go here
 
-  expect_equal(
-    mutate(df,
-           x = ncol(over(1, mean)),
-           y = ncol(over(1:2, mean))),
-    tibble(a = 1, x = 1L, y = 2L)
-  )
-
-  expect_equal(
-    mutate(df,
-           a = "x",
-           y = ncol(over(1, mean))),
-    tibble(a = "x", y = 1L)
-  )
-
-  expect_equal(
-    mutate(df,
-           x = 1,
-           y = ncol(over(1:2, mean))),
-    tibble(a = 1, x = 1, y = 2L)
-  )
-})
-
-test_that("across() retains original ordering", {
-  df <- tibble(a = 1, b = 2)
-  expect_named(mutate(df, a = 2, x = across())$x, c("a", "b"))
-})
-
-test_that("over() gives meaningful messages", {
-
-  # inside dplyr
-  expect_snapshot_error(over())
-
-  # mutate .keep = "used"
   expect_snapshot_error(
-    mutate(tibble(x = 1),
-           over(1, mean),
-           .keep = "used")
-    )
-
-  # mutate .keep = "unused"
-  expect_snapshot_error(
-    mutate(tibble(x = 1),
-           over(1, mean),
-           .keep = "unused")
+    mutate(tibble(x = 1), over2(1, c(2:3), mean))
   )
-
-  # .fns must be function
-  expect_snapshot_error(
-    summarise(tibble(x = 1), over(1, 42))
-  )
-
-  # check keep used
-  expect_snapshot_error(
-    mutate(tibble(x = 1),
-           over(1, mean),
-           .keep = "used")
-  )
-
-  # check keep unused
-  expect_snapshot_error(
-    mutate(tibble(x = 1),
-           over(1, mean),
-           .keep = "unused")
-  )
-
-  # no existing colnames
-  expect_snapshot_error(
-    mutate(iris, over("Sepal.Length", paste))
-  )
-
-  # vector to .names too short
-  expect_snapshot_error({
-    gf <- tibble(x = 1, y = 2, z = 3, s = "") %>% group_by(x)
-    col_nm_vec2 <- c("one", "two", "three")
-    summarise(gf, over(list(a = 5, b = 6, c = 7),
-                       list(mean = mean, sum = sum),
-                       .names = col_nm_vec2))
-  })
-
-  # vector to .names too long
-  expect_snapshot_error({
-    gf <- tibble(x = 1, y = 2, z = 3, s = "") %>% group_by(x)
-    col_nm_vec3 <- c("one", "two", "three", "four", "five", "six", "seven")
-    summarise(gf, over(list(a = 5, b = 6, c = 7),
-                       list(mean = mean, sum = sum),
-                       .names = col_nm_vec3))
-  })
-
-  # vector to .names duplicate names
-  expect_snapshot_error({
-    gf <- tibble(x = 1, y = 2, z = 3, s = "") %>% group_by(x)
-    col_nm_vec4 <- rep(col_nm_vec2 <- c("one", "two", "three"), 2)
-    summarise(gf, over(list(a = 5, b = 6, c = 7),
-                       list(mean = mean, sum = sum),
-                       .names = col_nm_vec4))
-  })
 
 })
 
-test_that("monitoring cache - over() can be used twice in the same expression", {
-  df <- tibble(a = 1, b = 2)
-  expect_equal(
-    mutate(df, x = ncol(over(1, mean) + ncol(over(1, mean)))),
-    tibble(a = 1, b = 2, x = 1)
-    )
-})
-
-test_that("monitoring cache - over() can be used in separate expressions", {
-  df <- tibble(a = 1, b = 2)
-  expect_equal(
-    mutate(df,
-           x = ncol(over(1:2, mean)),
-           y = ncol(over(1, mean))),
-    tibble(a = 1, b = 2, x = 2, y = 1)
-  )
-})
-
-test_that("monitoring cache - over() usage can depend on the group id", {
-  df <- tibble(g = 1:2, a = 1:2, b = 3:4)
-  df <- group_by(df, g)
-
-  switcher <- function() {
-    if_else(cur_group_id() == 1L, over(1L:2L, mean)$`1`, over(3L:4L, mean)$`4`)
-  }
-
-  expect <- df
-  expect$x <- c(1L, 4L)
-
-  expect_equal(
-    mutate(df, x = switcher()),
-    expect
-  )
-})
-
-test_that("monitoring cache - over() internal cache key depends on all inputs", {
-  df <- tibble(g = rep(1:2, each = 2), a = 1:4)
-  df <- group_by(df, g)
-
-  expect_identical(
-    mutate(df,
-           tibble(x = over(1, ~ mean(.x + a))$`1`,
-                  y = over(list(b = 1:2), ~ max(.x + a))$b)),
-    mutate(df, x = mean(a + 1), y = max(a + 1:2))
-  )
-})
-
-test_that("over() rejects non vectors", {
-  expect_error(
-    data.frame(x = 1) %>% summarise(over(1, ~sym("foo")))
-  )
-})
-
-test_that("over() uses tidy recycling rules", {
-  expect_equal(
-    tibble::tibble(x = 1, y = 2) %>% summarise(over(1:2, ~ rep(42, .))),
-    tibble::tibble(`1` = rep(42, 2), `2` = rep(42, 2))
-  )
-
-  expect_error(
-    data.frame(x = 2, y = 3) %>% summarise(over(1:3, ~rep(42, .)))
-  )
-})
-
-test_that("over(<empty set>, foo) returns a data frame with 1 row", {
-  df <- tibble(x = 1:42)
-  expect_equal(
-    mutate(df, over(c(), mean)),
-    df
-  )
-  expect_equal(
-    mutate(df, y = over(c(), mean))$y,
-    tibble::new_tibble(list(), nrow = 42)
-  )
-  mutate(df, {
-    res <- over(c(), mean)
-    expect_equal(nrow(res), 1L)
-    res
-  })
-})
 
 
 # expected errors
 
-test_that("over() custom errors", {
+test_that("over2() custom errors", {
 
   # inside dplyr
-  expect_error(over())
+  expect_error(over2())
 
   # .fns must be function
-    expect_error(
-    summarise(tibble(x = 1), over(1, 42))
+  expect_error(
+    summarise(tibble(x = 1), over2(1, 2, 42))
+  )
+  expect_error(
+    summarise(tibble(x = 1), over2x(1, 2, 42))
   )
 
   # check keep used
-    expect_error(
-    mutate(tibble(x = 1),
-           over(1, mean),
-           .keep = "used")
+  expect_error(
+    mutate(tibble(x = 1), over2(1, 2, mean), .keep = "used")
+  )
+  expect_error(
+    mutate(tibble(x = 1), over2x(1, 2, mean), .keep = "used")
   )
 
   # check keep unused
-    expect_error(
-    mutate(tibble(x = 1),
-           over(1, mean),
-           .keep = "unused")
+  expect_error(
+    mutate(tibble(x = 1), over2(1, 2, mean), .keep = "unused")
+  )
+  expect_error(
+    mutate(tibble(x = 1), over2x(1, 2, mean), .keep = "unused")
   )
 
   # no existing colnames
-    expect_error(
-    mutate(iris, over("Sepal.Length", paste))
+  expect_error(
+    mutate(iris, over2(1, 2, paste, .names = "Sepal.Length"))
+  )
+  expect_error(
+    mutate(iris, over2x("Sepal.Length", c(2,3), paste,
+                        .names = c("Sepal.Length", "Sepal.Width")))
+  )
+
+  # over2 specific errors
+  expect_error(
+    mutate(tibble(x = 1), over2(1, c(2:3), mean))
   )
 
 })

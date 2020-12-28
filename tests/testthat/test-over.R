@@ -361,6 +361,11 @@ test_that("over() correctly names output columns", {
                        .names = "{fn}_{x_nm}")),
     c("x", "mean_a", "sum_a",  "mean_b", "sum_b", "mean_c", "sum_c")
   )
+  expect_named(
+    summarise(gf, over(list(5, 6:8, 7),
+                       list(sum = sum))),
+    c("x", "1_sum", "2_sum", "3_sum")
+  )
   expect_warning(
     summarise(gf, over(list(5, 6, 7),
                        list(mean = mean, sum = sum),
