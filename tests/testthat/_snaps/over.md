@@ -30,24 +30,6 @@
 ---
 
     Problem with `mutate()` input `..1`.
-    x Problem with `over()` inside `mutate()`.
-    i `over`() is not supported in `mutate()` calls which set the `.keep` argument to "used" or "unused".
-    x `over`() was called inside `mutate(..., .keep = "used").
-    i Either drop the `.keep` argument or set it to "all" (default) or "none".
-    i Input `..1` is `over(1, mean)`.
-
----
-
-    Problem with `mutate()` input `..1`.
-    x Problem with `over()` inside `mutate()`.
-    i `over`() is not supported in `mutate()` calls which set the `.keep` argument to "used" or "unused".
-    x `over`() was called inside `mutate(..., .keep = "unused").
-    i Either drop the `.keep` argument or set it to "all" (default) or "none".
-    i Input `..1` is `over(1, mean)`.
-
----
-
-    Problem with `mutate()` input `..1`.
     x Problem with `over()`.
     i Output must not contain existing column names.
     x `over()` tried to create the following existing column names: 'Sepal.Length'.
