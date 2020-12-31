@@ -166,7 +166,7 @@
 #' ```
 #'
 #' @export
-crossover <- function(.xcols = everything(), .y, .fns, ..., .names = NULL, .names_fn = NULL){
+crossover <- function(.xcols = dplyr::everything(), .y, .fns, ..., .names = NULL, .names_fn = NULL){
 
   .data <- tryCatch({
     dplyr::across()
@@ -213,7 +213,7 @@ crossover <- function(.xcols = everything(), .y, .fns, ..., .names = NULL, .name
   if (setup$each) {
     data <- dplyr::select(dplyr::cur_data(), dplyr::all_of(unique(vars)))
     data_ls <- as.list(data)[vars]
-    data <- tibble::new_tibble(data_ls)
+    data <- tibble::new_tibble(data_ls, nrow = nrow(data))
   } else {
     data <- dplyr::select(dplyr::cur_data(), dplyr::all_of(vars))
   }
@@ -406,7 +406,7 @@ crossover_setup <- function(cols, y1, fns, names, cnames, data, names_fn, each =
 
 #' @rdname crossover
 #' @export
-crossoverx <- function(.xcols = everything(), .y, .fns, ..., .names = NULL, .names_fn = NULL){
+crossoverx <- function(.xcols = dplyr::everything(), .y, .fns, ..., .names = NULL, .names_fn = NULL){
 
   .data <- tryCatch({
     dplyr::across()
