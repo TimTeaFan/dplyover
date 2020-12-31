@@ -3,16 +3,28 @@
 #' @description
 #' `over2()` and `over2x()` are variants of [over()] that iterate over two
 #' arguments simultaneously. `over2()` is equivalent to `purrr::map2()` in that it
-#' processes its inputs in parallel (not in the sense of multicore computing). It
-#' is basically a simple loop with two inputs. `over2x()`, on the other hand, is
-#' a nested loop, which takes each combination of its inputs and loops it over one
-#' or more functions.
+#' processes its inputs in parallel (not in the sense of multicore computing).
+#' Regarding its first two inputs `.x` and `.y` it is basically a simple loop.
+#' `over2x()`, on the other hand, can be understood as a nested loop, which creates
+#' each combination of its inputs `.x` and `.y`.
 #'
 #' @inheritParams over
 #'
 #' @param .x,.y An atomic vector or list to apply functions to. Alternatively a
-#'   <[`selection helper`][selection_helpers]> can be useed to create a vector.
+#'   <[`selection helper`][selection_helpers]> can be used to create a vector.
 #'   `over2()` requires `.x` and `.y` to be of the same length.
+#'
+#' @param .fns Functions to apply to each of the elements in `.x` and `.y`. .
+#'
+#'   Possible values are:
+#'
+#'   - A function
+#'   - A purrr-style lambda
+#'   - A list of functions/lambdas
+#'
+#'   For examples see the example section below.
+#'
+#'   Note that `NULL` is not accepted as argument to `.fns`.
 #'
 #' @param .names A glue specification that describes how to name the output
 #'   columns. This can use `{x}` and `{y}` to stand for the selected vector element,
@@ -31,9 +43,9 @@
 #'   This standard behavior (interpretation of `{x}/{y}`) can be overwritten by
 #'   directly specifying:
 #'
-#'   - `{x_val}/{y_val}` for `.x`'s or  `.y`'s values
-#'   - `{x_nm}/{y_nm}` for their names
-#'   - `{x_idx}/{y_idx}` for their index numbers
+#'   - `{x_val}` or `{y_val}` for `.x`'s or  `.y`'s values
+#'   - `{x_nm}` or `{y_nm}` for their names
+#'   - `{x_idx}` or `{y_idx}` for their index numbers
 #'
 #'   Alternatively, a character vector of length equal to the number of columns to
 #'   be created can be supplied to `.names`. Note that in this case, the glue

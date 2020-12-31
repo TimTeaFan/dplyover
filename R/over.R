@@ -13,7 +13,7 @@
 #' `vignette("over")` for more details.
 #'
 #' @param .x An atomic vector or list to apply functions to. Alternatively a
-#'   <[`selection helper`][selection_helpers]> can be useed to create a vector.
+#'   <[`selection helper`][selection_helpers]> can be used to create a vector.
 #'
 #' @param .fns Functions to apply to each of the elements in `.x`. For
 #'   functions that expect variable names as input, the selected strings need to
@@ -63,12 +63,12 @@
 #'   in case the resulting names need to be further cleaned or trimmed.
 #'
 #' @returns
-#' A tibble with one column for each element in `.x` and each function in `.fns`;.
+#' A tibble with one column for each element in `.x` and each function in `.fns`.
 #'
 #' @section Note:
 #' `over()` must only be used to create 'new' columns and will throw an error if
 #' the new columns created contain existing column names. To transform existing
-#' columns use [dplyr::across()] or [crossover()].
+#' columns use [dplyr::across()].
 #'
 #' Similar to `dplyr::across()` `over()` works only inside dplyr verbs.
 #'
