@@ -121,7 +121,8 @@
 #'  iris %>%
 #'    mutate(crossover(starts_with("Sepal"),
 #'                     c(5,3),
-#'                      ~ .x <= .y))
+#'                      ~ .x <= .y)) %>%
+#'    glimpse
 #' ```
 #'
 #' The `.y` argument of `crossover()` can take a function instead of list or vector.
