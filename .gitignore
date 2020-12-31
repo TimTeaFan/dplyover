@@ -2,6 +2,7 @@
 .Rhistory
 .RData
 to_do.R
-.R/dplyr_context_internals.R
-.R/dplyr_data_mask.R
-.R/across_new.R
+R/dplyr_context_internals.R
+R/dplyr_data_mask.R
+R/across_new.R
+tests/testthat/test-across_new.R
