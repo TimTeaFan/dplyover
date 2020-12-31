@@ -82,7 +82,7 @@ csat <- csat %>%
                          `2` = "Unsatisfied",
                          `3` = "Neutral",
                          `4` = "Satisfied",
-                         `5` = "Very Satisfied")),
+                         `5` = "Very satisfied")),
          across(ends_with("_contact"),
                 ~ recode(.x,
                          `0` = "no contact",
