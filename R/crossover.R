@@ -165,7 +165,7 @@
 #' ```
 #'
 #' @export
-crossover <- function(.xcols, .y, .fns, ..., .names = NULL, .names_fn = NULL){
+crossover <- function(.xcols = everything(), .y, .fns, ..., .names = NULL, .names_fn = NULL){
 
   .data <- tryCatch({
     dplyr::across()
@@ -405,7 +405,7 @@ crossover_setup <- function(cols, y1, fns, names, cnames, data, names_fn, each =
 
 #' @rdname crossover
 #' @export
-crossoverx <- function(.xcols, .y, .fns, ..., .names = NULL, .names_fn = NULL){
+crossoverx <- function(.xcols = everything(), .y, .fns, ..., .names = NULL, .names_fn = NULL){
 
   .data <- tryCatch({
     dplyr::across()
