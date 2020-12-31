@@ -3,6 +3,7 @@
 export(.)
 export(across2)
 export(crossover)
+export(crossoverx)
 export(cut_names)
 export(dist_values)
 export(extract_names)
