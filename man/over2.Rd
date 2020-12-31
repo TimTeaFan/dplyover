@@ -11,14 +11,10 @@ over2x(.x, .y, .fns, ..., .names = NULL, .names_fn = NULL)
 }
 \arguments{
 \item{.x, .y}{An atomic vector or list to apply functions to. Alternatively a
-<\code{\link[=selection_helpers]{selection helper}}> can be useed to create a vector.
+<\code{\link[=selection_helpers]{selection helper}}> can be used to create a vector.
 \code{over2()} requires \code{.x} and \code{.y} to be of the same length.}
 
-\item{.fns}{Functions to apply to each of the elements in \code{.x}. For
-functions that expect variable names as input, the selected strings need to
-be turned into symbols and evaluated. \code{dplyrover} comes with a genuine helper
-function that evaluates strings as names \code{\link[=.]{.()}}. Note that <\code{\link[rlang:nse-force]{rlang's forcing operators}}>
-are not supported in \code{over()}.
+\item{.fns}{Functions to apply to each of the elements in \code{.x} and \code{.y}. .
 
 Possible values are:
 \itemize{
@@ -29,8 +25,7 @@ Possible values are:
 
 For examples see the example section below.
 
-Note that, unlike \code{across()}, \code{over()} does not accept \code{NULL} as a
-value to \code{.fns}.}
+Note that \code{NULL} is not accepted as argument to \code{.fns}.}
 
 \item{...}{Additional arguments for the function calls in \code{.fns}.}
 
@@ -52,9 +47,9 @@ from 1 to \code{length(x)} or \code{length(y)} respectively.
 This standard behavior (interpretation of \code{{x}/{y}}) can be overwritten by
 directly specifying:
 \itemize{
-\item \code{{x_val}/{y_val}} for \code{.x}'s or  \code{.y}'s values
-\item \code{{x_nm}/{y_nm}} for their names
-\item \code{{x_idx}/{y_idx}} for their index numbers
+\item \code{{x_val}} or \code{{y_val}} for \code{.x}'s or  \code{.y}'s values
+\item \code{{x_nm}} or \code{{y_nm}} for their names
+\item \code{{x_idx}} or \code{{y_idx}} for their index numbers
 }
 
 Alternatively, a character vector of length equal to the number of columns to
@@ -63,9 +58,7 @@ specification described above is not supported.}
 
 \item{.names_fn}{Optionally, a function that is applied after the glue
 specification in \code{.names} has been evaluated. This is, for example, helpful,
-in case the resulting names need to be further cleaned or trimmed. Note that
-this argument will be ignored if a character vector of length equal to
-to the number of columns to be created is supplied to \code{.names}.}
+in case the resulting names need to be further cleaned or trimmed.}
 }
 \value{
 \code{over2()} returns a tibble with one column for each pair of elements in \code{.x}
@@ -77,10 +70,10 @@ in \code{.x}, \code{.y} and \code{.fns}.
 \description{
 \code{over2()} and \code{over2x()} are variants of \code{\link[=over]{over()}} that iterate over two
 arguments simultaneously. \code{over2()} is equivalent to \code{purrr::map2()} in that it
-processes its inputs in parallel (not in the sense of multicore computing). It
-is basically a simple loop with two inputs. \code{over2x()}, on the other hand, is
-a nested loop, which takes each combination of its inputs and loops it over one
-or more functions.
+processes its inputs in parallel (not in the sense of multicore computing).
+Regarding its first two inputs \code{.x} and \code{.y} it is basically a simple loop.
+\code{over2x()}, on the other hand, can be understood as a nested loop, which creates
+each combination of its inputs \code{.x} and \code{.y}.
 }
 \section{Examples}{
 
@@ -93,7 +86,7 @@ iris <- as_tibble(iris)
 
 When doing exploratory analysis, it is often helpful to transform continious variables
 into several categorial variables. Below we use \code{over2()} to loop over two lists
-containing "breaks" and "labels" argument, which we then use in a call to \code{cut()}:\if{html}{\out{<div class="r">}}\preformatted{brks <- list(b1 = 3:8,
+containing "breaks" and "labels" arguments, which we then use in a call to \code{cut()}:\if{html}{\out{<div class="r">}}\preformatted{brks <- list(b1 = 3:8,
              b2 = seq(3, 9, by = 2))
 
 labs <- list(l1 = c("3 to 4", "4 to 5", "5 to 6",

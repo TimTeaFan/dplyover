@@ -8,7 +8,7 @@ over(.x, .fns, ..., .names = NULL, .names_fn = NULL)
 }
 \arguments{
 \item{.x}{An atomic vector or list to apply functions to. Alternatively a
-<\code{\link[=selection_helpers]{selection helper}}> can be useed to create a vector.}
+<\code{\link[=selection_helpers]{selection helper}}> can be used to create a vector.}
 
 \item{.fns}{Functions to apply to each of the elements in \code{.x}. For
 functions that expect variable names as input, the selected strings need to
@@ -58,12 +58,10 @@ specification described above is not supported.}
 
 \item{.names_fn}{Optionally, a function that is applied after the glue
 specification in \code{.names} has been evaluated. This is, for example, helpful,
-in case the resulting names need to be further cleaned or trimmed. Note that
-this argument will be ignored if a character vector of length equal to
-to the number of columns to be created is supplied to \code{.names}.}
+in case the resulting names need to be further cleaned or trimmed.}
 }
 \value{
-A tibble with one column for each element in \code{.x} and each function in \code{.fns};.
+A tibble with one column for each element in \code{.x} and each function in \code{.fns}.
 }
 \description{
 \code{over()} makes it easy to create new colums inside a \code{\link[dplyr:mutate]{dplyr::mutate()}} or
@@ -81,7 +79,7 @@ specified columns or (2) column names. See the examples below and the
 
 \code{over()} must only be used to create 'new' columns and will throw an error if
 the new columns created contain existing column names. To transform existing
-columns use \code{\link[dplyr:across]{dplyr::across()}} or \code{\link[=crossover]{crossover()}}.
+columns use \code{\link[dplyr:across]{dplyr::across()}}.
 
 Similar to \code{dplyr::across()} \code{over()} works only inside dplyr verbs.
 }

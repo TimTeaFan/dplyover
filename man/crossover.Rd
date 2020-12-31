@@ -2,22 +2,36 @@
 % Please edit documentation in R/crossover.R
 \name{crossover}
 \alias{crossover}
-\title{Loop two inputs simultaneaously over one or several functions in 'dplyr'}
+\alias{crossoverx}
+\title{Loop columns and a vector over one or several functions in 'dplyr'}
 \usage{
-crossover(.cols, .x, .fns, ..., .names = NULL)
+crossover(.xcols, .y, .fns, ..., .names = NULL, .names_fn = NULL)
+
+crossoverx(.xcols, .y, .fns, ..., .names = NULL, .names_fn = NULL)
 }
 \arguments{
-\item{.x, .y}{An atomic vector (expect 'raw' and 'complex') to apply functions to.
-Instead of a vector a <\code{\link[=selection_helpers]{selection helper}}> or anything else
-that is coercible to an atomic vector can be used. Note that \code{over()} must only
-be used to create 'new' columns and will throw an error if \code{.x} contains
-existing column names. To transform existing columns use \code{\link[dplyr:across]{dplyr::across()}}.}
+\item{.xcols}{<\code{\link[=dplyr_tidy_select]{tidy-select}}> Columns to transform.
+Because \code{crossover()} is used within functions like \code{summarise()} and
+\code{mutate()}, you can't select or compute upon grouping variables.}
 
-\item{.fns}{Functions to apply to each of the elements in \code{.x}. For
-functions that expect variable names as input, the selected strings need to
-be turned into symbols and evaluated. \code{dplyrover} comes with a genuine helper
-function that evaluates strings as names \code{\link[=.]{.()}}. Note that <\code{\link[rlang:nse-force]{rlang's forcing operators}}>
-are not supported in \code{over()}.
+\item{.y}{An atomic vector or list to apply functions to. \code{crossover()} also
+accepts a function as \code{.y} argument. In this case each column in \code{.xcols}
+is looped over all the outputs that it generated with the function supplied
+to \code{.y}.
+
+If a function is supplied the following values are possible:
+\itemize{
+\item A bare function name, e.g. \code{mean}
+\item An anonymous function, e.g. \code{function(x) mean(x)}
+\item A purrr-style lambda, e.g. \code{~ mean(.x, na.rm = TRUE)}
+}
+
+Note that additional arguments can only be specified with an anonymous
+function, a purrr-style lamba or with a pre-filled custom function.}
+
+\item{.fns}{Functions to apply to each column in \code{.xcols} and element in \code{.y}.
+Note that <\code{\link[rlang:nse-force]{rlang's forcing operators}}> are not
+supported in \code{crossover()}.
 
 Possible values are:
 \itemize{
@@ -26,34 +40,162 @@ Possible values are:
 \item A list of functions/lambdas
 }
 
-For examples see the example section below.
-
-Note that, unlike \code{across()}, \code{over()} does not accept \code{NULL} as a
-value to \code{.fns}.}
+Note that \code{NULL} is not accepted as argument to \code{.fns}.}
 
 \item{...}{Additional arguments for the function calls in \code{.fns}.}
 
 \item{.names}{A glue specification that describes how to name the output
-columns. This can use \code{{vec}} to stand for the selected vector element, and
-\code{{fn}} to stand for the name of the function being applied. The default
-(\code{NULL}) is equivalent to \code{"{vec}"} for the single function case and
-\code{"{vec}_{fn}"} for the case where a list is used for \code{.fns}.}
+columns. This can use:
+\itemize{
+\item \code{{xcol}} to stand for the selected column name,
+\item \code{{y}} to stand for the selected vector element, and
+\item \code{{fn}} to stand for the name of the function being applied.
+}
+
+The default (\code{NULL}) is equivalent to \code{"{xcol}_{y}"} for the single function
+case and \code{"{xcol}_{y}_{fn}"} for the case where a list is used for \code{.fns}.
+
+Note that, depending on the nature of the underlying object in \code{.y},
+specifying \code{{y}} will yield different results:
+\itemize{
+\item If \code{.y} is an unnamed atomic vector, \code{{y}} will represent each value.
+\item If \code{.y} is a named list or atomic vector, \code{{y}} will represent each name.
+\item If \code{.y} is an unnamed list, \code{{y}} will be the index number running from 1 to \code{length(y)}.
+}
+
+This standard behavior (interpretation of \code{{y}}) can be overwritten by
+directly specifying:
+\itemize{
+\item \code{{y_val}} for \code{.y}'s values
+\item \code{{y_nm}} for its names
+\item \code{{y_idx}} for its index numbers
+}
+
+Alternatively, a character vector of length equal to the number of columns to
+be created can be supplied to \code{.names}. Note that in this case, the glue
+specification described above is not supported.}
+
+\item{.names_fn}{Optionally, a function that is applied after the glue
+specification in \code{.names} has been evaluated. This is, for example, helpful,
+in case the resulting names need to be further cleaned or trimmed.}
 }
 \value{
-A tibble with one column for each element in \code{.x} and each function in \code{.fns};.
+\code{crossover()} returns a tibble with one column for each pair of columns in \code{.xcols}
+and elements in \code{.y} combined with each function in \code{.fns}.
+
+If a function is supplied as \code{.y} argument, \code{crossover()} returns a tibble with
+one column for each pair of output elements of \code{.y} and the column in \code{.xcols}
+that generated the output combined with each function in \code{.fns}.
+
+\code{crossoverx()} returns a tibble with one column for each each combination of
+columns in \code{.xcols}, elements in \code{.y} and functions in \code{.fns}.
 }
 \description{
-...
+\code{crossover()} and \code{crossoverx()} combine the functionality of \code{\link[dplyr:across]{dplyr::across()}}
+with \code{\link[=over]{over()}} by iterating over (i) one or more columns (\code{.xcols}) and,
+simultaneously, (ii) elements of a vector or list (\code{.y}). Regardings its first
+two inputs \code{crossover()} is basically a simple loop, while \code{crossoverx()} is
+a nested loop, which creates each combination of all columns in \code{.xcols} and
+elements in \code{.y}.
+
+\code{crossover()} has one trick up it's sleeves: Its second input
+(\code{.y}) can be a function. This changes the originial behavior slightly: First
+the function in \code{.y} is applied to all columns in \code{.xcols} to \emph{generate} a
+vector or list which will be used as \code{.y} input. Then each column is looped
+over all the outputs that it generated with the function supplied to \code{.y}.
+For examples see the example section below.
 }
 \section{Examples}{
 
 
-\code{over()} can only be used inside \code{dplyr::mutate} or \code{dplyr::summarise}.
-It has two main use cases. They differ in how the elements in \code{.x}
-are used. Let's first attach \code{dplyr}:\if{html}{\out{<div class="r">}}\preformatted{library(dplyr)
+For the basic functionality please refer to the examples in \code{\link[=over]{over()}} and
+\code{\link[dplyr:across]{dplyr::across()}}.\if{html}{\out{<div class="r">}}\preformatted{library(dplyr)
 
 # For better printing
 iris <- as_tibble(iris)
 }\if{html}{\out{</div>}}
+
+Here is a simple toy example of \code{crossover()}. The first argument selects
+all columns starting with "Sepal" (here: 'Sepal.Length' and 'Sepal.Width').
+The  second argument is a vector of \code{5} and \code{3}. The function \code{.x <= .y} is
+applied to each pair of colums and elements, where \code{.x} stands for the column in
+\code{.xcols} and \code{.y} for the element in \code{.y}. In this case two \code{logical} columns
+are created: 'Sepal.Length_5' shows whether 'Sepal.Length' is equal or smaller
+than 5, and 'Sepal.Width_3' shows whether 'Sepal.Length' is equal or smaller
+than 3.\if{html}{\out{<div class="r">}}\preformatted{ iris \%>\%
+   mutate(crossover(starts_with("Sepal"),
+                    c(5,3),
+                     ~ .x <= .y))
+#> # A tibble: 150 x 7
+#>   Sepal.Length Sepal.Width Petal.Length Petal.Width Species Sepal.Length_5
+#>          <dbl>       <dbl>        <dbl>       <dbl> <fct>   <lgl>         
+#> 1          5.1         3.5          1.4         0.2 setosa  FALSE         
+#> 2          4.9         3            1.4         0.2 setosa  TRUE          
+#> 3          4.7         3.2          1.3         0.2 setosa  TRUE          
+#> 4          4.6         3.1          1.5         0.2 setosa  TRUE          
+#> # ... with 146 more rows, and 1 more variable: Sepal.Width_3 <lgl>
+}\if{html}{\out{</div>}}
+
+The \code{.y} argument of \code{crossover()} can take a function instead of list or vector.
+In the example below we select the columns 'type', 'product', 'csat' in \code{.xcols}.
+We supply the function \code{\link[=dist_values]{dist_values()}} to \code{.y}, which is a cleaner variant of
+base R's \code{unique()}. This generates all distinct values for all three selected
+variables. Now, the function in \code{.fns}, \code{~ if_else(.y == .x, 1, 0)}, is applied
+to each pair of distinct value in \code{.y} and the column in \code{.xcols} that generated
+this value. This basically creates a dummy variable each value of each variable.
+Since some of the values contain space characters, we can use the \code{.names_fn}
+argument to supply a \emph{third} function that cleans the output names by replacing
+spaces with an underscore and setting all characters \code{tolower()}.\if{html}{\out{<div class="r">}}\preformatted{ csat \%>\%
+   transmute(
+     crossover(.xcols = c(type, product, csat),
+               .y = dist_values,
+               .fns = ~ if_else(.y == .x, 1, 0),
+               .names_fn = ~ gsub("\\\\s", "_", .x) \%>\% tolower(.)
+               )) \%>\%
+   glimpse
+#> Rows: 150
+#> Columns: 11
+#> $ type_existing         <dbl> 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, ...
+#> $ type_new              <dbl> 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, ...
+#> $ type_reactivate       <dbl> 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, ...
+#> $ product_advanced      <dbl> 1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, ...
+#> $ product_basic         <dbl> 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, ...
+#> $ product_premium       <dbl> 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, ...
+#> $ csat_neutral          <dbl> 1, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, ...
+#> $ csat_satisfied        <dbl> 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, ...
+#> $ csat_unsatisfied      <dbl> 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, ...
+#> $ csat_very_satisfied   <dbl> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, ...
+#> $ csat_very_unsatisfied <dbl> 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, ...
+}\if{html}{\out{</div>}}
+
+\code{crossoverx()} loops every combination of colums in \code{.xcols} and elements
+\code{.y} over the functions in \code{.fns}. This is helpful in cases where we want to
+create a batch of similar variables with only slightly changes in the arguments
+of the calling function. A good example are lagged variables. Below we create
+five lagged variables for each 'Sepal.Length' and  'Sepal.Width'. To create
+nice names we use a named list as argument in \code{.fns} and specify the glue
+syntax in \code{.names}.\if{html}{\out{<div class="r">}}\preformatted{ iris \%>\%
+   transmute(
+     crossoverx(starts_with("sepal"),
+                1:5,
+                list(lag = ~ lag(.x, .y)),
+                .names = "\{xcol\}_\{fn\}\{y\}")) \%>\%
+   glimpse
+#> Rows: 150
+#> Columns: 10
+#> $ Sepal.Length_lag1 <dbl> NA, 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6, 5.0, 4.4, ...
+#> $ Sepal.Length_lag2 <dbl> NA, NA, 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6, 5.0, 4...
+#> $ Sepal.Length_lag3 <dbl> NA, NA, NA, 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6, 5....
+#> $ Sepal.Length_lag4 <dbl> NA, NA, NA, NA, 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6...
+#> $ Sepal.Length_lag5 <dbl> NA, NA, NA, NA, NA, 5.1, 4.9, 4.7, 4.6, 5.0, 5.4,...
+#> $ Sepal.Width_lag1  <dbl> NA, 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4, 3.4, 2.9, ...
+#> $ Sepal.Width_lag2  <dbl> NA, NA, 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4, 3.4, 2...
+#> $ Sepal.Width_lag3  <dbl> NA, NA, NA, 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4, 3....
+#> $ Sepal.Width_lag4  <dbl> NA, NA, NA, NA, 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4...
+#> $ Sepal.Width_lag5  <dbl> NA, NA, NA, NA, NA, 3.5, 3.0, 3.2, 3.1, 3.6, 3.9,...
+}\if{html}{\out{</div>}}
 }
 
+\seealso{
+Other members of the <\code{\link[=over_across_family]{over-across function family}}>.
+}
