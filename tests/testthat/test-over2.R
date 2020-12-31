@@ -1,7 +1,7 @@
 # over2 ------------------------------------------------------------------
 library(dplyr)
 
-# over examples of basic functionality from the example section
+# over2 examples of basic functionality from the example section
 test_that("over2() exmample", {
 
   brks <- list(b1 = 3:8,
