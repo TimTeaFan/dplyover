@@ -728,6 +728,13 @@ test_that("over() custom errors", {
            over(1, mean),
            .keep = "unused")
   )
+  # check even if function is renamed:
+    expect_error({
+     myfun <- dplyr::mutate
+      myfun(tibble(x = 1),
+            over(1, mean),
+            .keep = "unused")
+    })
 
   # no existing colnames
     expect_error(
@@ -749,6 +756,41 @@ test_that("over() can use cur_data()", {
     summarise(`1` = nrow(cur_data()))
 
   expect_equal(df_over, df_expect)
+
+})
+
+test_that("over() can be used with other functions that use `.keep`", {
+
+  expect_error({
+    iris %>%
+      mutate(new = 1, .keep = "unused") %>%
+      nest_by(Species, .keep = FALSE) %>%
+      mutate(over(1, paste))},
+    NA)
+
+  expect_error({
+    iris %>%
+      nest_by(Sepal.Length < 6, .keep = TRUE) %>%
+      mutate(data2 = list(nest_by(data, Species, .keep = TRUE) %>%
+                            mutate(over(1, paste))))},
+    NA)
+
+  # FAILIING:
+  # TODO: fix check()
+  # expect_error({
+  #   iris %>%
+  #     mutate(data2 = list(mutate(over(1, paste))),
+  #            .keep = "unused")},
+  #   NA)
+
+  expect_error({
+    iris %>%
+      nest_by(Sepal.Length < 6, .keep = TRUE) %>%
+      mutate(data2 = list(mutate(data, new = 1) %>%
+                            nest_by(Species, .keep = TRUE) %>%
+                            mutate(over(1, paste))))},
+    NA)
+
 
 })
 
