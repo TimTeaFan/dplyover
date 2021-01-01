@@ -276,7 +276,7 @@
 over <- function(.x, .fns, ..., .names = NULL, .names_fn = NULL){
 
   .data <- tryCatch({
-    dplyr::across()
+    dplyr::cur_data()
   }, error = function(e) {
     rlang::abort("`over()` must only be used inside dplyr verbs")
   })

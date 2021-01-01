@@ -108,7 +108,7 @@
 over2 <- function(.x, .y, .fns, ..., .names = NULL, .names_fn = NULL){
 
   .data <- tryCatch({
-    dplyr::across()
+    dplyr::cur_data()
   }, error = function(e) {
     rlang::abort("`over2()` must only be used inside dplyr verbs")
   })
@@ -318,7 +318,7 @@ over2_setup <- function(x1, y1, fns, names, cnames, names_fn) {
 over2x <- function(.x, .y, .fns, ..., .names = NULL, .names_fn = NULL){
 
   .data <- tryCatch({
-    dplyr::across()
+    dplyr::cur_data()
   }, error = function(e) {
     rlang::abort("`over2x()` must only be used inside dplyr verbs")
   })
@@ -531,7 +531,6 @@ over2x_setup <- function(x1, y1, fns, names, cnames, names_fn) {
     nm_f <- rlang::as_function(names_fn)
     names <- purrr::map_chr(names, nm_f)
   }
-
   value <- list(x = x1, y = y1, fns = fns, names = names)
   value
 }

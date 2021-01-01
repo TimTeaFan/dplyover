@@ -169,7 +169,7 @@
 crossover <- function(.xcols = dplyr::everything(), .y, .fns, ..., .names = NULL, .names_fn = NULL){
 
   .data <- tryCatch({
-    dplyr::across()
+    dplyr::cur_data()
   }, error = function(e) {
     rlang::abort("`crossover()` must only be used inside dplyr verbs")
   })
@@ -394,7 +394,7 @@ crossover_setup <- function(cols, y1, fns, names, cnames, data, names_fn, each =
 crossoverx <- function(.xcols = dplyr::everything(), .y, .fns, ..., .names = NULL, .names_fn = NULL){
 
   .data <- tryCatch({
-    dplyr::across()
+    dplyr::cur_data()
   }, error = function(e) {
     rlang::abort("`crossoverx()` must only be used inside dplyr verbs")
   })
