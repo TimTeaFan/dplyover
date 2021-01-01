@@ -736,4 +736,20 @@ test_that("over() custom errors", {
 
 })
 
+# dplyr compability
+test_that("over() can use cur_data()", {
+
+  df_over <- iris %>%
+    group_by(Species) %>%
+    summarise(over(1,
+                   ~ nrow(cur_data())))
+
+  df_expect <-  iris %>%
+    group_by(Species) %>%
+    summarise(`1` = nrow(cur_data()))
+
+  expect_equal(df_over, df_expect)
+
+})
+
 # other edge cases
