@@ -58,9 +58,11 @@
 ---
 
     Problem with `summarise()` input `..1`.
-    x Problem with `over()` input `.names`.
-    i All elements in `.names` must be unique.
-    x The following names are not unique: 'one', 'two', 'three'.
+    x Names must be unique.
+    x These names are duplicated:
+      * "one" at locations 1 and 4.
+      * "two" at locations 2 and 5.
+      * "three" at locations 3 and 6.
     i Input `..1` is `over(...)`.
     i The error occurred in group 1: x = 1.
 
