@@ -288,6 +288,15 @@ over2_setup <- function(x1, y1, fns, names, cnames, names_fn) {
                      i = "`.names` only supports the following expressions: '{x}', '{x_val}', '{x_nm}', '{x_idx}',  '{fn}', '{y}', '{y_val}', '{y_nm}', '{y_idx}' or '{fn}'."
       ))
     }
+    # check if names are unique
+    vctrs::vec_as_names(names, repair = "check_unique")
+    # check number of names
+    if (length(names) !=  vars_no) {
+      rlang::abort(c("Problem with `over2()`  input `.names`.",
+                     i = "The number of elements in `.names` must equal the number of new columns.",
+                     x = paste0(length(names), " elements provided to `.names`, but the number of new columns is ", vars_no, ".")
+      ))
+    }
   }
 
   # apply names_fn
@@ -297,29 +306,8 @@ over2_setup <- function(x1, y1, fns, names, cnames, names_fn) {
     names <- purrr::map_chr(names, nm_f)
   }
 
-   # check number of names
-   if (length(names) !=  vars_no) {
-     rlang::abort(c("Problem with `over2()`  input `.names`.",
-                    i = "The number of elements in `.names` must equal the number of new columns.",
-                    x = paste0(length(names), " elements provided to `.names`, but the number of new columns is ", vars_no, ".")
-     ))
-   }
 
-    # check if names are unique
-    if (length(names) != length(unique(names))) {
 
-      d_names <- names[duplicated(names)]
-      d_names_l <- ifelse(length(d_names) > 3, 3, length(d_names))
-
-      rlang::abort(c("Problem with `over2()` input `.names`.",
-                     i = "All elements in `.names` must be unique.",
-                     x = paste0("The following names are not unique: ",
-                                paste(paste0("'", d_names[seq_along(1:d_names_l)], "'"), collapse = ", "),
-                                ifelse(length(d_names) > 3, " etc. ", ".")
-                     )
-      ))
-
-    }
 
   value <- list(x = x1, y = y1, fns = fns, names = names)
   value
@@ -527,36 +515,21 @@ over2x_setup <- function(x1, y1, fns, names, cnames, names_fn) {
                      i = "`.names` only supports the following expressions: '{x}', '{x_val}', '{x_nm}', '{x_idx}',  '{fn}', '{y}', '{y_val}', '{y_nm}', '{y_idx}' or '{fn}'."
       ))
     }
+    # check if names are unique
+    vctrs::vec_as_names(names, repair = "check_unique")
+    # check number of names
+    if (length(names) !=  vars_no) {
+      rlang::abort(c("Problem with `over2x()`  input `.names`.",
+                     i = "The number of elements in `.names` must equal the number of new columns.",
+                     x = paste0(length(names), " elements provided to `.names`, but the number of new columns is ", vars_no, ".")
+      ))
+    }
   }
 
   # apply names_fn
   if (!is.null(names_fn)) {
     nm_f <- rlang::as_function(names_fn)
     names <- purrr::map_chr(names, nm_f)
-  }
-
-  # check number of names
-  if (length(names) !=  vars_no) {
-    rlang::abort(c("Problem with `over2x()`  input `.names`.",
-                   i = "The number of elements in `.names` must equal the number of new columns.",
-                   x = paste0(length(names), " elements provided to `.names`, but the number of new columns is ", vars_no, ".")
-    ))
-  }
-
-  # check if names are unique
-  if (length(names) != length(unique(names))) {
-
-    d_names <- names[duplicated(names)]
-    d_names_l <- ifelse(length(d_names) > 3, 3, length(d_names))
-
-    rlang::abort(c("Problem with `over2x()` input `.names`.",
-                   i = "When more than one element is provided to `.names` all elements must be unique.",
-                   x = paste0("The following names are not unique: ",
-                              paste(paste0("'", d_names[seq_along(1:d_names_l)], "'"), collapse = ", "),
-                              ifelse(length(d_names) > 3, " etc. ", ".")
-                   )
-    ))
-
   }
 
   value <- list(x = x1, y = y1, fns = fns, names = names)

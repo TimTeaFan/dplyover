@@ -368,36 +368,21 @@ crossover_setup <- function(cols, y1, fns, names, cnames, data, names_fn, each =
                      i = "`.names` only supports the following expressions: '{xcol}'. '{y}', '{y_val}', '{y_nm}', '{y_idx}' or '{fn}'."
       ))
     }
+    # check if non-glue names are unique
+    vctrs::vec_as_names(names, repair = "check_unique")
+    # check number of names
+    if (length(names) !=  vars_no) {
+      rlang::abort(c("Problem with `crossover()`  input `.names`.",
+                     i = "The number of elements in `.names` must equal the number of new columns.",
+                     x = paste0(length(names), " elements provided to `.names`, but the number of new columns is ", vars_no, ".")
+      ))
+    }
   }
 
   # apply names_fn
   if (!is.null(names_fn)) {
     nm_f <- rlang::as_function(names_fn)
     names <- purrr::map_chr(names, nm_f)
-  }
-
-  # check number of names
-  if (length(names) !=  vars_no) {
-    rlang::abort(c("Problem with `crossover()`  input `.names`.",
-                   i = "The number of elements in `.names` must equal the number of new columns.",
-                   x = paste0(length(names), " elements provided to `.names`, but the number of new columns is ", vars_no, ".")
-    ))
-  }
-
-  # check if names are unique
-  if (length(names) != length(unique(names))) {
-
-    d_names <- names[duplicated(names)]
-    d_names_l <- ifelse(length(d_names) > 3, 3, length(d_names))
-
-    rlang::abort(c("Problem with `crossover()` input `.names`.",
-                   i = "All elements in `.names` must be unique.",
-                   x = paste0("The following names are not unique: ",
-                              paste(paste0("'", d_names[seq_along(1:d_names_l)], "'"), collapse = ", "),
-                              ifelse(length(d_names) > 3, " etc. ", ".")
-                   )
-    ))
-
   }
 
   value <- list(vars = vars, y = y1, fns = fns, names = names, each = each)
@@ -596,36 +581,21 @@ crossoverx_setup <- function(cols, y1, fns, names, cnames, data, names_fn) {
                      i = "`.names` only supports the following expressions: '{xcol}'. '{y}', '{y_val}', '{y_nm}', '{y_idx}' or '{fn}'."
       ))
     }
+    # check if non-glue names are unique
+    vctrs::vec_as_names(names, repair = "check_unique")
+    # check number of names
+    if (length(names) !=  vars_no) {
+      rlang::abort(c("Problem with `crossoverx()`  input `.names`.",
+                     i = "The number of elements in `.names` must equal the number of new columns.",
+                     x = paste0(length(names), " elements provided to `.names`, but the number of new columns is ", vars_no, ".")
+      ))
+    }
   }
 
   # apply names_fn
   if (!is.null(names_fn)) {
     nm_f <- rlang::as_function(names_fn)
     names <- purrr::map_chr(names, nm_f)
-  }
-
-  # check number of names
-  if (length(names) !=  vars_no) {
-    rlang::abort(c("Problem with `crossoverx()`  input `.names`.",
-                   i = "The number of elements in `.names` must equal the number of new columns.",
-                   x = paste0(length(names), " elements provided to `.names`, but the number of new columns is ", vars_no, ".")
-    ))
-  }
-
-  # check if names are unique
-  if (length(names) != length(unique(names))) {
-
-    d_names <- names[duplicated(names)]
-    d_names_l <- ifelse(length(d_names) > 3, 3, length(d_names))
-
-    rlang::abort(c("Problem with `crossoverx()` input `.names`.",
-                   i = "All elements in `.names` must be unique.",
-                   x = paste0("The following names are not unique: ",
-                              paste(paste0("'", d_names[seq_along(1:d_names_l)], "'"), collapse = ", "),
-                              ifelse(length(d_names) > 3, " etc. ", ".")
-                   )
-    ))
-
   }
 
   value <- list(vars = vars, y = y1, fns = fns, names = names)
