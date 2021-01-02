@@ -419,7 +419,7 @@ test_that("over() correctly names output columns", {
                        .names = "new"))
   )
   # test that external vectors throws error when it contains non-unique names
-  col_nm_vec4 <- rep(col_nm_vec2 <- c("one", "two", "three"), 2)
+  col_nm_vec4 <- rep(c("one", "two", "three"), 2)
   expect_error(
     summarise(gf, over(list(a = 5, b = 6, c = 7),
                        list(mean = mean, sum = sum),

@@ -229,7 +229,7 @@ test_that("over2() correctly names output columns", {
                        .names = "new"))
   )
   # test that external vectors throws error when it contains non-unique names
-  col_nm_vec4 <- rep(col_nm_vec2 <- c("one", "two", "three"), 2)
+  col_nm_vec4 <- rep(c("one", "two", "three"), 2)
   expect_error(
     summarise(gf, over2(list(a = 5, b = 6, c = 7),
                         list(x = 1, x = 1, z = 3),
@@ -375,7 +375,7 @@ test_that("over2x() correctly names output columns", {
                         .names = "new"))
   )
   # test that external vectors throws error when it contains non-unique names
-  col_nm_vec4 <- rep(col_nm_vec2 <- c("one", "two", "three", "four"), 2)
+  col_nm_vec4 <- rep(c("one", "two", "three", "four"), 2)
   expect_error(
     summarise(gf, over2x(list(a = 5, b = 6),
                          list(x = 1, y = 2),
@@ -460,11 +460,11 @@ test_that("over2() passes unnamed arguments following .fns as ...", {
 
   df <- tibble(x = 1)
 
-  expect_equal(mutate(df, over2(2, NA_integer_, sum, na.rm = TRUE)),
-               tibble(x = 1, `2_NA` = 2))
+  expect_equal(mutate(df, over2(2, 3, paste, 4)),
+               tibble(x = 1, `2_3` = "2 3 4"))
 
-  expect_equal(mutate(df, over2x(2, c(2, NA_integer_), sum, na.rm = TRUE)),
-               tibble(x = 1, `2_2` = 4,  `2_NA` = 2))
+  expect_equal(mutate(df, over2x(2, c(2, NA), paste, "a")),
+               tibble(x = 1, `2_2` = "2 2 a",  `2_NA` = "2 NA a"))
 })
 
 # test_that("over() works sequentially", {
@@ -522,6 +522,7 @@ test_that("over2() custom errors", {
 
   # inside dplyr
   expect_error(over2())
+  expect_error(over2x())
 
   # .fns must be function
   expect_error(
