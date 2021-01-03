@@ -496,6 +496,44 @@ test_that("crossover() gives meaningful messages", {
 
 })
 
+test_that("crossover() uses environment from the current quosure (#5460)", {
+  # If the data frame `y` is selected, causes a subscript conversion
+  # error since it is fractional
+  df <- data.frame(x = c(1, 2), y = c(1.1, 2.4))
+  y <- "x"
+  expect_equal(df %>%
+                 summarise(crossover(all_of(y),
+                                     1,
+                                     ~ mean(.x, na.rm = .y))),
+               data.frame(x_1 = 1.5))
+
+  expect_equal(df %>%
+                 summarise(crossoverx(all_of(y),
+                                     1,
+                                     ~ mean(.x, na.rm = .y))),
+               data.frame(x_1 = 1.5))
+
+  expect_equal(df %>% filter(crossover(all_of(y), 1, ~ .x + .y <= 2)),
+               slice(df, 1))
+
+  expect_equal(df %>% filter(crossoverx(all_of(y), 1, ~ .x + .y <= 2)),
+               slice(df, 1))
+
+  # Recursive case fails because the `y` column has precedence (across issue: #5498)
+  # expect_error(df %>% summarise(summarise(across(), across(all_of(y), mean))))
+
+  # Inherited case
+  out <- df %>% summarise(local(crossover(all_of(y),
+                                          1,
+                                          ~ mean(.x, na.rm = .y))))
+  expect_equal(out, data.frame(x_1 = 1.5))
+
+  out2 <- df %>% summarise(local(crossoverx(all_of(y),
+                                          1,
+                                          ~ mean(.x, na.rm = .y))))
+  expect_equal(out2, data.frame(x_1 = 1.5))
+})
+
 
 
 # expected errors

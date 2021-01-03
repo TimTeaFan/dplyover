@@ -247,13 +247,11 @@ crossover_setup <- function(cols, y1, fns, names, cnames, data, names_fn, each =
 
   # setup: cols
   cols <- rlang::enquo(cols)
-  # TODO: Check if needed:
-  # cols <- rlang::quo_set_env(cols,
-  #                            data_mask_top(rlang::quo_get_env(cols),
-  #                                          recursive = FALSE,
-  #                                          inherit = TRUE))
-  # vars <- tidyselect::eval_select(cols, data)
-  vars <- tidyselect::eval_select(rlang::expr(!!cols), data)
+  cols <- rlang::quo_set_env(cols,
+                             data_mask_top(rlang::quo_get_env(cols),
+                                           recursive = FALSE,
+                                           inherit = TRUE))
+  vars <- tidyselect::eval_select(cols, data)
   vars <- init_vars <- names(vars)
 
   # setup: .y
@@ -470,13 +468,11 @@ crossoverx_setup <- function(cols, y1, fns, names, cnames, data, names_fn) {
 
   # setup: cols
   cols <- rlang::enquo(cols)
-  # TODO: Check if needed:
-  # cols <- rlang::quo_set_env(cols,
-  #                            data_mask_top(rlang::quo_get_env(cols),
-  #                                          recursive = FALSE,
-  #                                          inherit = TRUE))
-  # vars <- tidyselect::eval_select(cols, data)
-  vars <- tidyselect::eval_select(rlang::expr(!!cols), data)
+  cols <- rlang::quo_set_env(cols,
+                             data_mask_top(rlang::quo_get_env(cols),
+                                           recursive = FALSE,
+                                           inherit = TRUE))
+  vars <- tidyselect::eval_select(cols, data)
   vars <- init_vars <- names(vars)
 
   # setup: .y
@@ -670,4 +666,15 @@ crossXover_int <- function(.cols, .x, .fns, .data, ..., .names = NULL){
   tibble::new_tibble(out, nrow = size)
 }
 
+
+data_mask_top <- function(env, recursive = FALSE, inherit = FALSE) {
+   while (rlang::env_has(env, ".__tidyeval_data_mask__.", inherit = inherit)) {
+     env <- rlang::env_parent(rlang::env_get(env, ".top_env", inherit = inherit))
+     if (!recursive) {
+       return(env)
+     }
+   }
+
+   env
+ }
 
