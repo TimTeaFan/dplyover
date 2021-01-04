@@ -2,11 +2,9 @@
 #'
 #' @description
 #' `over2()` and `over2x()` are variants of [over()] that iterate over two
-#' arguments simultaneously. `over2()` is equivalent to `purrr::map2()` in that it
-#' processes its inputs in parallel (not in the sense of multicore computing).
-#' Regarding its first two inputs `.x` and `.y` it is basically a simple loop.
-#' `over2x()`, on the other hand, can be understood as a nested loop, which creates
-#' each combination of its inputs `.x` and `.y`.
+#' objects simultaneously. `over2()` loops each pair of elements in `.x` and
+#' `.y` over one or more functions, while `over2x()` loops every combination
+#' between elements in `.x` a `.y` over one or more functions.
 #'
 #' @inheritParams over
 #'
@@ -55,8 +53,8 @@
 #' `over2()` returns a tibble with one column for each pair of elements in `.x`
 #' and `.y` combined with each function in `.fns`.
 #'
-#' `over2x()` returns a tibble with one column for each combination of elements
-#' in `.x`, `.y` and `.fns`.
+#' `over2x()` returns a tibble with one column for each combination between elements
+#' in `.x` and `.y` combined with each function in `.fns`.
 #'
 #' @section Examples:
 #'

@@ -2,18 +2,19 @@
 #'
 #' @description
 #' `crossover()` and `crossoverx()` combine the functionality of [dplyr::across()]
-#' with [over()] by iterating over (i) one or more columns (`.xcols`) and,
-#' simultaneously, (ii) elements of a vector or list (`.y`). Regardings its first
-#' two inputs `crossover()` is basically a simple loop, while `crossoverx()` is
-#' a nested loop, which creates each combination of all columns in `.xcols` and
-#' elements in `.y`.
+#' with [over()] by iterating simultaneously over (i) one or more columns (`.xcols`)
+#' and (ii) elements of a vector or list (`.y`). `crossover()` loops each pair of
+#' elements in `.xcols` and  `.y` over one or more functions, while `crossoverx()`
+#' loops every combination between columns in `.xcols` and elements in `.y` over
+#' one or more functions.
 #'
-#' `crossover()` has one trick up it's sleeves: Its second input
+#' `crossover()` has one trick up it's sleeves, which sets it apart from the other
+#' functions in the <[`over-across family`][over_across_family]>: Its second input
 #' (`.y`) can be a function. This changes the originial behavior slightly: First
-#' the function in `.y` is applied to all columns in `.xcols` to *generate* a
-#' vector or list which will be used as `.y` input. Then each column is looped
-#' over all the outputs that it generated with the function supplied to `.y`.
-#' For examples see the example section below.
+#' the function in `.y` is applied to all columns in `.xcols` to *generate* an
+#' object which will be used as `.y` input. Then each column is looped over all
+#' the outputs that it generated with the function supplied to `.y`. For examples
+#' see the example section below.
 #'
 #' @param .xcols <[`tidy-select`][dplyr_tidy_select]> Columns to transform.
 #'   Because `crossover()` is used within functions like `summarise()` and
@@ -24,7 +25,7 @@
 #'   is looped over all the outputs that it generated with the function supplied
 #'   to `.y`.
 #'
-#'   If a function is supplied the following values are possible:
+#'   If a function is supplied, the following values are possible:
 #'
 #'   - A bare function name, e.g. `mean`
 #'   - An anonymous function, e.g. `function(x) mean(x)`
@@ -35,7 +36,7 @@
 #'
 #' @param .fns Functions to apply to each column in `.xcols` and element in `.y`.
 #'   Note that <[`rlang's forcing operators`][rlang::nse-force]> are not
-#'   supported in `crossover()`.
+#'   supported.
 #'
 #'   Possible values are:
 #'
@@ -87,7 +88,7 @@
 #' one column for each pair of output elements of `.y` and the column in `.xcols`
 #' that generated the output combined with each function in `.fns`.
 #'
-#' `crossoverx()` returns a tibble with one column for each each combination of
+#' `crossoverx()` returns a tibble with one column for each combination of
 #' columns in `.xcols`, elements in `.y` and functions in `.fns`.
 #'
 #' @seealso
@@ -108,6 +109,7 @@
 #' iris <- as_tibble(iris)
 #' ```
 #'
+#' ## A simple example
 #' Here is a simple toy example of `crossover()`. The first argument selects
 #' all columns starting with "Sepal" (here: 'Sepal.Length' and 'Sepal.Width').
 #' The  second argument is a vector of `5` and `3`. The function `.x <= .y` is
@@ -124,7 +126,7 @@
 #'                      ~ .x <= .y)) %>%
 #'    glimpse
 #' ```
-#'
+#' ## Creating dummy variables for multiple varialbes (columns)
 #' The `.y` argument of `crossover()` can take a function instead of list or vector.
 #' In the example below we select the columns 'type', 'product', 'csat' in `.xcols`.
 #' We supply the function [dist_values()] to `.y`, which is a cleaner variant of
@@ -147,6 +149,7 @@
 #'    glimpse
 #' ```
 #'
+#' ## Creating many similar variables for mulitple columns
 #' `crossoverx()` loops every combination of colums in `.xcols` and elements
 #' `.y` over the functions in `.fns`. This is helpful in cases where we want to
 #' create a batch of similar variables with only slightly changes in the arguments
