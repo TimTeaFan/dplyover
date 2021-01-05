@@ -1,35 +1,63 @@
-#' Loop two inputs simultaneaously over one or several functions in 'dplyr'
+#' Loop two columns simultaneaously over one or several functions in 'dplyr'
 #'
 #' @description
-#' ...
+#' `across2()` and `across2x()` are variants of [dplyr::across()] that iterate over
+#' two columns simultaneously. `across2()` loops each pair of columns in `.xcols`
+#' and  `.ycols` over one or more functions, while `across2x()` loops every
+#' combination between columns in `.xcols` and `.ycols` over one or more functions.
 #'
-#' @inheritParams over
+#' @param .xcols,.ycols <[`tidy-select`][dplyr_tidy_select]> Columns to transform.
+#' Note that you can not select or compute upon grouping variables.
 #'
-#' @param .x,.y An atomic vector (expect 'raw' and 'complex') to apply functions to.
-#'   Instead of a vector a <[`selection helper`][selection_helpers]> or anything else
-#'   that is coercible to an atomic vector can be used. Note that `over()` must only
-#'   be used to create 'new' columns and will throw an error if `.x` contains
-#'   existing column names. To transform existing columns use [dplyr::across()].
+#' @param .fns Functions to apply to each column in `.xcols` and `.ycols`.
+#'   Note that <[`rlang's forcing operators`][rlang::nse-force]> are not
+#'   supported.
+#'
+#'   Possible values are:
+#'
+#'   - A function
+#'   - A purrr-style lambda
+#'   - A list of functions/lambdas
+#'
+#'   Note that `NULL` is not accepted as argument to `.fns`.
 #'
 #' @param ... Additional arguments for the function calls in `.fns`.
 #'
 #' @param .names A glue specification that describes how to name the output
-#'   columns. This can use `{vec}` to stand for the selected vector element, and
-#'   `{fn}` to stand for the name of the function being applied. The default
-#'   (`NULL`) is equivalent to `"{vec}"` for the single function case and
-#'   `"{vec}_{fn}"` for the case where a list is used for `.fns`.
+#'   columns. This can use:
+#'
+#'   - `{xcol}` to stand for the selected column name in `.xcols`,
+#'   - `{ycol}` to stand for the selected column name in `.ycols`, and
+#'   - `{fn}` to stand for the name of the function being applied.
+#'
+#'   The default (`NULL`) is equivalent to `"{xcol}_{ycol}"` for the single function
+#'   case and `"{xcol}_{ycol}_{fn}"` for the case where a list is used for `.fns`.
+#'
+#'   `across2()` supports two additonal glue specifications: `{pre}` and `{suf}`.
+#'   They extract the common ...
+#'
+#'
+#'   Alternatively, a character vector of length equal to the number of columns to
+#'   be created can be supplied to `.names`. Note that in this case, the glue
+#'   specification described above is not supported.
+#'
+#' @param .names_fn Optionally, a function that is applied after the glue
+#'   specification in `.names` has been evaluated. This is, for example, helpful,
+#'   in case the resulting names need to be further cleaned or trimmed.
 #'
 #' @returns
-#' A tibble with one column for each element in `.x` and each function in `.fns`;.
+#' `across2()` returns a tibble with one column for each pair of elements in `.xcols`
+#' and `.ycols` combined with each function in `.fns`.
+#'
+#' `across2x()` returns a tibble with one column for each combination between elements
+#' in `.x` and`.y` combined with each function in `.fns`.
 #'
 #' @section Examples:
 #'
 #' ```{r, child = "man/rmd/setup.Rmd"}
 #' ```
 #'
-#' `over()` can only be used inside `dplyr::mutate` or `dplyr::summarise`.
-#' It has two main use cases. They differ in how the elements in `.x`
-#' are used. Let's first attach `dplyr`:
+#' For the basic functionality please refer to the examples in [dplyr::across()].
 #'
 #' ```{r, comment = "#>", collapse = TRUE}
 #' library(dplyr)
@@ -38,6 +66,37 @@
 #' iris <- as_tibble(iris)
 #' ```
 #'
+#' `across2()` can be used to transfrom pairs of variables in one or more functions.
+#' In the example below we want to calculate the product and the sum of all pairs of
+#' 'Length' and 'Width' variables. We can use `{pre}` in the glue specification in
+#' `.names` to extract the common prefix of each pair of variables. We can further
+#' transform the names, in the example setting them `tolower` by specifying the
+#' `.names_fn` argument:
+#'
+#' ```{r, comment = "#>", collapse = TRUE}
+#' iris %>%
+#'   transmute(across2(ends_with("Length"),
+#'                     ends_with("Width"),
+#'                     .fns = list(product = ~ .x * .y,
+#'                                 sum = ~ .x + .y),
+#'                    .names = "{pre}_{fn}",
+#'                    .names_fn = tolower))
+#' ```
+#'
+#' `across2x()` can be used to perform calculations on each combination of variables.
+#' In the exm
+#'
+#' ```{r, comment = "#>", collapse = TRUE}
+#' iris %>%
+#'   summarise(across2x(-Species,
+#'                      -Species,
+#'                      ~ t.test(.x, .y)$p.value < .05))
+#' ```
+#'
+# iris %>%
+#   summarise(across2x(c("Sepal.Length", "Sepal.Width"),
+#                      c("Sepal.Length", "Sepal.Width"),
+#                      ~ t.test(.x, .y)$p.value < .05))
 #' @export
 across2 <- function(.xcols, .ycols, .fns, ..., .names = NULL, .names_fn = NULL){
 
@@ -232,7 +291,9 @@ across2_setup <- function(xcols, ycols, fns, names, cnames, data, names_fn) {
 }
 
 
-across2x <- function(.xcols, .ycols, .fns, ..., .names = NULL, .names_fn = NULL){
+across2x <- function(.xcols, .ycols, .fns, ..., .names = NULL, .names_fn = NULL, .comb = "all"){
+
+  comb <- match.arg(.comb, c("all", "unique", "minimal"), several.ok = FALSE)
 
   .data <- tryCatch({
     dplyr::cur_data()
@@ -250,7 +311,8 @@ across2x <- function(.xcols, .ycols, .fns, ..., .names = NULL, .names_fn = NULL)
                          names = .names,
                          cnames = .cnames,
                          data = .data,
-                         names_fn = .names_fn)
+                         names_fn = .names_fn,
+                         comb = comb)
 
   xvars <- setup$xvars
   yvars <- setup$yvars
@@ -273,11 +335,25 @@ across2x <- function(.xcols, .ycols, .fns, ..., .names = NULL, .names_fn = NULL)
   seq_fns <- seq_len(n_fns)
   k <- 1L
   out <- vector("list", n_xcols * n_ycols * n_fns)
+  out_check <- vector("character", n_xcols * n_ycols * n_fns)
 
   for (i in seq_n_xcols) {
+    x_nm <- names(xdata[i])
     xcol <- xdata[[i]]
     for(l in seq_n_ycols) {
+      y_nm <- names(ydata[l])
       ycol <- ydata[[l]]
+      new_nm <- paste(sort(c(x_nm, y_nm)), collapse = "_")
+      if ((comb == "unique" || comb == "minimal") && new_nm %in% out_check) {
+        k <- k + 1L
+        out_check[k] <- new_nm
+        next
+      }
+      out_check[k] <- new_nm
+      if (comb == "minimal" && x_nm == y_nm) {
+        k <- k + 1L
+        next
+      }
       for (j in seq_fns) {
         fn <- fns[[j]]
         out[[k]] <- fn(xcol, ycol, ...)
@@ -288,12 +364,26 @@ across2x <- function(.xcols, .ycols, .fns, ..., .names = NULL, .names_fn = NULL)
 
   size <- vctrs::vec_size_common(!!!out)
   out <- vctrs::vec_recycle_common(!!!out, .size = size)
+  if (comb != "all" && length(.names) < 1 && setup$is_glue) { # check is is_glue is needed
+
+    out <- purrr::compact(out)
+
+    if (length(out) != length(names)) {
+    rlang::abort(c("Problem with `across2x()` input `.names`.",
+                   i = "The number of elements in `.names` must equal the number of new columns.",
+                   x = paste0(length(.names), " elements provided to `.names`, but the number of new columns is ", length(out), ".")
+    ))
+    }
+    names(out) <- names
+  } else {
   names(out) <- names
+  out <- purrr::compact(out)
+  }
   tibble::new_tibble(out, nrow = size)
 }
 
 
-across2x_setup <- function(xcols, ycols, fns, names, cnames, data, names_fn) {
+across2x_setup <- function(xcols, ycols, fns, names, cnames, data, names_fn, comb) {
 
   # setup: cols
   xcols <- rlang::enquo(xcols)
@@ -383,7 +473,7 @@ across2x_setup <- function(xcols, ycols, fns, names, cnames, data, names_fn) {
     # check if non-glue names are unique
     vctrs::vec_as_names(names, repair = "check_unique")
     # check number of names
-    if (length(names) !=  vars_no) {
+    if (comb == "all" && length(names) !=  vars_no) {
       rlang::abort(c("Problem with `across2x()` input `.names`.",
                      i = "The number of elements in `.names` must equal the number of new columns.",
                      x = paste0(length(names), " elements provided to `.names`, but the number of new columns is ", vars_no, ".")
@@ -397,7 +487,7 @@ across2x_setup <- function(xcols, ycols, fns, names, cnames, data, names_fn) {
     names <- purrr::map_chr(names, nm_f)
   }
 
-  value <- list(xvars = xvars, yvars = yvars, fns = fns, names = names)
+  value <- list(xvars = xvars, yvars = yvars, fns = fns, names = names, is_glue = is_glue)
   value
 }
 
