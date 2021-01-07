@@ -2,6 +2,7 @@
 
 export(.)
 export(across2)
+export(across2x)
 export(crossover)
 export(crossoverx)
 export(cut_names)
