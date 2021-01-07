@@ -5,9 +5,23 @@
 \alias{crossoverx}
 \title{Loop columns and a vector over one or several functions in 'dplyr'}
 \usage{
-crossover(.xcols, .y, .fns, ..., .names = NULL, .names_fn = NULL)
+crossover(
+  .xcols = dplyr::everything(),
+  .y,
+  .fns,
+  ...,
+  .names = NULL,
+  .names_fn = NULL
+)
 
-crossoverx(.xcols, .y, .fns, ..., .names = NULL, .names_fn = NULL)
+crossoverx(
+  .xcols = dplyr::everything(),
+  .y,
+  .fns,
+  ...,
+  .names = NULL,
+  .names_fn = NULL
+)
 }
 \arguments{
 \item{.xcols}{<\code{\link[=dplyr_tidy_select]{tidy-select}}> Columns to transform.
@@ -19,7 +33,7 @@ accepts a function as \code{.y} argument. In this case each column in \code{.xco
 is looped over all the outputs that it generated with the function supplied
 to \code{.y}.
 
-If a function is supplied the following values are possible:
+If a function is supplied, the following values are possible:
 \itemize{
 \item A bare function name, e.g. \code{mean}
 \item An anonymous function, e.g. \code{function(x) mean(x)}
@@ -31,7 +45,7 @@ function, a purrr-style lamba or with a pre-filled custom function.}
 
 \item{.fns}{Functions to apply to each column in \code{.xcols} and element in \code{.y}.
 Note that <\code{\link[rlang:nse-force]{rlang's forcing operators}}> are not
-supported in \code{crossover()}.
+supported.
 
 Possible values are:
 \itemize{
@@ -87,23 +101,24 @@ If a function is supplied as \code{.y} argument, \code{crossover()} returns a ti
 one column for each pair of output elements of \code{.y} and the column in \code{.xcols}
 that generated the output combined with each function in \code{.fns}.
 
-\code{crossoverx()} returns a tibble with one column for each each combination of
+\code{crossoverx()} returns a tibble with one column for each combination of
 columns in \code{.xcols}, elements in \code{.y} and functions in \code{.fns}.
 }
 \description{
 \code{crossover()} and \code{crossoverx()} combine the functionality of \code{\link[dplyr:across]{dplyr::across()}}
-with \code{\link[=over]{over()}} by iterating over (i) one or more columns (\code{.xcols}) and,
-simultaneously, (ii) elements of a vector or list (\code{.y}). Regardings its first
-two inputs \code{crossover()} is basically a simple loop, while \code{crossoverx()} is
-a nested loop, which creates each combination of all columns in \code{.xcols} and
-elements in \code{.y}.
+with \code{\link[=over]{over()}} by iterating simultaneously over (i) one or more columns (\code{.xcols})
+and (ii) elements of a vector or list (\code{.y}). \code{crossover()} loops each
+\emph{pair} of columns in \code{.xcols} and elements  \code{.y} over one or more functions,
+while \code{crossoverx()} loops \emph{every pairwise combination} between columns in \code{.xcols}
+and elements in \code{.y} over one or more functions.
 
-\code{crossover()} has one trick up it's sleeves: Its second input
+\code{crossover()} has one trick up it's sleeves, which sets it apart from the other
+functions in the <\code{\link[=over_across_family]{over-across family}}>: Its second input
 (\code{.y}) can be a function. This changes the originial behavior slightly: First
-the function in \code{.y} is applied to all columns in \code{.xcols} to \emph{generate} a
-vector or list which will be used as \code{.y} input. Then each column is looped
-over all the outputs that it generated with the function supplied to \code{.y}.
-For examples see the example section below.
+the function in \code{.y} is applied to all columns in \code{.xcols} to \emph{generate} an
+object which will be used as \code{.y} input. Then each column is looped over all
+the outputs that it generated with the function supplied to \code{.y}. For examples
+see the example section below.
 }
 \section{Examples}{
 
@@ -114,6 +129,7 @@ For the basic functionality please refer to the examples in \code{\link[=over]{o
 # For better printing
 iris <- as_tibble(iris)
 }\if{html}{\out{</div>}}
+\subsection{A simple example}{
 
 Here is a simple toy example of \code{crossover()}. The first argument selects
 all columns starting with "Sepal" (here: 'Sepal.Length' and 'Sepal.Width').
@@ -125,16 +141,21 @@ than 5, and 'Sepal.Width_3' shows whether 'Sepal.Length' is equal or smaller
 than 3.\if{html}{\out{<div class="r">}}\preformatted{ iris \%>\%
    mutate(crossover(starts_with("Sepal"),
                     c(5,3),
-                     ~ .x <= .y))
-#> # A tibble: 150 x 7
-#>   Sepal.Length Sepal.Width Petal.Length Petal.Width Species Sepal.Length_5
-#>          <dbl>       <dbl>        <dbl>       <dbl> <fct>   <lgl>         
-#> 1          5.1         3.5          1.4         0.2 setosa  FALSE         
-#> 2          4.9         3            1.4         0.2 setosa  TRUE          
-#> 3          4.7         3.2          1.3         0.2 setosa  TRUE          
-#> 4          4.6         3.1          1.5         0.2 setosa  TRUE          
-#> # ... with 146 more rows, and 1 more variable: Sepal.Width_3 <lgl>
+                     ~ .x <= .y)) \%>\%
+   glimpse
+#> Rows: 150
+#> Columns: 7
+#> $ Sepal.Length   <dbl> 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6, 5.0, 4.4, 4.9, 5....
+#> $ Sepal.Width    <dbl> 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4, 3.4, 2.9, 3.1, 3....
+#> $ Petal.Length   <dbl> 1.4, 1.4, 1.3, 1.5, 1.4, 1.7, 1.4, 1.5, 1.4, 1.5, 1....
+#> $ Petal.Width    <dbl> 0.2, 0.2, 0.2, 0.2, 0.2, 0.4, 0.3, 0.2, 0.2, 0.1, 0....
+#> $ Species        <fct> setosa, setosa, setosa, setosa, setosa, setosa, seto...
+#> $ Sepal.Length_5 <lgl> FALSE, TRUE, TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, TR...
+#> $ Sepal.Width_3  <lgl> FALSE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALS...
 }\if{html}{\out{</div>}}
+}
+
+\subsection{Creating dummy variables for multiple varialbes (columns)}{
 
 The \code{.y} argument of \code{crossover()} can take a function instead of list or vector.
 In the example below we select the columns 'type', 'product', 'csat' in \code{.xcols}.
@@ -167,6 +188,9 @@ spaces with an underscore and setting all characters \code{tolower()}.\if{html}{
 #> $ csat_very_satisfied   <dbl> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, ...
 #> $ csat_very_unsatisfied <dbl> 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, ...
 }\if{html}{\out{</div>}}
+}
+
+\subsection{Creating many similar variables for mulitple columns}{
 
 \code{crossoverx()} loops every combination of colums in \code{.xcols} and elements
 \code{.y} over the functions in \code{.fns}. This is helpful in cases where we want to
@@ -194,6 +218,7 @@ syntax in \code{.names}.\if{html}{\out{<div class="r">}}\preformatted{ iris \%>\
 #> $ Sepal.Width_lag4  <dbl> NA, NA, NA, NA, 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4...
 #> $ Sepal.Width_lag5  <dbl> NA, NA, NA, NA, NA, 3.5, 3.0, 3.2, 3.1, 3.6, 3.9,...
 }\if{html}{\out{</div>}}
+}
 }
 
 \seealso{

@@ -79,7 +79,7 @@ specified columns or (2) column names. See the examples below and the
 
 \code{over()} must only be used to create 'new' columns and will throw an error if
 the new columns created contain existing column names. To transform existing
-columns use \code{\link[dplyr:across]{dplyr::across()}}.
+columns use \code{\link[dplyr:across]{dplyr::across()}}¥.
 
 Similar to \code{dplyr::across()} \code{over()} works only inside dplyr verbs.
 }
@@ -253,8 +253,8 @@ Rating was given. We can easily create a column for each response category:\if{h
 #>   <chr>   <fct> <fct>   <chr> <list>    <chr>          <chr>        
 #> 1 61297   exis~ advanc~ Neut~ <chr [1]> within 1 to 3~ Neutral      
 #> 2 07545   exis~ advanc~ Unsa~ <chr [1]> within 1 to 3~ Unsatisfied  
-#> 3 03822   exis~ premium Unsa~ <chr [3]> within 1 to 3~ Very Satisfi~
-#> 4 88219   reac~ basic   Sati~ <chr [3]> within last y~ Very Satisfi~
+#> 3 03822   exis~ premium Unsa~ <chr [3]> within 1 to 3~ Very satisfi~
+#> 4 88219   reac~ basic   Sati~ <chr [3]> within last y~ Very satisfi~
 #> # ... with 146 more rows, and 14 more variables: phone_contact <chr>,
 #> #   phone_rating <chr>, email_contact <chr>, email_rating <chr>,
 #> #   website_contact <chr>, website_rating <chr>, shop_contact <chr>,

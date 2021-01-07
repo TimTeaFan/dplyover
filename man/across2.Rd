@@ -2,16 +2,26 @@
 % Please edit documentation in R/across2.R
 \name{across2}
 \alias{across2}
-\title{Loop two inputs simultaneaously over one or several functions in 'dplyr'}
+\alias{across2x}
+\title{Loop two columns simultaneaously over one or several functions in 'dplyr'}
 \usage{
-across2(.cols1, .cols2, .fns, ..., .names = NULL)
+across2(.xcols, .ycols, .fns, ..., .names = NULL, .names_fn = NULL)
+
+across2x(
+  .xcols,
+  .ycols,
+  .fns,
+  ...,
+  .names = NULL,
+  .names_fn = NULL,
+  .comb = "all"
+)
 }
 \arguments{
-\item{.fns}{Functions to apply to each of the elements in \code{.x}. For
-functions that expect variable names as input, the selected strings need to
-be turned into symbols and evaluated. \code{dplyrover} comes with a genuine helper
-function that evaluates strings as names \code{\link[=.]{.()}}. Note that <\code{\link[rlang:nse-force]{rlang's forcing operators}}>
-are not supported in \code{over()}.
+\item{.xcols, .ycols}{<\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}> Columns to transform.
+Note that you can not select or compute upon grouping variables.}
+
+\item{.fns}{Functions to apply to each column in \code{.xcols} and \code{.ycols}.
 
 Possible values are:
 \itemize{
@@ -20,40 +30,108 @@ Possible values are:
 \item A list of functions/lambdas
 }
 
-For examples see the example section below.
-
-Note that, unlike \code{across()}, \code{over()} does not accept \code{NULL} as a
-value to \code{.fns}.}
+Note that \code{NULL} is not accepted as argument to \code{.fns}.}
 
 \item{...}{Additional arguments for the function calls in \code{.fns}.}
 
 \item{.names}{A glue specification that describes how to name the output
-columns. This can use \code{{vec}} to stand for the selected vector element, and
-\code{{fn}} to stand for the name of the function being applied. The default
-(\code{NULL}) is equivalent to \code{"{vec}"} for the single function case and
-\code{"{vec}_{fn}"} for the case where a list is used for \code{.fns}.}
+columns. This can use:
+\itemize{
+\item \code{{xcol}} to stand for the selected column name in \code{.xcols},
+\item \code{{ycol}} to stand for the selected column name in \code{.ycols}, and
+\item \code{{fn}} to stand for the name of the function being applied.
+}
 
-\item{.x, .y}{An atomic vector (expect 'raw' and 'complex') to apply functions to.
-Instead of a vector a <\code{\link[=selection_helpers]{selection helper}}> or anything else
-that is coercible to an atomic vector can be used. Note that \code{over()} must only
-be used to create 'new' columns and will throw an error if \code{.x} contains
-existing column names. To transform existing columns use \code{\link[dplyr:across]{dplyr::across()}}.}
+The default (\code{NULL}) is equivalent to \code{"{xcol}_{ycol}"} for the single function
+case and \code{"{xcol}_{ycol}_{fn}"} for the case where a list is used for \code{.fns}.
+
+\code{across2()} supports two additional glue specifications: \code{{pre}} and \code{{suf}}.
+They extract the common prefix or suffix of each pair of variables.
+
+Alternatively to a glue specification, a character vector of length equal
+to the number of columns to be created can be supplied to \code{.names}.
+Note that in this case, the glue specification described above is not supported.}
+
+\item{.names_fn}{Optionally, a function that is applied after the glue
+specification in \code{.names} has been evaluated. This is, for example, helpful,
+in case the resulting names need to be further cleaned or trimmed.}
+
+\item{.comb}{This argument allows to control in \code{across2x()} which
+combinations of columns are to be created. This argument only matters, if
+the columns specified in \code{.xcols} and \code{.ycols} overlap to some extent.
+\itemize{
+\item \code{"all"}, the default, will create all pairwise combinations between columns in \code{.xcols} and \code{.ycols} \emph{including all permutations} (e.g. \code{foo(column_x, column_y)} as well as \code{foo(column_y, column_x)}.
+\item \code{"unique"} will only create all unordered combinations (e.g. creates \code{foo(column_x, column_y)}, while \code{foo(column_y, column_x)} \emph{will not} be created)
+\item \verb{"minimal} same as \code{"unique"} and further skips all self-matches (e.g. \code{foo(column_x, column_x)} \emph{will not} be created)
+}}
 }
 \value{
-A tibble with one column for each element in \code{.x} and each function in \code{.fns};.
+\code{across2()} returns a tibble with one column for each pair of elements in \code{.xcols}
+and \code{.ycols} combined with each function in \code{.fns}.
+
+\code{across2x()} returns a tibble with one column for each combination between elements
+in \code{.x} and\code{.y} combined with each function in \code{.fns}.
 }
 \description{
-...
+\code{across2()} and \code{across2x()} are variants of \code{\link[dplyr:across]{dplyr::across()}} that iterate over
+two columns simultaneously. \code{across2()} loops each \emph{pair of columns} in \code{.xcols}
+and  \code{.ycols} over one or more functions, while \code{across2x()} loops
+\emph{every combination between columns} in \code{.xcols} and \code{.ycols} over one or more functions.
 }
 \section{Examples}{
 
 
-\code{over()} can only be used inside \code{dplyr::mutate} or \code{dplyr::summarise}.
-It has two main use cases. They differ in how the elements in \code{.x}
-are used. Let's first attach \code{dplyr}:\if{html}{\out{<div class="r">}}\preformatted{library(dplyr)
+For the basic functionality of \code{across()} please refer to the examples in \code{\link[dplyr:across]{dplyr::across()}}.\if{html}{\out{<div class="r">}}\preformatted{library(dplyr)
 
 # For better printing
 iris <- as_tibble(iris)
+}\if{html}{\out{</div>}}
+
+\code{across2()} can be used to transfrom pairs of variables in one or more functions.
+In the example below we want to calculate the product and the sum of all pairs of
+'Length' and 'Width' variables. We can use \code{{pre}} in the glue specification in
+\code{.names} to extract the common prefix of each pair of variables. We can further
+transform the names, in the example setting them \code{tolower} by specifying the
+\code{.names_fn} argument:\if{html}{\out{<div class="r">}}\preformatted{iris \%>\%
+  transmute(across2(ends_with("Length"),
+                    ends_with("Width"),
+                    .fns = list(product = ~ .x * .y,
+                                sum = ~ .x + .y),
+                   .names = "\{pre\}_\{fn\}",
+                   .names_fn = tolower))
+#> # A tibble: 150 x 4
+#>   sepal_product sepal_sum petal_product petal_sum
+#>           <dbl>     <dbl>         <dbl>     <dbl>
+#> 1          17.8       8.6         0.280      1.60
+#> 2          14.7       7.9         0.280      1.60
+#> 3          15.0       7.9         0.26       1.5 
+#> 4          14.3       7.7         0.3        1.7 
+#> # ... with 146 more rows
+}\if{html}{\out{</div>}}
+
+\code{across2x()} can be used to perform calculations on each combination of variables.
+In the example below we calculate the correlation between all variables in the
+\code{iris} data set for each group. To do this, we \code{group_by} 'Species' and specify
+the {tidyselect} helper \code{everything()} to \code{.xcols} and \code{.ycols}.
+\code{~ round(cor(.x, .y), 2)} gives us the correlation rounded to two digits for each
+pair of variables. We trim the rahter long variables names by replacing "Sepal"
+with "S", and "Petal" with "P" in the \code{.names_fn} argument. Finally, we are not
+interested in correlations of the same column and want to avoid excessive reults
+by setting the \code{.comb} argument to \code{"minimal"}.\if{html}{\out{<div class="r">}}\preformatted{iris \%>\%
+  group_by(Species) \%>\%
+  summarise(across2x(everything(),
+                     everything(),
+                     ~ round(cor(.x, .y), 2),
+                     .names_fn = ~ gsub("Sepal", "S", .x) \%>\%
+                                     gsub("Petal", "P", .),
+                     .comb = "minimal"))
+#> # A tibble: 3 x 7
+#>   Species S.Length_S.Width S.Length_P.Leng~ S.Length_P.Width S.Width_P.Length
+#>   <fct>              <dbl>            <dbl>            <dbl>            <dbl>
+#> 1 setosa              0.74             0.27             0.28             0.18
+#> 2 versic~             0.53             0.75             0.55             0.56
+#> 3 virgin~             0.46             0.86             0.28             0.4 
+#> # ... with 2 more variables: S.Width_P.Width <dbl>, P.Length_P.Width <dbl>
 }\if{html}{\out{</div>}}
 }
 

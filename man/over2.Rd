@@ -64,16 +64,14 @@ in case the resulting names need to be further cleaned or trimmed.}
 \code{over2()} returns a tibble with one column for each pair of elements in \code{.x}
 and \code{.y} combined with each function in \code{.fns}.
 
-\code{over2x()} returns a tibble with one column for each combination of elements
-in \code{.x}, \code{.y} and \code{.fns}.
+\code{over2x()} returns a tibble with one column for each combination between elements
+in \code{.x} and \code{.y} combined with each function in \code{.fns}.
 }
 \description{
 \code{over2()} and \code{over2x()} are variants of \code{\link[=over]{over()}} that iterate over two
-arguments simultaneously. \code{over2()} is equivalent to \code{purrr::map2()} in that it
-processes its inputs in parallel (not in the sense of multicore computing).
-Regarding its first two inputs \code{.x} and \code{.y} it is basically a simple loop.
-\code{over2x()}, on the other hand, can be understood as a nested loop, which creates
-each combination of its inputs \code{.x} and \code{.y}.
+objects simultaneously. \code{over2()} loops each \emph{pair of elements} in \code{.x} and
+\code{.y} over one or more functions, while \code{over2x()} loops
+\emph{pairwise every combination between elements} in \code{.x} a \code{.y} over one or more functions.
 }
 \section{Examples}{
 
