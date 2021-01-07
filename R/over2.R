@@ -2,9 +2,9 @@
 #'
 #' @description
 #' `over2()` and `over2x()` are variants of [over()] that iterate over two
-#' objects simultaneously. `over2()` loops each pair of elements in `.x` and
-#' `.y` over one or more functions, while `over2x()` loops every combination
-#' between elements in `.x` a `.y` over one or more functions.
+#' objects simultaneously. `over2()` loops each *pair of elements* in `.x` and
+#' `.y` over one or more functions, while `over2x()` loops
+#' *pairwise every combination between elements* in `.x` a `.y` over one or more functions.
 #'
 #' @inheritParams over
 #'

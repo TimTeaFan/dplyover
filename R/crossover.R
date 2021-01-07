@@ -3,10 +3,10 @@
 #' @description
 #' `crossover()` and `crossoverx()` combine the functionality of [dplyr::across()]
 #' with [over()] by iterating simultaneously over (i) one or more columns (`.xcols`)
-#' and (ii) elements of a vector or list (`.y`). `crossover()` loops each pair of
-#' elements in `.xcols` and  `.y` over one or more functions, while `crossoverx()`
-#' loops every combination between columns in `.xcols` and elements in `.y` over
-#' one or more functions.
+#' and (ii) elements of a vector or list (`.y`). `crossover()` loops each
+#' *pair* of columns in `.xcols` and elements  `.y` over one or more functions,
+#' while `crossoverx()` loops *every pairwise combination* between columns in `.xcols`
+#' and elements in `.y` over one or more functions.
 #'
 #' `crossover()` has one trick up it's sleeves, which sets it apart from the other
 #' functions in the <[`over-across family`][over_across_family]>: Its second input
