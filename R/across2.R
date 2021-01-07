@@ -1,17 +1,15 @@
 #' Loop two columns simultaneaously over one or several functions in 'dplyr'
 #'
 #' @description
-#' `across2()` and `across2x()` are variants of [dplyr::across()] that iterate over
-#' two columns simultaneously. `across2()` loops each pair of columns in `.xcols`
-#' and  `.ycols` over one or more functions, while `across2x()` loops every
-#' combination between columns in `.xcols` and `.ycols` over one or more functions.
+#' `across2()` and `across2x()` are variants of [`dplyr::across()`][dplyr::across] that iterate over
+#' two columns simultaneously. `across2()` loops each *pair of columns* in `.xcols`
+#' and  `.ycols` over one or more functions, while `across2x()` loops
+#' *every combination between columns* in `.xcols` and `.ycols` over one or more functions.
 #'
-#' @param .xcols,.ycols <[`tidy-select`][dplyr_tidy_select]> Columns to transform.
+#' @param .xcols,.ycols <[`tidy-select`][dplyr::dplyr_tidy_select]> Columns to transform.
 #' Note that you can not select or compute upon grouping variables.
 #'
 #' @param .fns Functions to apply to each column in `.xcols` and `.ycols`.
-#'   Note that <[`rlang's forcing operators`][rlang::nse-force]> are not
-#'   supported.
 #'
 #'   Possible values are:
 #'
@@ -33,17 +31,24 @@
 #'   The default (`NULL`) is equivalent to `"{xcol}_{ycol}"` for the single function
 #'   case and `"{xcol}_{ycol}_{fn}"` for the case where a list is used for `.fns`.
 #'
-#'   `across2()` supports two additonal glue specifications: `{pre}` and `{suf}`.
-#'   They extract the common ...
+#'   `across2()` supports two additional glue specifications: `{pre}` and `{suf}`.
+#'   They extract the common prefix or suffix of each pair of variables.
 #'
-#'
-#'   Alternatively, a character vector of length equal to the number of columns to
-#'   be created can be supplied to `.names`. Note that in this case, the glue
-#'   specification described above is not supported.
+#'   Alternatively to a glue specification, a character vector of length equal
+#'   to the number of columns to be created can be supplied to `.names`.
+#'   Note that in this case, the glue specification described above is not supported.
 #'
 #' @param .names_fn Optionally, a function that is applied after the glue
 #'   specification in `.names` has been evaluated. This is, for example, helpful,
 #'   in case the resulting names need to be further cleaned or trimmed.
+#'
+#' @param .comb  This argument allows to control in `across2x()` which
+#'   combinations of columns are to be created. This argument only matters, if
+#'   the columns specified in `.xcols` and `.ycols` overlap to some extent.
+#'
+#'   - `"all"`, the default, will create all pairwise combinations between columns in `.xcols` and `.ycols` *including all permutations* (e.g. `foo(column_x, column_y)` as well as `foo(column_y, column_x)`.
+#'   - `"unique"` will only create all unordered combinations (e.g. creates `foo(column_x, column_y)`, while `foo(column_y, column_x)` *will not* be created)
+#'   - `"minimal` same as `"unique"` and further skips all self-matches (e.g. `foo(column_x, column_x)` *will not* be created)
 #'
 #' @returns
 #' `across2()` returns a tibble with one column for each pair of elements in `.xcols`
@@ -57,7 +62,7 @@
 #' ```{r, child = "man/rmd/setup.Rmd"}
 #' ```
 #'
-#' For the basic functionality please refer to the examples in [dplyr::across()].
+#' For the basic functionality of `across()` please refer to the examples in [`dplyr::across()`][dplyr::across].
 #'
 #' ```{r, comment = "#>", collapse = TRUE}
 #' library(dplyr)
@@ -84,19 +89,26 @@
 #' ```
 #'
 #' `across2x()` can be used to perform calculations on each combination of variables.
-#' In the exm
+#' In the example below we calculate the correlation between all variables in the
+#' `iris` data set for each group. To do this, we `group_by` 'Species' and specify
+#' the {tidyselect} helper `everything()` to `.xcols` and `.ycols`.
+#' `~ round(cor(.x, .y), 2)` gives us the correlation rounded to two digits for each
+#' pair of variables. We trim the rahter long variables names by replacing "Sepal"
+#' with "S", and "Petal" with "P" in the `.names_fn` argument. Finally, we are not
+#' interested in correlations of the same column and want to avoid excessive reults
+#' by setting the `.comb` argument to `"minimal"`.
 #'
 #' ```{r, comment = "#>", collapse = TRUE}
 #' iris %>%
-#'   summarise(across2x(-Species,
-#'                      -Species,
-#'                      ~ t.test(.x, .y)$p.value < .05))
+#'   group_by(Species) %>%
+#'   summarise(across2x(everything(),
+#'                      everything(),
+#'                      ~ round(cor(.x, .y), 2),
+#'                      .names_fn = ~ gsub("Sepal", "S", .x) %>%
+#'                                      gsub("Petal", "P", .),
+#'                      .comb = "minimal"))
 #' ```
 #'
-# iris %>%
-#   summarise(across2x(c("Sepal.Length", "Sepal.Width"),
-#                      c("Sepal.Length", "Sepal.Width"),
-#                      ~ t.test(.x, .y)$p.value < .05))
 #' @export
 across2 <- function(.xcols, .ycols, .fns, ..., .names = NULL, .names_fn = NULL){
 
@@ -205,7 +217,7 @@ across2_setup <- function(xcols, ycols, fns, names, cnames, data, names_fn) {
   # setup control flow:
   vars_no <- length(xvars) * length(fns)
   maybe_glue <- any(grepl("{.*}", names, perl = TRUE))
-  is_glue <- any(grepl("{(xcol|ycol|fn|pre|suf)}", names, perl = TRUE))
+  is_glue <- any(grepl("{(xcol|ycol|fn|pre|suf|idx)}", names, perl = TRUE))
 
   # if .names use glue syntax:
   if (is_glue) {
@@ -216,13 +228,16 @@ across2_setup <- function(xcols, ycols, fns, names, cnames, data, names_fn) {
                      x = paste0("`.names` is of length: ", length(names), ".")))
     }
 
+    # setup index
+    idx <- as.character(seq_len(vars_no))
+
     # setup pre and suf
     names2 <- names %||% ""
     pre1 <- NULL
     suf1 <- NULL
 
     # check pre and suf
-    check_pre <- grepl("{pre}", names2, perl = TRUE) # any / all ?
+    check_pre <- grepl("{pre}", names2, perl = TRUE)
     check_suf <- grepl("{suf}", names2, perl = TRUE)
 
     if (check_pre || check_suf) {
@@ -235,26 +250,36 @@ across2_setup <- function(xcols, ycols, fns, names, cnames, data, names_fn) {
       }
 
       var_nms <- purrr::flatten(purrr::map2(xvars, yvars, ~ list(c(.x, .y))))
-      pre1 <- purrr::map_chr(var_nms, ~ get_affix(.x, "prefix"))
-      suf1 <- purrr::map_chr(var_nms, ~ get_affix(.x, "suffix"))
+      pre1 <- purrr::map(var_nms, ~ get_affix(.x, "prefix"))
+      suf1 <- purrr::map(var_nms, ~ get_affix(.x, "suffix"))
 
-      if (check_pre && length(pre1) < 1) {
+      check_pre1 <- any(purrr::map_lgl(pre1, rlang::is_empty))
+      check_suf1 <- any(purrr::map_lgl(suf1, rlang::is_empty))
+
+
+
+      if (check_pre && check_pre1) {
+
         rlang::abort(c("Problem with `across2()` input `.names`.",
-                       i = "When `{pre}` is used inside `.names` the input variables in `.xcols` and `.ycols` must share a common prefix of length > 0.",
-                       x = "No shared prefix could be extracted.",
-                       i = "Use `test_prefix()` to check why the extraction doesn't yield the expected result."))
+                       i = "When `{pre}` is used inside `.names` each pair of input variables in `.xcols` and `.ycols` must share a common prefix of length > 0.",
+                       x = "For at least one pair of variables a shared prefix could not be extracted.",
+                       i = "Use `test_prefix()` to see the prefixes for each variable pair."))
       }
-      if (check_suf && length(suf1) < 1) {
+      pre1 <- unlist(pre1)
+
+      if (check_suf && check_suf1) {
         rlang::abort(c("Problem with `across2()` input `.names`.",
-                       i = "When `{suf}` is used inside `.names` the input variables in `.xcols` and `.ycols` must share a common suffix of length > 0.",
-                       x = "No shared suffix could be extracted.",
-                       i = "Use `test_suffix()` to check why the extraction doesn't yield the expected result."))
+                       i = "When `{suf}` is used inside `.names` each pair of input variables in `.xcols` and `.ycols` must share a common suffix of length > 0.",
+                       x = "For at least one pair of variables a shared suffix could not be extracted.",
+                       i = "Use `test_suffix()` to see the suffixes for each variable pair."))
       }
+      suf1 <- unlist(suf1)
     }
 
     names <- vctrs::vec_as_names(glue::glue(names,
                                             xcol = rep(xvars, each = length(fns)),
                                             ycol = rep(yvars, each = length(fns)),
+                                            idx = idx,
                                             pre = rep(pre1, each = length(fns)),
                                             suf = rep(suf1, each = length(fns)),
                                             fn = rep(names_fns, length(xcols))), # here vars1 instead
@@ -266,7 +291,7 @@ across2_setup <- function(xcols, ycols, fns, names, cnames, data, names_fn) {
     if (maybe_glue && length(names) == 1 && vars_no > 1) {
       rlang::abort(c("Problem with `across2()`  input `.names`.",
                      x = "Unrecognized glue specification `{...}` detected in `.names`.",
-                     i = "`.names` only supports the following expressions: '{xcol}'. '{ycol}' or '{fn}'."
+                     i = "`.names` only supports the following expressions: '{xcol}', '{ycol}', '{idx}' or '{fn}'."
       ))
     }
     # check if non-glue names are unique
@@ -290,7 +315,8 @@ across2_setup <- function(xcols, ycols, fns, names, cnames, data, names_fn) {
   value
 }
 
-
+#' @rdname across2
+#' @export
 across2x <- function(.xcols, .ycols, .fns, ..., .names = NULL, .names_fn = NULL, .comb = "all"){
 
   comb <- match.arg(.comb, c("all", "unique", "minimal"), several.ok = FALSE)
@@ -364,7 +390,7 @@ across2x <- function(.xcols, .ycols, .fns, ..., .names = NULL, .names_fn = NULL,
 
   size <- vctrs::vec_size_common(!!!out)
   out <- vctrs::vec_recycle_common(!!!out, .size = size)
-  if (comb != "all" && length(.names) < 1 && setup$is_glue) { # check is is_glue is needed
+  if (comb != "all" && length(.names) > 1 && setup$is_glue) { # check is is_glue is needed
 
     out <- purrr::compact(out)
 
@@ -427,7 +453,7 @@ across2x_setup <- function(xcols, ycols, fns, names, cnames, data, names_fn, com
   # setup control flow:
   vars_no <- length(xvars) * length(yvars) * length(fns)
   maybe_glue <- any(grepl("{.*}", names, perl = TRUE))
-  is_glue <- any(grepl("{(xcol|ycol|fn)}", names, perl = TRUE))
+  is_glue <- any(grepl("{(xcol|ycol|fn|idx)}", names, perl = TRUE))
 
   # if .names use glue syntax:
   if (is_glue) {
@@ -438,6 +464,8 @@ across2x_setup <- function(xcols, ycols, fns, names, cnames, data, names_fn, com
                      x = paste0("`.names` is of length: ", length(names), ".")))
     }
 
+
+
     n_xcols <- length(xvars)
     n_ycols <- length(yvars)
     n_nm_fns <- length(names_fns)
@@ -445,7 +473,10 @@ across2x_setup <- function(xcols, ycols, fns, names, cnames, data, names_fn, com
     seq_n_ycols <- seq_len(n_ycols)
     seq_nm_fns <- seq_len(n_nm_fns)
     k <- 1L
-    out <- vector("character", n_xcols * n_ycols * n_nm_fns)
+
+    idx <- as.character(seq_len(vars_no))
+
+    out <- vector("character", vars_no)
 
     for (i in seq_n_xcols) {
       for(l in seq_n_ycols) {
@@ -453,6 +484,7 @@ across2x_setup <- function(xcols, ycols, fns, names, cnames, data, names_fn, com
           out[[k]] <- glue::glue(names,
                                  xcol = xvars[[i]],
                                  ycol = yvars[[l]],
+                                 idx = idx[[k]],
                                  fn = names_fns[[j]])
           k <- k + 1L
         }
@@ -467,7 +499,7 @@ across2x_setup <- function(xcols, ycols, fns, names, cnames, data, names_fn, com
     if (maybe_glue && length(names) == 1 && vars_no > 1) {
       rlang::abort(c("Problem with `across2x()` input `.names`.",
                      x = "Unrecognized glue specification `{...}` detected in `.names`.",
-                     i = "`.names` only supports the following expressions: '{xcol}'. '{ycol}' or '{fn}'."
+                     i = "`.names` only supports the following expressions: '{xcol}'. '{ycol}', '{idx}' or '{fn}'."
       ))
     }
     # check if non-glue names are unique
