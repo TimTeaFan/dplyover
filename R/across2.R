@@ -282,7 +282,7 @@ across2_setup <- function(xcols, ycols, fns, names, cnames, data, names_fn) {
                                             idx = idx,
                                             pre = rep(pre1, each = length(fns)),
                                             suf = rep(suf1, each = length(fns)),
-                                            fn = rep(names_fns, length(xcols))), # here vars1 instead
+                                            fn = rep(names_fns, length(xvars))), # here vars1 instead
                                  repair = "check_unique")
 
     # no correct glue syntax detected
