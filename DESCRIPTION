@@ -17,7 +17,9 @@ RoxygenNote: 7.1.1
 URL: https://github.com/TimTeaFan/dplyover
 BugReports: https://github.com/TimTeaFan/dplyover/issues
 Suggests: 
-    testthat
+    testthat,
+    knitr,
+    rmarkdown
 Imports: 
     dplyr (>= 1.0.0),
     rlang (>= 0.4.7),
@@ -28,4 +30,4 @@ Imports:
 Depends: 
     R (>= 3.2.0)
 Config/testthat/edition: 3
-    
+VignetteBuilder: knitr
