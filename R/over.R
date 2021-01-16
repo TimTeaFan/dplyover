@@ -275,44 +275,94 @@
 #' @export
 over <- function(.x, .fns, ..., .names = NULL, .names_fn = NULL){
 
-  .data <- tryCatch({
-    dplyr::cur_data()
+  deparse_call <- deparse(sys.call(),
+                          width.cutoff = 500L,
+                          backtick = TRUE,
+                          nlines = 1L,
+                          control = NULL)
+
+  # get group id for setup
+  grp_id <- tryCatch({
+    dplyr::cur_group_id()
   }, error = function(e) {
     rlang::abort("`over()` must only be used inside dplyr verbs")
   })
 
-  .cnames <- names(.data)
+# meta setup
+  par_frame <- parent.frame()
+  setup_exists <- exists(".__dplyover_setup__.", envir = par_frame)
 
-  check_keep(type = "keep")
+  # if setup already exists
+  if (setup_exists && grp_id > 1L) {
+    # get data
+    meta_setup <- get(".__dplyover_setup__.", envir = par_frame)
+    # get call number
+    call_no <- which.min(meta_setup$call_his)
+    call_id <- paste0("call", call_no)
+    # update "call_his"
+    par_frame[[".__dplyover_setup__."]][["call_his"]][call_no] <- grp_id
+    # check call
+    if (!identical(meta_setup$call_lang[call_no], deparse_call)) {
+      rlang::abort(c("Problem with the way `over()` was called.",
+                     i = "It seems like different calls to `over()` were made depending on the group_id.",
+                     x = "For technical reasons, it is not possible that the call to `over()` depends on the group_id."))
+    }
+    # get data from existing call
+    .cnames <- meta_setup[[call_id]]$cnames
+    setup <- meta_setup[[call_id]]$setup
 
-  setup <- over_setup(.x,
-                      fns = .fns,
-                      names = .names,
-                      cnames = .cnames,
-                      names_fn = .names_fn)
+  # if this is a new call to over: update par_frame
+  } else {
+    if (!setup_exists) {
+    # new setup
+      check_keep(type = "keep")
+      par_frame[[".__dplyover_setup__."]][["call_his"]] <- grp_id
+      par_frame[[".__dplyover_setup__."]][["call_lang"]] <- deparse_call
+      call_id <- paste0("call", 1)
 
-  x <- setup$x
+    # existing setup, but new call
+    } else {
+      meta_setup <- get(".__dplyover_setup__.", envir = par_frame)
+      # register new call
+      par_frame[[".__dplyover_setup__."]][["call_his"]] <- c(meta_setup$call_his, 1)
+      par_frame[[".__dplyover_setup__."]][["call_lang"]] <- c(meta_setup$call_lang, deparse_call)
+      # get number of current call
+      call_id <- paste0("call", which.min(meta_setup$call_his))
+    }
 
-  if (length(x) == 0L) {
-    return(tibble::new_tibble(list(), nrow = 1L))
+    # write data into parent frame
+    .data <-  dplyr::cur_data()
+    par_frame[[".__dplyover_setup__."]][[call_id]][["cnames"]] <- .cnames <- names(.data)
+    par_frame[[".__dplyover_setup__."]][[call_id]][["setup"]] <- setup <- over_setup(
+      .x,
+      fns = .fns,
+      names = .names,
+      cnames = .cnames,
+      names_fn = .names_fn)
+
+    # checks
+    if (length(setup$x) == 0L) {
+      return(tibble::new_tibble(list(), nrow = 1L))
+    }
+
+    if (any(setup$names %in% .cnames)) {
+      dnames <- .cnames[.cnames %in% setup$names]
+      names_l <- ifelse(length(dnames) > 3, 3, length(dnames))
+
+      rlang::abort(c("Problem with `over()`.",
+                     i = "Output must not contain existing column names.",
+                     x = paste0("`over()` tried to create the following existing column names: ",
+                                paste0(paste0("'", dnames[seq_along(1:names_l)], "'"), collapse = ", "),
+                                ifelse(length(dnames) > 3, " etc. ", ".")),
+                     i = "If you want to transform existing columns try using `dplyr::across()`.",
+                     i = "If you want to change the output names use the `.names` argument."))
+    }
   }
 
+  # actual function starts here
+  x <- setup$x
   fns <- setup$fns
   names <- setup$names
-
-  if (any(names %in% .cnames)) {
-    dnames <- .cnames[.cnames %in% names]
-    names_l <- ifelse(length(dnames) > 3, 3, length(dnames))
-
-    rlang::abort(c("Problem with `over()`.",
-                   i = "Output must not contain existing column names.",
-                   x = paste0("`over()` tried to create the following existing column names: ",
-                              paste0(paste0("'", dnames[seq_along(1:names_l)], "'"), collapse = ", "),
-                              ifelse(length(dnames) > 3, " etc. ", ".")),
-                   i = "If you want to transform existing columns try using `dplyr::across()`.",
-                   i = "If you want to change the output names use the `.names` argument."))
-
-  }
 
   n_x <- length(x)
   n_fns <- length(fns)

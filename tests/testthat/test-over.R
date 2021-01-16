@@ -561,42 +561,21 @@ test_that("over() gives meaningful messages", {
 
 })
 
-# FAILING
-#
-# test_that("monitoring cache - over() can be used twice in the same expression", {
-#   df <- tibble(a = 1, b = 2)
-#   expect_equal(
-#     mutate(df, x = ncol(over(c(.data$a, .data$b), mean) + ncol(over(.data$b, mean)))),
-#     tibble(a = 1, b = 2, x = 3)
-#     )
-# })
+test_that("monitoring cache - over() can be used twice in the same expression", {
+  df <- tibble(a = 1, b = 2)
+  expect_equal(
+    mutate(df, x = ncol(over(c(1, 2), mean)) + ncol(over(3, mean))),
+    tibble(a = 1, b = 2, x = 3)
+  )
+})
 
 test_that("monitoring cache - over() can be used in separate expressions", {
   df <- tibble(a = 1, b = 2)
   expect_equal(
     mutate(df,
-           x = ncol(over(c(.data$a, .data$b), mean)),
+           x = ncol(over(c(1, 2), mean)),
            y = ncol(over(.data$x, mean))),
     tibble(a = 1, b = 2, x = 2, y = 1)
-  )
-})
-
-test_that("monitoring cache - over() usage can depend on the group id", {
-  df <- tibble(g = 1:2, a = 1:2, b = 3:4)
-  df <- group_by(df, g)
-
-  switcher <- function() {
-    if_else(cur_group_id() == 1L,
-            over(cur_data()$a, mean, .names = "c")$c,
-            over(cur_data()$b, mean, .names = "c")$c)
-  }
-
-  expect <- df
-  expect$x <- c(1L, 4L)
-
-  expect_equal(
-    mutate(df, x = switcher()),
-    expect
   )
 })
 
@@ -660,7 +639,7 @@ test_that("over(<empty set>, foo) returns a data frame with 1 row", {
 # test_that("over() uses environment from the current quosure (#5460)", {
 #   # If the data frame `y` is selected, causes a subscript conversion
 #   # error since it is fractional
-#   df <- data.frame(x = 1, y = 2.4)
+#   df <- data.frame(x = c(1:2), y = c(1.1, 2.4))
 #   y <- "x"
 #   expect_equal(df %>% summarise(over(.env$y, mean, .names = "x_idx")), data.frame(x = 1))
 #   expect_equal(df %>% mutate(over(all_of(y), mean)), df)
@@ -741,6 +720,19 @@ test_that("over() custom errors", {
     mutate(iris, over("Sepal.Length", paste))
   )
 
+  # error if over is called depending on group id
+    expect_error({
+      df <- tibble(g = 1:2, a = 1:2, b = 3:4)
+      df <- group_by(df, g)
+
+      switcher <- function() {
+        if_else(cur_group_id() == 1L,
+                over(cur_data()$a, mean, .names = "c")$c,
+                over(cur_data()$b, mean, .names = "c")$c)
+      }
+
+      mutate(df, x = switcher())
+    })
 })
 
 # dplyr compability
@@ -790,7 +782,6 @@ test_that("over() can be used with other functions that use `.keep`", {
                             nest_by(Species, .keep = TRUE) %>%
                             mutate(over(1, paste))))},
     NA)
-
 
 })
 
