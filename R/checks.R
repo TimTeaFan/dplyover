@@ -11,7 +11,7 @@ check_keep <- function(type = c("keep", "summarise")) {
 
   call_st <- sys.calls()
 
-  calling_fn <- call_st[[sys.nframe() - 1]][[1]]
+  calling_fn <- call_st[[sys.nframe() - 2]][[1]]
 
   res <- lapply(call_st, function(x) {
 
@@ -60,3 +60,27 @@ check_keep <- function(type = c("keep", "summarise")) {
 }
 
 
+
+warn_keep <- function() {
+
+  trace_bck <- rlang::trace_back()
+  call_fns <- lapply(trace_bck$calls, function(x) { `[[`(x, 1) })
+  limit <- min(which(grepl("^dplyover::", call_fns)))
+  mut_id <- which(grepl("^dplyr:::mutate", call_fns[1:limit - 1]))
+
+  if (length(mut_id) > 0) {
+
+    calling_fn <- sub(".*::(.*)", "\\1", "dplyover::over")
+    last_mut <- as.list(trace_bck$calls[[max(mut_id)-2]])
+
+    keep_arg <- grepl("^\\.keep$", names(last_mut), perl = TRUE)
+
+    if (any(keep_arg)) {
+      keep_val <- last_mut[keep_arg]
+
+      if (keep_val %in% c("used", "unused")) {
+        rlang::warn(glue::glue("`{calling_fn}()` does not support the `.keep` argument in `dplyr::mutate()` when set to 'used' or 'unused'."))
+      }
+    }
+  }
+}

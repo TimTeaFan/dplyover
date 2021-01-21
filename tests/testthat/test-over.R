@@ -508,28 +508,9 @@ test_that("over() gives meaningful messages", {
   # inside dplyr
   expect_snapshot_error(over())
 
-  # mutate .keep = "used"
-  expect_snapshot_error(
-    mutate(tibble(x = 1),
-           over(1, mean),
-           .keep = "used")
-    )
-
-  # mutate .keep = "unused"
-  expect_snapshot_error(
-    mutate(tibble(x = 1),
-           over(1, mean),
-           .keep = "unused")
-  )
-
   # .fns must be function
   expect_snapshot_error(
     summarise(tibble(x = 1), over(1, 42))
-  )
-
-  # no existing colnames
-  expect_snapshot_error(
-    mutate(iris, over("Sepal.Length", paste))
   )
 
   # vector to .names too short
@@ -613,6 +594,26 @@ test_that("over(<empty set>, foo) returns a data frame with 1 row", {
   })
 })
 
+test_that("monitoring cache - over() usage can depend on the group id", {
+
+  df <- tibble(g = 1:2, a = 1:2, b = 3:4)
+  df <- group_by(df, g)
+
+  switcher <- function() {
+    if_else(cur_group_id() == 1L,
+            over(cur_data()$a, mean, .names = "c")$c,
+            over(cur_data()$b, mean, .names = "c")$c)
+  }
+
+  expect <- df
+  expect$x <- c(1L, 4L)
+
+  expect_equal(
+    mutate(df, x = switcher()),
+    expect
+    )
+})
+
 
 # issues not adapted in over code yet
 
@@ -684,7 +685,7 @@ test_that("over(<empty set>, foo) returns a data frame with 1 row", {
 
 # expected errors
 
-test_that("over() custom errors", {
+test_that("over() custom errors and warnings", {
 
   # inside dplyr
   expect_error(over())
@@ -695,44 +696,29 @@ test_that("over() custom errors", {
   )
 
   # check keep used
-    expect_error(
+    expect_warning({
     mutate(tibble(x = 1),
            over(1, mean),
-           .keep = "used")
+           .keep = "used")},
+    "does not support the `.keep`"
   )
 
   # check keep unused
-    expect_error(
+    expect_warning({
     mutate(tibble(x = 1),
            over(1, mean),
-           .keep = "unused")
+           .keep = "unused")},
+    "does not support the `.keep`"
   )
   # check even if function is renamed:
-    expect_error({
+    expect_warning({
      myfun <- dplyr::mutate
       myfun(tibble(x = 1),
             over(1, mean),
-            .keep = "unused")
-    })
+            .keep = "unused")},
+      "does not support the `.keep`"
+    )
 
-  # no existing colnames
-    expect_error(
-    mutate(iris, over("Sepal.Length", paste))
-  )
-
-  # error if over is called depending on group id
-    expect_error({
-      df <- tibble(g = 1:2, a = 1:2, b = 3:4)
-      df <- group_by(df, g)
-
-      switcher <- function() {
-        if_else(cur_group_id() == 1L,
-                over(cur_data()$a, mean, .names = "c")$c,
-                over(cur_data()$b, mean, .names = "c")$c)
-      }
-
-      mutate(df, x = switcher())
-    })
 })
 
 # dplyr compability
@@ -751,31 +737,30 @@ test_that("over() can use cur_data()", {
 
 })
 
-test_that("over() can be used with other functions that use `.keep`", {
+test_that("over() can be used with other functions that use `.keep` without warning", {
 
-  expect_error({
+  expect_warning({
     iris %>%
       mutate(new = 1, .keep = "unused") %>%
       nest_by(Species, .keep = FALSE) %>%
       mutate(over(1, paste))},
     NA)
 
-  expect_error({
+  expect_warning({
     iris %>%
       nest_by(Sepal.Length < 6, .keep = TRUE) %>%
       mutate(data2 = list(nest_by(data, Species, .keep = TRUE) %>%
                             mutate(over(1, paste))))},
     NA)
 
-  # FAILIING:
-  # TODO: fix check()
-  # expect_error({
-  #   iris %>%
-  #     mutate(data2 = list(mutate(over(1, paste))),
-  #            .keep = "unused")},
-  #   NA)
+  expect_warning({
+    iris %>%
+      mutate(data2 = list(mutate(over(1, paste))),
+             .keep = "unused")},
+    "does not support the `.keep`"
+    )
 
-  expect_error({
+  expect_warning({
     iris %>%
       nest_by(Sepal.Length < 6, .keep = TRUE) %>%
       mutate(data2 = list(mutate(data, new = 1) %>%
