@@ -174,20 +174,24 @@ crossover <- function(.xcols = dplyr::everything(), .y, .fns, ..., .names = NULL
   .data <- tryCatch({
     dplyr::cur_data()
   }, error = function(e) {
-    rlang::abort("`crossover()` must only be used inside dplyr verbs")
+    rlang::abort("`crossover()` must only be used inside dplyr verbs.")
   })
 
-  .cnames <- names(.data)
+  deparse_call <- deparse(sys.call(),
+                          width.cutoff = 500L,
+                          backtick = TRUE,
+                          nlines = 1L,
+                          control = NULL)
 
-  check_keep()
-
-  setup <- crossover_setup({{.xcols}},
-                       .y,
-                       fns = .fns,
-                       names = .names,
-                       cnames = .cnames,
-                       data = .data,
-                       names_fn = .names_fn)
+  setup <- meta_setup(grp_id = dplyr::cur_group_id(),
+                      dep_call = deparse_call,
+                      par_frame = parent.frame(),
+                      setup_fn = "crossover_setup",
+                      cols = rlang::enquo(.xcols),
+                      y1 = .y,
+                      fns = .fns,
+                      names = .names,
+                      names_fn = .names_fn)
 
   vars <- setup$vars
   y <- setup$y
@@ -199,26 +203,12 @@ crossover <- function(.xcols = dplyr::everything(), .y, .fns, ..., .names = NULL
   fns <- setup$fns
   names <- setup$names
 
-  if (any(names %in% .cnames)) {
-    dnames <- .cnames[.cnames %in% names]
-    names_l <- ifelse(length(dnames) > 3, 3, length(dnames))
-
-    rlang::abort(c("Problem with `crossover()`.",
-                   i = "Output must not contain existing column names.",
-                   x = paste0("`crossover()` tried to create the following existing column names: ",
-                              paste0(paste0("'", dnames[seq_along(1:names_l)], "'"), collapse = ", "),
-                              ifelse(length(dnames) > 3, " etc. ", ".")),
-                   i = "If you want to transform existing columns try using `across()`.",
-                   i = "If you want to change the output names use the `.names` argument."))
-
-  }
-
   if (setup$each) {
-    data <- dplyr::select(dplyr::cur_data(), dplyr::all_of(unique(vars)))
+    data <- dplyr::select(.data, dplyr::all_of(unique(vars)))
     data_ls <- as.list(data)[vars]
     data <- tibble::new_tibble(data_ls, nrow = nrow(data))
   } else {
-    data <- dplyr::select(dplyr::cur_data(), dplyr::all_of(vars))
+    data <- dplyr::select(.data, dplyr::all_of(vars))
   }
 
   n_cols <- length(data)
@@ -246,10 +236,10 @@ crossover <- function(.xcols = dplyr::everything(), .y, .fns, ..., .names = NULL
 }
 
 
-crossover_setup <- function(cols, y1, fns, names, cnames, data, names_fn, each = FALSE) {
+crossover_setup <- function(cols, y1, fns, names, names_fn, each = FALSE) {
 
   # setup: cols
-  cols <- rlang::enquo(cols)
+  data <- dplyr::cur_data()
   cols <- rlang::quo_set_env(cols,
                              data_mask_top(rlang::quo_get_env(cols),
                                            recursive = FALSE,
@@ -262,11 +252,18 @@ crossover_setup <- function(cols, y1, fns, names, cnames, data, names_fn, each =
   # if .y is function:
   if (is.function(y1) || rlang::is_formula(y1)) {
 
+    if (length(dplyr::cur_group()) > 0) {
+      rlang::abort(c("Problem with `crossover()` input `.y`.",
+                     i = "If `.y` is a function the underlying data must not be grouped.",
+                     x = "`crossover()` was used on a grouped data.frame."))
+    }
+
     # expand vars
     y1 <- rlang::as_function(y1)
     y1 <- purrr::map(dplyr::select(data, !! cols), y1)
     vars <- unlist(purrr::imap(y1, ~ rep(.y, length(.x))))
     y1 <- unlist(y1, recursive = FALSE)
+
     if (!is.list(y1)) y1 <- unname(y1)
 
     # set flag `each` if neccesary
@@ -397,20 +394,24 @@ crossoverx <- function(.xcols = dplyr::everything(), .y, .fns, ..., .names = NUL
   .data <- tryCatch({
     dplyr::cur_data()
   }, error = function(e) {
-    rlang::abort("`crossoverx()` must only be used inside dplyr verbs")
+    rlang::abort("`crossoverx()` must only be used inside dplyr verbs.")
   })
 
-  .cnames <- names(.data)
+  deparse_call <- deparse(sys.call(),
+                          width.cutoff = 500L,
+                          backtick = TRUE,
+                          nlines = 1L,
+                          control = NULL)
 
-  check_keep()
-
-  setup <- crossoverx_setup({{.xcols}},
-                           .y,
-                           fns = .fns,
-                           names = .names,
-                           cnames = .cnames,
-                           data = .data,
-                           names_fn = .names_fn)
+  setup <- meta_setup(grp_id = dplyr::cur_group_id(),
+                      dep_call = deparse_call,
+                      par_frame = parent.frame(),
+                      setup_fn = "crossoverx_setup",
+                      cols = rlang::enquo(.xcols),
+                      y1 = .y,
+                      fns = .fns,
+                      names = .names,
+                      names_fn = .names_fn)
 
   vars <- setup$vars
   y <- setup$y
@@ -421,20 +422,6 @@ crossoverx <- function(.xcols = dplyr::everything(), .y, .fns, ..., .names = NUL
 
   fns <- setup$fns
   names <- setup$names
-
-  if (any(names %in% .cnames)) {
-    dnames <- .cnames[.cnames %in% names]
-    names_l <- ifelse(length(dnames) > 3, 3, length(dnames))
-
-    rlang::abort(c("Problem with `crossoverx()`.",
-                   i = "Output must not contain existing column names.",
-                   x = paste0("`crossover()` tried to create the following existing column names: ",
-                              paste0(paste0("'", dnames[seq_along(1:names_l)], "'"), collapse = ", "),
-                              ifelse(length(dnames) > 3, " etc. ", ".")),
-                   i = "If you want to transform existing columns try using `across()`.",
-                   i = "If you want to change the output names use the `.names` argument."))
-
-  }
 
   data <- dplyr::select(dplyr::cur_data(), dplyr::all_of(vars))
 
@@ -467,10 +454,10 @@ crossoverx <- function(.xcols = dplyr::everything(), .y, .fns, ..., .names = NUL
 }
 
 
-crossoverx_setup <- function(cols, y1, fns, names, cnames, data, names_fn) {
+crossoverx_setup <- function(cols, y1, fns, names, names_fn) {
 
   # setup: cols
-  cols <- rlang::enquo(cols)
+  data <- dplyr::cur_data()[1, ]
   cols <- rlang::quo_set_env(cols,
                              data_mask_top(rlang::quo_get_env(cols),
                                            recursive = FALSE,

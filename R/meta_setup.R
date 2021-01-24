@@ -1,18 +1,10 @@
-meta_setup <- function(grp_id, dep_call, par_frame, setup_fn, ..., data = NULL, xcols = NULL, ycols = NULL) {
+meta_setup <- function(grp_id, dep_call, par_frame, setup_fn, ...) { # data = NULL, xcols = NULL, ycols = NULL
 
   call_nm <- sub("([a-z0-9]+).*", "\\1()", dep_call)
 
   dots <- rlang::list2(...)
 
   wrong_setup <- FALSE
-
-  # if (!is.null(xcols)) {
-  #   dots[["xcols"]] <- xcols
-  # }
-  #
-  # if (!is.null(ycols)) {
-  #   dots[["ycols"]] <- ycols
-  # }
 
   # meta setup
   setup_exists <- exists(".__dplyover_setup__.", envir = par_frame)

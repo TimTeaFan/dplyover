@@ -553,28 +553,23 @@ test_that("crossover() custom errors", {
   )
 
   # check keep used
-  expect_error(
-    mutate(tibble(x = 1), crossover(x, 2, mean), .keep = "used")
+  expect_warning(
+    mutate(tibble(x = 1), crossover(x, 2, mean), .keep = "used"),
+    "does not support the `.keep`"
   )
-  expect_error(
-    mutate(tibble(x = 1), crossoverx(x, 2, mean), .keep = "used")
+  expect_warning(
+    mutate(tibble(x = 1), crossoverx(x, 2, mean), .keep = "used"),
+    "does not support the `.keep`"
   )
 
   # check keep unused
-  expect_error(
-    mutate(tibble(x = 1), crossover(x, 2, mean), .keep = "unused")
+  expect_warning(
+    mutate(tibble(x = 1), crossover(x, 2, mean), .keep = "unused"),
+    "does not support the `.keep`"
   )
-  expect_error(
-    mutate(tibble(x = 1), crossoverx(x, 2, mean), .keep = "unused")
-  )
-
-  # no existing colnames
-  expect_error(
-    mutate(iris, crossover(Sepal.Length, 2, paste, .names = "{xcol}"))
-  )
-  expect_error(
-    mutate(iris, crossoverx("Sepal.Length", c(2,3), paste,
-                        .names = c("Sepal.Length", "Sepal.Width")))
+  expect_warning(
+    mutate(tibble(x = 1), crossoverx(x, 2, mean), .keep = "unused"),
+    "does not support the `.keep`"
   )
 
   # over2 specific errors

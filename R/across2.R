@@ -46,9 +46,13 @@
 #'   combinations of columns are to be created. This argument only matters, if
 #'   the columns specified in `.xcols` and `.ycols` overlap to some extent.
 #'
-#'   - `"all"`, the default, will create all pairwise combinations between columns in `.xcols` and `.ycols` *including all permutations* (e.g. `foo(column_x, column_y)` as well as `foo(column_y, column_x)`.
-#'   - `"unique"` will only create all unordered combinations (e.g. creates `foo(column_x, column_y)`, while `foo(column_y, column_x)` *will not* be created)
-#'   - `"minimal` same as `"unique"` and further skips all self-matches (e.g. `foo(column_x, column_x)` *will not* be created)
+#'   - `"all"`, the default, will create all pairwise combinations between columns
+#'   in `.xcols` and `.ycols` *including all permutations* (e.g.
+#'   `foo(column_x, column_y)` as well as `foo(column_y, column_x)`.
+#'   - `"unique"` will only create all unordered combinations (e.g. creates
+#'   `foo(column_x, column_y)`, while `foo(column_y, column_x)` *will not* be created)
+#'   - `"minimal` same as `"unique"` and further skips all self-matches (e.g.
+#'   `foo(column_x, column_x)` *will not* be created)
 #'
 #' @returns
 #' `across2()` returns a tibble with one column for each pair of elements in `.xcols`
@@ -62,7 +66,8 @@
 #' ```{r, child = "man/rmd/setup.Rmd"}
 #' ```
 #'
-#' For the basic functionality of `across()` please refer to the examples in [`dplyr::across()`][dplyr::across].
+#' For the basic functionality of `across()` please refer to the examples in
+#' [`dplyr::across()`][dplyr::across].
 #'
 #' ```{r, comment = "#>", collapse = TRUE}
 #' library(dplyr)
@@ -112,23 +117,27 @@
 #' @export
 across2 <- function(.xcols, .ycols, .fns, ..., .names = NULL, .names_fn = NULL){
 
-  .data <- tryCatch({
+   .data <- tryCatch({
     dplyr::cur_data()
   }, error = function(e) {
-    rlang::abort("`across2()` must only be used inside dplyr verbs")
+    rlang::abort("`across2()` must only be used inside dplyr verbs.")
   })
 
-  .cnames <- names(.data)
+  deparse_call <- deparse(sys.call(),
+                          width.cutoff = 500L,
+                          backtick = TRUE,
+                          nlines = 1L,
+                          control = NULL)
 
-  check_keep()
-
-  setup <- across2_setup({{.xcols}},
-                         {{.ycols}},
-                         fns = .fns,
-                         names = .names,
-                         cnames = .cnames,
-                         data = .data,
-                         names_fn = .names_fn)
+  setup <- meta_setup(grp_id = dplyr::cur_group_id(),
+                      dep_call = deparse_call,
+                      par_frame = parent.frame(),
+                      setup_fn = "across2_setup",
+                      xcols = rlang::enquo(.xcols),
+                      ycols = rlang::enquo(.ycols),
+                      fns = .fns,
+                      names = .names,
+                      names_fn = .names_fn)
 
   xvars <- setup$xvars
   yvars <- setup$yvars
@@ -140,8 +149,8 @@ across2 <- function(.xcols, .ycols, .fns, ..., .names = NULL, .names_fn = NULL){
   fns <- setup$fns
   names <- setup$names
 
-  xdata <- dplyr::select(dplyr::cur_data(), dplyr::all_of(xvars))
-  ydata <- dplyr::select(dplyr::cur_data(), dplyr::all_of(yvars))
+  xdata <- .data[xvars]
+  ydata <- .data[yvars]
 
   n_xcols <- length(xdata)
   n_fns <- length(fns)
@@ -166,11 +175,10 @@ across2 <- function(.xcols, .ycols, .fns, ..., .names = NULL, .names_fn = NULL){
 }
 
 
-across2_setup <- function(xcols, ycols, fns, names, cnames, data, names_fn) {
+across2_setup <- function(xcols, ycols, fns, names, data, names_fn) {
 
   # setup: cols
-  xcols <- rlang::enquo(xcols)
-  ycols <- rlang::enquo(ycols)
+  data <- dplyr::cur_data()[1, ]
   xcols <- rlang::quo_set_env(xcols,
                               data_mask_top(rlang::quo_get_env(xcols),
                                             recursive = FALSE,
@@ -256,8 +264,6 @@ across2_setup <- function(xcols, ycols, fns, names, cnames, data, names_fn) {
       check_pre1 <- any(purrr::map_lgl(pre1, rlang::is_empty))
       check_suf1 <- any(purrr::map_lgl(suf1, rlang::is_empty))
 
-
-
       if (check_pre && check_pre1) {
 
         rlang::abort(c("Problem with `across2()` input `.names`.",
@@ -282,7 +288,7 @@ across2_setup <- function(xcols, ycols, fns, names, cnames, data, names_fn) {
                                             idx = idx,
                                             pre = rep(pre1, each = length(fns)),
                                             suf = rep(suf1, each = length(fns)),
-                                            fn = rep(names_fns, length(xvars))), # here vars1 instead
+                                            fn = rep(names_fns, length(xvars))),
                                  repair = "check_unique")
 
     # no correct glue syntax detected
@@ -324,21 +330,25 @@ across2x <- function(.xcols, .ycols, .fns, ..., .names = NULL, .names_fn = NULL,
   .data <- tryCatch({
     dplyr::cur_data()
   }, error = function(e) {
-    rlang::abort("`across2x()` must only be used inside dplyr verbs")
+    rlang::abort("`across2x()` must only be used inside dplyr verbs.")
   })
 
-  .cnames <- names(.data)
+  deparse_call <- deparse(sys.call(),
+                          width.cutoff = 500L,
+                          backtick = TRUE,
+                          nlines = 1L,
+                          control = NULL)
 
-  check_keep()
-
-  setup <- across2x_setup({{.xcols}},
-                         {{.ycols}},
-                         fns = .fns,
-                         names = .names,
-                         cnames = .cnames,
-                         data = .data,
-                         names_fn = .names_fn,
-                         comb = comb)
+  setup <- meta_setup(grp_id = dplyr::cur_group_id(),
+                      dep_call = deparse_call,
+                      par_frame = parent.frame(),
+                      setup_fn = "across2x_setup",
+                      xcols = rlang::enquo(.xcols),
+                      ycols = rlang::enquo(.ycols),
+                      fns = .fns,
+                      names = .names,
+                      names_fn = .names_fn,
+                      comb = comb)
 
   xvars <- setup$xvars
   yvars <- setup$yvars
@@ -412,8 +422,7 @@ across2x <- function(.xcols, .ycols, .fns, ..., .names = NULL, .names_fn = NULL,
 across2x_setup <- function(xcols, ycols, fns, names, cnames, data, names_fn, comb) {
 
   # setup: cols
-  xcols <- rlang::enquo(xcols)
-  ycols <- rlang::enquo(ycols)
+  data <- dplyr::cur_data()[1, ]
   xcols <- rlang::quo_set_env(xcols,
                               data_mask_top(rlang::quo_get_env(xcols),
                                             recursive = FALSE,

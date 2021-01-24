@@ -59,8 +59,6 @@ check_keep <- function(type = c("keep", "summarise")) {
 
 }
 
-
-
 warn_keep <- function() {
 
   trace_bck <- rlang::trace_back()

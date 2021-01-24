@@ -105,46 +105,38 @@
 #' @export
 over2 <- function(.x, .y, .fns, ..., .names = NULL, .names_fn = NULL){
 
-  .data <- tryCatch({
-    dplyr::cur_data()
+  grp_id <- tryCatch({
+    dplyr::cur_group_id()
   }, error = function(e) {
-    rlang::abort("`over2()` must only be used inside dplyr verbs")
+    rlang::abort("`over2()` must only be used inside dplyr verbs.")
   })
 
-  .cnames <- names(.data)
+  deparse_call <- deparse(sys.call(),
+                          width.cutoff = 500L,
+                          backtick = TRUE,
+                          nlines = 1L,
+                          control = NULL)
 
-  check_keep(type = "keep")
-
-  setup <- over2_setup(.x,
-                       .y,
-                       fns = .fns,
-                       names = .names,
-                       cnames = .cnames,
-                       names_fn = .names_fn)
+  setup <- meta_setup(grp_id = grp_id,
+                      dep_call = deparse_call,
+                      par_frame = parent.frame(),
+                      setup_fn = "over2_setup",
+                      x1 = .x,
+                      y1 = .y,
+                      fns = .fns,
+                      names = .names,
+                      names_fn = .names_fn)
 
   x <- setup$x
   y <- setup$y
 
+  # check empty input
   if (length(x) == 0L && length(y)) {
     return(tibble::new_tibble(list(), nrow = 1L))
   }
 
   fns <- setup$fns
   names <- setup$names
-
-  if (any(names %in% .cnames)) {
-    dnames <- .cnames[.cnames %in% names]
-    names_l <- ifelse(length(dnames) > 3, 3, length(dnames))
-
-    rlang::abort(c("Problem with `over2()`.",
-                   i = "Output must not contain existing column names.",
-                   x = paste0("`over2()` tried to create the following existing column names: ",
-                              paste0(paste0("'", dnames[seq_along(1:names_l)], "'"), collapse = ", "),
-                              ifelse(length(dnames) > 3, " etc. ", ".")),
-                   i = "If you want to transform existing columns try using `crossover()` or `across2()`.",
-                   i = "If you want to change the output names use the `.names` argument."))
-
-  }
 
   n_x <- length(x)
   n_fns <- length(fns)
@@ -169,7 +161,7 @@ over2 <- function(.x, .y, .fns, ..., .names = NULL, .names_fn = NULL){
 }
 
 
-over2_setup <- function(x1, y1, fns, names, cnames, names_fn) {
+over2_setup <- function(x1, y1, fns, names, names_fn) {
 
   if (length(x1) != length(y1)) {
     rlang::abort(c("Problem with `over2()` input `.x` and `.y`.",
@@ -315,22 +307,27 @@ over2_setup <- function(x1, y1, fns, names, cnames, names_fn) {
 #' @export
 over2x <- function(.x, .y, .fns, ..., .names = NULL, .names_fn = NULL){
 
-  .data <- tryCatch({
-    dplyr::cur_data()
+  grp_id <- tryCatch({
+    dplyr::cur_group_id()
   }, error = function(e) {
-    rlang::abort("`over2x()` must only be used inside dplyr verbs")
+    rlang::abort("`over2x()` must only be used inside dplyr verbs.")
   })
 
-  .cnames <- names(.data)
+  deparse_call <- deparse(sys.call(),
+                          width.cutoff = 500L,
+                          backtick = TRUE,
+                          nlines = 1L,
+                          control = NULL)
 
-  check_keep(type = "keep")
-
-  setup <- over2x_setup(.x,
-                        .y,
-                        fns = .fns,
-                        names = .names,
-                        cnames = .cnames,
-                        names_fn = .names_fn)
+  setup <- meta_setup(grp_id = grp_id,
+                      dep_call = deparse_call,
+                      par_frame = parent.frame(),
+                      setup_fn = "over2x_setup",
+                      x1 = .x,
+                      y1 = .y,
+                      fns = .fns,
+                      names = .names,
+                      names_fn = .names_fn)
 
   x <- setup$x
   y <- setup$y
@@ -341,20 +338,6 @@ over2x <- function(.x, .y, .fns, ..., .names = NULL, .names_fn = NULL){
 
   fns <- setup$fns
   names <- setup$names
-
-  if (any(names %in% .cnames)) {
-    dnames <- .cnames[.cnames %in% names]
-    names_l <- ifelse(length(dnames) > 3, 3, length(dnames))
-
-    rlang::abort(c("Problem with `over2x()`.",
-                   i = "Output must not contain existing column names.",
-                   x = paste0("`over2x()` tried to create the following existing column names: ",
-                              paste0(paste0("'", dnames[seq_along(1:names_l)], "'"), collapse = ", "),
-                              ifelse(length(dnames) > 3, " etc. ", ".")),
-                   i = "If you want to transform existing columns try using `crossover()`, `dplyr::across()` or `across2()`.",
-                   i = "If you want to change the output names use the `.names` argument."))
-
-  }
 
   n_x <- length(x)
   n_y <- length(y)
@@ -383,7 +366,7 @@ over2x <- function(.x, .y, .fns, ..., .names = NULL, .names_fn = NULL){
 }
 
 
-over2x_setup <- function(x1, y1, fns, names, cnames, names_fn) {
+over2x_setup <- function(x1, y1, fns, names, names_fn) {
 
   # setup name variants
   x1_nm <- names(x1)

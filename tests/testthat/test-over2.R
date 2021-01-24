@@ -518,7 +518,7 @@ test_that("over2() gives meaningful messages", {
 
 # expected errors
 
-test_that("over2() custom errors", {
+test_that("over2() custom errors and warnings", {
 
   # inside dplyr
   expect_error(over2())
@@ -533,31 +533,27 @@ test_that("over2() custom errors", {
   )
 
   # check keep used
-  expect_error(
-    mutate(tibble(x = 1), over2(1, 2, mean), .keep = "used")
+  expect_warning(
+    mutate(tibble(x = 1), over2(1, 2, mean), .keep = "used"),
+    "does not support the `.keep`"
   )
-  expect_error(
-    mutate(tibble(x = 1), over2x(1, 2, mean), .keep = "used")
+  expect_warning(
+    mutate(tibble(x = 1), over2x(1, 2, mean), .keep = "used"),
+    "does not support the `.keep`"
   )
 
   # check keep unused
-  expect_error(
-    mutate(tibble(x = 1), over2(1, 2, mean), .keep = "unused")
+  expect_warning(
+    mutate(tibble(x = 1), over2(1, 2, mean), .keep = "unused"),
+    "does not support the `.keep`"
   )
-  expect_error(
-    mutate(tibble(x = 1), over2x(1, 2, mean), .keep = "unused")
-  )
-
-  # no existing colnames
-  expect_error(
-    mutate(iris, over2(1, 2, paste, .names = "Sepal.Length"))
-  )
-  expect_error(
-    mutate(iris, over2x("Sepal.Length", c(2,3), paste,
-                        .names = c("Sepal.Length", "Sepal.Width")))
+  expect_warning(
+    mutate(tibble(x = 1), over2x(1, 2, mean), .keep = "unused"),
+    "does not support the `.keep`"
   )
 
   # over2 specific errors
+  # same length of .x and .y
   expect_error(
     mutate(tibble(x = 1), over2(1, c(2:3), mean))
   )

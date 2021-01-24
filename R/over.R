@@ -275,36 +275,35 @@
 #' @export
 over <- function(.x, .fns, ..., .names = NULL, .names_fn = NULL, .fast){
 
-  deparse_call <- deparse(sys.call(),
-                          width.cutoff = 500L,
-                          backtick = TRUE,
-                          nlines = 1L,
-                          control = NULL)
-
-  # get group id for setup
-  group_id <- tryCatch({
+  grp_id <- tryCatch({
     dplyr::cur_group_id()
   }, error = function(e) {
-    rlang::abort("`over()` must only be used inside dplyr verbs")
+    rlang::abort("`over()` must only be used inside dplyr verbs.")
   })
 
-  setup <- meta_setup(grp_id = group_id,
-                      dep_call = deparse_call,
-                      par_frame = parent.frame(),
-                      setup_fn = "over_setup",
-                      x1 = .x,
-                      fns = .fns,
-                      names = .names,
-                      names_fn = .names_fn)
+    deparse_call <- deparse(sys.call(),
+                            width.cutoff = 500L,
+                            backtick = TRUE,
+                            nlines = 1L,
+                            control = NULL)
 
-  # check empty input
-  if (length(setup$x) == 0L) {
-    return(tibble::new_tibble(list(), nrow = 1L))
-  }
+    setup <- meta_setup(grp_id = grp_id,
+                        dep_call = deparse_call,
+                        par_frame = parent.frame(),
+                        setup_fn = "over_setup",
+                        x1 = .x,
+                        fns = .fns,
+                        names = .names,
+                        names_fn = .names_fn)
 
   x <- setup$x
   fns <- setup$fns
   names <- setup$names
+
+  # check empty input
+  if (length(x) == 0L) {
+    return(tibble::new_tibble(list(), nrow = 1L))
+  }
 
   n_x <- length(x)
   n_fns <- length(fns)
@@ -430,8 +429,6 @@ over_setup <- function(x1, fns, names, names_fn) {
     nm_f <- rlang::as_function(names_fn)
     names <- purrr::map_chr(names, nm_f)
   }
-
-
 
   value <- list(x = x1, fns = fns, names = names)
   value
