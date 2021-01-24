@@ -387,8 +387,6 @@ test_that("across2() retains original ordering", {
 
 
 
-
-
 # FAILING
 # test_that("monitoring cache - across2() can be used twice in the same expression", {
 #   df <- tibble(a = 1, b = 2)
@@ -476,7 +474,7 @@ test_that("across2(<empty set>) returns a data frame with 1 row (#5204)", {
   })
 })
 
-# not supported yet
+# not supported yet:
 # test_that("across2(.names=) can use local variables in addition to {col} and {fn}", {
 #   res <- local({
 #     prefix <- "MEAN"
@@ -486,50 +484,54 @@ test_that("across2(<empty set>) returns a data frame with 1 row (#5204)", {
 #   expect_identical(res, data.frame(MEAN_x = 42))
 # })
 
-## resume here #####
+test_that("across2() uses environment from the current quosure (#5460)", {
+  # If the data frame `y` is selected, causes a subscript conversion
+  # error since it is fractional
+  df <- data.frame(x = 1, y = 2.4)
+  y <- "x"
+  expect_equal(df %>% summarise(across2(all_of(y), all_of(y), sum, .names = "{xcol}")),
+               data.frame(x = 2))
+  expect_equal(df %>% mutate(across2(all_of(y), all_of(y), prod, .names = "{xcol}")),
+               df)
+  expect_equal(df %>% filter(across2(all_of(y), all_of(y), ~ .x < 2 & .y < 2)),
+               df)
 
-# test_that("across2() uses environment from the current quosure (#5460)", {
-#   # If the data frame `y` is selected, causes a subscript conversion
-#   # error since it is fractional
-#   df <- data.frame(x = 1, y = 2.4)
-#   y <- "x"
-#   expect_equal(df %>% summarise(across2(all_of(y), mean)), data.frame(x = 1))
-#   expect_equal(df %>% mutate(across2(all_of(y), mean)), df)
-#   expect_equal(df %>% filter(across2(all_of(y), ~ .x < 2)), df)
-#
-#   # Recursive case fails because the `y` column has precedence (#5498)
-#   expect_error(df %>% summarise(summarise(across2(), across2(all_of(y), mean))))
-#
-#   # Inherited case
-#   out <- df %>% summarise(local(across2(all_of(y), mean)))
-#   expect_equal(out, data.frame(x = 1))
-# })
-#
+  # Recursive case fails because the `y` column has precedence (#5498)
+  # `dplyr::across()` is currently *not* failing this test => skip test
+  # expect_error(df %>% summarise(summarise(across2(), across2(all_of(y), mean))))
+
+  # Inherited case
+  out <- df %>% summarise(local(across2(all_of(y), all_of(y), prod, .names = "{xcol}")))
+  expect_equal(out, data.frame(x = 1))
+})
+
+# `dplyr::across()` is currently failing this test => skip test
 # test_that("across2() sees columns in the recursive case (#5498)", {
-#   df <- tibble(
-#     vars = list("foo"),
-#     data = list(data.frame(foo = 1, bar = 2))
-#   )
-#
-#   out <- df %>% mutate(data = purrr::map2(data, vars, ~ {
-#     .x %>% mutate(across2(all_of(.y), ~ NA))
-#   }))
-#   exp <- tibble(
-#     vars = list("foo"),
-#     data = list(data.frame(foo = NA, bar = 2))
-#   )
-#   expect_identical(out, exp)
-#
-#   out <- df %>% mutate(data = purrr::map2(data, vars, ~ {
-#     local({
-#       .y <- "bar"
-#       .x %>% mutate(across2(all_of(.y), ~ NA))
-#     })
-#   }))
-#   exp <- tibble(
-#     vars = list("foo"),
-#     data = list(data.frame(foo = 1, bar = NA))
-#   )
-#   expect_identical(out, exp)
+  # df <- tibble(
+  #   vars = list("foo"),
+  #   data = list(data.frame(foo = 1, bar = 2))
+  # )
+  #
+  #
+  # out <- df %>% mutate(data = purrr::map2(data, vars, ~ {
+  #   .x %>% mutate(across2(all_of(.y), ~ NA))
+  # }))
+  # exp <- tibble(
+  #   vars = list("foo"),
+  #   data = list(data.frame(foo = NA, bar = 2))
+  # )
+  # expect_identical(out, exp)
+  #
+  # out <- df %>% mutate(data = purrr::map2(data, vars, ~ {
+  #   local({
+  #     .y <- "bar"
+  #     .x %>% mutate(across2(all_of(.y), ~ NA))
+  #   })
+  # }))
+  # exp <- tibble(
+  #   vars = list("foo"),
+  #   data = list(data.frame(foo = 1, bar = NA))
+  # )
+  # expect_identical(out, exp)
 # })
-#
+
