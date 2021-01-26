@@ -60,9 +60,13 @@ in case the resulting names need to be further cleaned or trimmed.}
 combinations of columns are to be created. This argument only matters, if
 the columns specified in \code{.xcols} and \code{.ycols} overlap to some extent.
 \itemize{
-\item \code{"all"}, the default, will create all pairwise combinations between columns in \code{.xcols} and \code{.ycols} \emph{including all permutations} (e.g. \code{foo(column_x, column_y)} as well as \code{foo(column_y, column_x)}.
-\item \code{"unique"} will only create all unordered combinations (e.g. creates \code{foo(column_x, column_y)}, while \code{foo(column_y, column_x)} \emph{will not} be created)
-\item \verb{"minimal} same as \code{"unique"} and further skips all self-matches (e.g. \code{foo(column_x, column_x)} \emph{will not} be created)
+\item \code{"all"}, the default, will create all pairwise combinations between columns
+in \code{.xcols} and \code{.ycols} \emph{including all permutations} (e.g.
+\code{foo(column_x, column_y)} as well as \code{foo(column_y, column_x)}.
+\item \code{"unique"} will only create all unordered combinations (e.g. creates
+\code{foo(column_x, column_y)}, while \code{foo(column_y, column_x)} \emph{will not} be created)
+\item \verb{"minimal} same as \code{"unique"} and further skips all self-matches (e.g.
+\code{foo(column_x, column_x)} \emph{will not} be created)
 }}
 }
 \value{
@@ -81,7 +85,8 @@ and  \code{.ycols} over one or more functions, while \code{across2x()} loops
 \section{Examples}{
 
 
-For the basic functionality of \code{across()} please refer to the examples in \code{\link[dplyr:across]{dplyr::across()}}.\if{html}{\out{<div class="r">}}\preformatted{library(dplyr)
+For the basic functionality of \code{across()} please refer to the examples in
+\code{\link[dplyr:across]{dplyr::across()}}.\if{html}{\out{<div class="r">}}\preformatted{library(dplyr)
 
 # For better printing
 iris <- as_tibble(iris)
