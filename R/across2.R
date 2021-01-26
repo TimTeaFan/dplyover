@@ -7,7 +7,7 @@
 #' *every combination between columns* in `.xcols` and `.ycols` over one or more functions.
 #'
 #' @param .xcols,.ycols <[`tidy-select`][dplyr::dplyr_tidy_select]> Columns to transform.
-#' Note that you can not select or compute upon grouping variables.
+#'   Note that you can not select or compute upon grouping variables.
 #'
 #' @param .fns Functions to apply to each column in `.xcols` and `.ycols`.
 #'
