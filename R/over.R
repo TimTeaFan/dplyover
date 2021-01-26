@@ -273,7 +273,7 @@
 #'          .keep = "none")
 #' ```
 #' @export
-over <- function(.x, .fns, ..., .names = NULL, .names_fn = NULL, .fast){
+over <- function(.x, .fns, ..., .names = NULL, .names_fn = NULL){
 
   grp_id <- tryCatch({
     dplyr::cur_group_id()
