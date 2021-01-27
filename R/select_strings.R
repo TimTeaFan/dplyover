@@ -2,9 +2,9 @@
 #'
 #' @description
 #'
-#' These functions are [selection helpers][selection_helpers]. They are intended
-#' to be used inside `over()` to extract parts or patterns of the column names of
-#' the underlying data.
+#' These functions are [string selection helpers][string_selection_helpers].
+#' They are intended to be used inside `over()` to extract parts or patterns of
+#' the column names of the underlying data.
 #'
 #' * [cut_names()] selects strings by removing (cutting off) the specified `.pattern`.
 #' This functionality resembles `stringr::str_remove_all()`.
@@ -17,10 +17,10 @@
 #'   all column names of the underlying data are automatically supplied to `.vars`.
 #'   This argument is useful when testing the functionality outside the context of
 #'   `over()`.
-#' @param .select Pattern to further select and narrow down the variable names
-#'   provided in `.vars`. When this argument is provided the variables names in
-#'   `.vars` will be narrowed down to those which match the pattern specified in
-#'   `.select`.
+#' @param .remove Pattern to remove from the variable names provided in `.vars`.
+#'   When this argument is provided, all variables names in `.vars` that match
+#'   the pattern specified in `.remove` will be removed, before the `.pattern` to
+#'   look for will be applied.
 #'
 #' @return
 #' A character vector.
@@ -111,17 +111,17 @@
 #' csatraw %>% glimpse(width = 50)
 #' ```
 #'
-#' The survey has several `item`s consisting of two sub-questions / variables `a`
-#' and `b`. Lets say we want to calculate the product of those two variables for
+#' The survey has several 'item's consisting of two sub-questions / variables 'a'
+#' and 'b'. Lets say we want to calculate the product of those two variables for
 #' each item. `extract_names()` helps us to select all variables containing
-#' `"item"` followed by a digit using as regex `"item\\d"` as `.pattern`.
-#' However, there is `item1` which is only one variable not followed by `a` and
-#' `b`. `extract_names()` lets us exclude this item by setting the `.select`
+#' 'item' followed by a digit using the regex `"item\\d"` as `.pattern`.
+#' However, there is 'item1'  and 'item1_open' which are not followed by `a` and
+#' `b`. `extract_names()` lets us exclude these items by setting the `.remove`
 #' argument to `[^item1]`:
 #'
 #' ```{r, comment = "#>", collapse = TRUE}
 #' csatraw %>%
-#'  transmute(over(extract_names("item[2-6]"),
+#'  transmute(over(extract_names("item\\d", "^item1"),
 #'                 ~ .("{.x}a") * .("{.x}b"))
 #'  )
 #' ```
@@ -130,7 +130,7 @@ NULL
 
 #' @rdname select_vars
 #' @export
-cut_names <- function(.pattern, .select = NULL, .vars = NULL) {
+cut_names <- function(.pattern, .remove = NULL, .vars = NULL) {
 
   .varn <- .vars
 
@@ -138,20 +138,23 @@ cut_names <- function(.pattern, .select = NULL, .vars = NULL) {
     .varn <- names(dplyr::across())
   }
 
-  if (is.null(.select)) {
+  if (is.null(.remove)) {
     .selected <- .varn
   } else {
-    .selected <- grep(.select, .varn, perl = TRUE, value = TRUE)
+    .notselected <- grep(.remove, .varn, perl = TRUE, value = TRUE)
 
-    if (length(.selected) == 0) {
+    if (length(.notselected) == 0) {
       rlang::abort(
-        c("Problem with `cut_names()` input `.select`.",
-          i = paste0("The character string provided in `.select` ('",
-                     .select, "') must at least match one ",
+        c("Problem with `cut_names()` input `.remove`.",
+          i = paste0("The character string provided in `.remove` ('",
+                     .remove, "') must at least match one ",
                     ifelse(is.null(.vars), "column name.", "element in `.vars`.")),
           x = "No match was found."))
     }
+
+    .selected <- setdiff(.varn, .notselected)
   }
+
 
   .match <- grepl(.pattern, .selected, perl = TRUE)
   .extract <- gsub(.pattern, "", .selected, perl = TRUE)[.match]
@@ -169,7 +172,7 @@ cut_names <- function(.pattern, .select = NULL, .vars = NULL) {
 
 #' @rdname select_vars
 #' @export
-extract_names <- function(.pattern, .select = NULL, .vars = NULL) {
+extract_names <- function(.pattern, .remove = NULL, .vars = NULL) {
 
    .varn <- .vars
 
@@ -177,19 +180,20 @@ extract_names <- function(.pattern, .select = NULL, .vars = NULL) {
     .varn <- names(dplyr::across())
   }
 
-   if (is.null(.select)) {
+   if (is.null(.remove)) {
      .selected <- .varn
    } else {
-     .selected <- grep(.select, .varn, perl = TRUE, value = TRUE)
+     .notselected <- grep(.remove, .varn, perl = TRUE, value = TRUE)
 
-     if (length(.selected) == 0) {
+     if (length(.notselected) == 0) {
        rlang::abort(
-         c("Problem with `extract_names()` input `.select`.",
-           i = paste0("The character string provided in `.select` ('",
-                      .select, "') must at least match one ",
+         c("Problem with `extract_names()` input `.remove`.",
+           i = paste0("The character string provided in `.remove` ('",
+                      .remove, "') must at least match one ",
                       ifelse(is.null(.vars), "column name.", "element in `.vars`.")),
            x = "No match was found."))
      }
+     .selected <- setdiff(.varn, .notselected)
    }
 
   .extract <- regexpr(.pattern, .selected, perl = TRUE)
