@@ -2,7 +2,9 @@
 #'
 #' @description
 #'
-#' These functions are [selection helpers][selection_helpers].
+#' These functions are [selection helpers][selection_helpers]. They are intended
+#' to be used inside all functions that accept a vector as argument (that is `over()`
+#' and `crossover()` and all their variants) to extract values of a variable.
 #'
 #' * [dist_values()] returns all distinct values (or in the case of factor variables:
 #'   levels) of a variable `x` which are not `NA`.

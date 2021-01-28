@@ -13,7 +13,8 @@
 #' `vignette("over")` for more details.
 #'
 #' @param .x An atomic vector or list to apply functions to. Alternatively a
-#'   <[`selection helper`][selection_helpers]> can be used to create a vector.
+#'   <[`selection helper`][selection_helpers]> can be used to create
+#'   a vector.
 #'
 #' @param .fns Functions to apply to each of the elements in `.x`. For
 #'   functions that expect variable names as input, the selected strings need to
