@@ -22,11 +22,10 @@ library(bench)
 
 # Introduction
 
-{dplyover} is an extension of {dplyr}, but it doesn't make use of (read: copy)
+Although {dplyover} is an extension of {dplyr}, it doesn't make use of (read: copy)
 {dplyr} internals. This made it relatively easy to create this package without
-copying internal dplyr functions and rewriting the major operating functions
-(e.g. `mutate`, `summarise` etc.). However, this has some negative side effects
-in terms of performance and compability.
+copying dplyr functions and rewriting the major verbs (e.g. `mutate`, `summarise` etc.).
+However, this has some negative side effects in terms of performance and compability.
 
 In a nutshell this means:
   - the over-across function family in {dplyover} is somewhat slower than the 
@@ -192,9 +191,7 @@ across_bench %>%
 
 - compare across and over and across2
 
-- compare simmilar operations
-   over and map
-   across/cur_column and across2
+
 
 
 ```{r, echo = FALSE, eval = TRUE, warning = FALSE, message = FALSE}
@@ -222,7 +219,7 @@ diamonds_1000rows <- diamonds %>%
 over_bench <- bench::mark(iterations = 50, check = FALSE,
   "across 1" = {
     diamonds_1row %>%
-      summarise(across(x, mean, .names = "mean_{col}"))}, 
+      summarise(across(x, ~ 1, .names = "{col}_1"))}, 
   "across 10" = {
     diamonds_10rows %>%
       summarise(across(x, mean, .names = "mean_{col}"))}, 
@@ -259,9 +256,91 @@ over_bench %>%
   ggplot(aes(x = groups, y = median, group = fun, color = fun)) +
   geom_line() + 
   scale_y_bench_time(base = NULL)
-
-
 ```
 
 
+- compare simmilar operations
+   over and map (lag)
+   across/cur_column and across2 (add two variables)
 
+
+```{r, echo = FALSE, eval = TRUE, warning = FALSE, message = FALSE}
+
+diamonds_1row <- diamonds %>%
+  slice_head(n = 1) %>% 
+  rowwise()
+
+diamonds_10rows <- diamonds %>%
+  slice_head(n = 10) %>% 
+  rowwise()
+
+diamonds_100rows <- diamonds %>%
+  slice_head(n = 100) %>% 
+  rowwise()
+
+diamonds_500rows <- diamonds %>%
+  slice_head(n = 500) %>% 
+  rowwise()
+
+diamonds_1000rows <- diamonds %>%
+  slice_head(n = 1000) %>% 
+  rowwise()
+
+across_bench <- bench::mark(iterations = 50,
+            check = FALSE,
+  "across 1" = {
+   diamonds_1row %>%
+     summarise(across(c(x,y,z),
+                   mean))}, 
+  "across 10" = {
+   diamonds_10rows %>%
+     summarise(across(c(x,y,z),
+                   mean))}, 
+  "across 100" = {
+   diamonds_100rows %>%
+     summarise(across(c(x,y,z),
+                   mean))}, 
+  "across 500" = {
+   diamonds_500rows %>%
+     summarise(across(c(x,y,z),
+                   mean))}, 
+  "across 1000" = {
+   diamonds_1000rows %>%
+     summarise(across(c(x,y,z),
+                   mean))},
+   "manually 1" = {
+    diamonds_1row %>% 
+      summarise(x = mean(x),
+                y = mean(y),
+                z = mean(z))},
+  "manually 10" = {
+    diamonds_10rows %>% 
+      summarise(x = mean(x),
+                y = mean(y),
+                z = mean(z))},
+  "manually 100" = {
+    diamonds_100rows %>% 
+      summarise(x = mean(x),
+                y = mean(y),
+                z = mean(z))},
+  "manually 500" = {
+    diamonds_500rows %>% 
+      summarise(x = mean(x),
+                y = mean(y),
+                z = mean(z))},
+  "manually 1000" = {
+    diamonds_1000rows %>% 
+      summarise(x = mean(x),
+                y = mean(y),
+                z = mean(z))
+    })
+
+across_bench %>%
+  separate(expression,
+           into = c("fun", "groups"),
+           convert = TRUE) %>% 
+  ggplot(aes(x = groups, y = median, group = fun, color = fun)) +
+  geom_line() + 
+  scale_y_bench_time(base = NULL)
+
+```
