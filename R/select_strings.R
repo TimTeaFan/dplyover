@@ -2,7 +2,7 @@
 #'
 #' @description
 #'
-#' These functions are [string selection helpers][string_selection_helpers].
+#' These functions are [selection helpers][selection_helpers].
 #' They are intended to be used inside `over()` to extract parts or patterns of
 #' the column names of the underlying data.
 #'
@@ -135,7 +135,7 @@ cut_names <- function(.pattern, .remove = NULL, .vars = NULL) {
   .varn <- .vars
 
   if (is.null(.vars) && sys.call(sys.nframe() - 2)[[1]] == "meta_setup") {
-    .varn <- names(dplyr::across())
+    .varn <- names(dplyr::cur_data_all())
   }
 
   if (is.null(.remove)) {
@@ -177,7 +177,7 @@ extract_names <- function(.pattern, .remove = NULL, .vars = NULL) {
    .varn <- .vars
 
   if (is.null(.vars) && sys.call(sys.nframe() - 2)[[1]] == "meta_setup") {
-    .varn <- names(dplyr::across())
+    .varn <- names(dplyr::cur_data_all())
   }
 
    if (is.null(.remove)) {
