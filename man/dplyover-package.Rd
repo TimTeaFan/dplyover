@@ -4,7 +4,7 @@
 \name{dplyover-package}
 \alias{dplyover}
 \alias{dplyover-package}
-\title{dplyover: Create Columns by Looping over Vectors in 'dplyr'}
+\title{dplyover: Create columns by looping over one or several vectors and columns in 'dplyr'.}
 \description{
 To learn more about dplyover, start with the vignette:
 \code{browseVignettes(package = "dplyover")}

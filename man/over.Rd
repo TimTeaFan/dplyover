@@ -8,7 +8,8 @@ over(.x, .fns, ..., .names = NULL, .names_fn = NULL)
 }
 \arguments{
 \item{.x}{An atomic vector or list to apply functions to. Alternatively a
-<\code{\link[=selection_helpers]{selection helper}}> can be used to create a vector.}
+<\code{\link[=selection_helpers]{selection helper}}> can be used to create
+a vector.}
 
 \item{.fns}{Functions to apply to each of the elements in \code{.x}. For
 functions that expect variable names as input, the selected strings need to

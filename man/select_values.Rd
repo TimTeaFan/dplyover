@@ -25,7 +25,9 @@ factors which are converted to type \code{"character"}.
 \code{\link[=seq_range]{seq_range()}} returns an vector of type \code{"integer"} or \code{"double"}.
 }
 \description{
-These functions are \link[=selection_helpers]{selection helpers}.
+These functions are \link[=selection_helpers]{selection helpers}. They are intended
+to be used inside all functions that accept a vector as argument (that is \code{over()}
+and \code{crossover()} and all their variants) to extract values of a variable.
 \itemize{
 \item \code{\link[=dist_values]{dist_values()}} returns all distinct values (or in the case of factor variables:
 levels) of a variable \code{x} which are not \code{NA}.
