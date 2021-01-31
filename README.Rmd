@@ -41,16 +41,16 @@ The functions in the <over-apply function family> create columns by applying
 one or several functions to:
 
 ### basic functions
- - [dplyr::across()]: a set of columns
- - [over()]: a vector (list or atomic vector)
+ - `dplyr::across()`: a set of columns (not part of {dplyover})
+ - `over()`: a vector (list or atomic vector)
 
 ### variants
- - [over2()] two vectors of the same length (pairwise)
- - [over2x()] two vectors (nested)
- - [across2()] two sets of columns (pairwise)
- - [across2x()] two sets of columns (nested)
- - [crossover()] a set of columns and a vector (pairwise)
- - [crossoverx()] a set of columns and a vector (nested)
+ - `over2()` two vectors of the same length (pairwise)
+ - `over2x()` two vectors (nested)
+ - `across2()` two sets of columns (pairwise)
+ - `across2x()` two sets of columns (nested)
+ - `crossover()` a set of columns and a vector (pairwise)
+ - `crossoverx()` a set of columns and a vector (nested)
 
 
 ## Installation
@@ -72,12 +72,13 @@ found in the vignette "Why dplyover?".
 ```{r, setup}
 # dplyover is extention of dplyr:
 library(dplyr)
+library(dplyover)
 
 # For better printing:
 iris <- as_tibble(iris)
 ```
 
-### Applying a function with a varying argument to one column
+#### Applying a function with a varying argument to one column
 
 `over()` applies one or several functions to a vector. We can use it inside
 `dplyr::mutate()` to create several similar variables that we derive from an
@@ -95,7 +96,7 @@ tibble(a = 1:10) %>%
               .names = "a_{fn}{x}"))
 ```
 
-### Applying a function with a varying argument to a set of columns
+#### Applying a function with a varying argument to a set of columns
 
 `crossoverx()` applies the functions in `.fns` to every combination of colums in
 `.xcols` and elements in `.y`. This is similar to the example above, but this time,
@@ -114,7 +115,7 @@ iris %>%
 ```
 
 
-### Applying functions to a pair of variables
+#### Applying functions to a pair of variables
 
 `across2()` can be used to transform pairs of variables in one or more functions.
 In the example below we want to calculate the product and the sum of all pairs
@@ -147,10 +148,11 @@ However, the downside is that not relying on {dplyr} internals has some negative
 effects in terms of performance and compability.
 
 In a nutshell this means:
-  - the over-across function family in {dplyover} is somewhat slower than the 
-  original `dplyr::across`.
-  - Although {dplyover} is designed to work (only) in {dplyr}, some features and
-  edge cases will not work correctly.
+
+ - the over-across function family in {dplyover} is somewhat slower than the
+ original `dplyr::across`.
+ - Although {dplyover} is designed to work (only) in {dplyr}, some features and
+ edge cases will not work correctly.
   
 The good news is, that even without relying on {dplyr} internals most of the
 original functionality can be replicated, and although being a bit less performant,
@@ -183,8 +185,10 @@ and copyrights apply). So if this package is working correctly, all the credit
 should go to the dplyr team. 
 
 My own contribution merely consists of: 
+
  1. removing the underlying dependencies on dplyr's internal functions, and
  2. slightly changing `across`' logic to make it work for vectors and or a
 combination of two vectors and / or sets columns.
+
 By this I probably managed to introduce some bugs and edge cases which won't work, 
 and in which case I am the only one to blame.
