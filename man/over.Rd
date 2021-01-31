@@ -14,8 +14,7 @@ a vector.}
 \item{.fns}{Functions to apply to each of the elements in \code{.x}. For
 functions that expect variable names as input, the selected strings need to
 be turned into symbols and evaluated. \code{dplyrover} comes with a genuine helper
-function that evaluates strings as names \code{\link[=.]{.()}}. Note that <\code{\link[rlang:nse-force]{rlang's forcing operators}}>
-are not supported in \code{over()}.
+function that evaluates strings as names \code{\link[=.]{.()}}.
 
 Possible values are:
 \itemize{

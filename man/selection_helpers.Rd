@@ -5,11 +5,10 @@
 \alias{over_selection_helpers}
 \title{Selection helpers}
 \description{
-\subsection{Overview of selection helpers}{
-
 \code{dplyover} provides two kinds of selection helpers which are intended for use
 in all functions that accept a vector as argument (that is \code{over()} and
-\code{crossover()} as well as all their variants).
+\code{crossover()} as well as all their variants, see here for a full list of the
+\link[=over_across_family]{over-across function family}).
 
 Helpers which select \strong{string parts} of the \strong{column names} (of the underyling data):
 \itemize{
@@ -21,6 +20,5 @@ Helpers which select \strong{values} of a variable:
 \itemize{
 \item \code{\link[=dist_values]{dist_values()}} returns all distinct values.
 \item \code{\link[=seq_range]{seq_range()}} returns the sequence between the \code{range()} of a variable.
-}
 }
 }
