@@ -1,6 +1,6 @@
 # over() gives meaningful messages
 
-    `over()` must only be used inside dplyr verbs
+    `over()` must only be used inside dplyr verbs.
 
 ---
 
