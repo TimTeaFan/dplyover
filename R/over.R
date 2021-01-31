@@ -19,8 +19,7 @@
 #' @param .fns Functions to apply to each of the elements in `.x`. For
 #'   functions that expect variable names as input, the selected strings need to
 #'   be turned into symbols and evaluated. `dplyrover` comes with a genuine helper
-#'   function that evaluates strings as names [`.()`]. Note that <[`rlang's forcing operators`][rlang::nse-force]>
-#'   are not supported in `over()`.
+#'   function that evaluates strings as names [`.()`].
 #'
 #'   Possible values are:
 #'
