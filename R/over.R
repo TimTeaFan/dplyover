@@ -206,7 +206,8 @@
 #'   mutate(over(unique(unlist(csat_open)),
 #'               ~ as.integer(grepl(.x, csat_open)),
 #'               .names = "rsp_{x}",
-#'               .names_fn = ~ gsub("\\s", "_", .x)))
+#'               .names_fn = ~ gsub("\\s", "_", .x)),
+#'               .keep = "none")
 #' ```
 #'
 #'
