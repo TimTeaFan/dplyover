@@ -13,7 +13,7 @@ sets of columns in dplyr. Ideally, this will improve our mental model so that
 it is easier to tackle problems where the solution is based on creating
 new columns.
 
-The functions in the <over-apply function family> create columns by applying
+The functions in the over-apply function family create columns by applying
 one or several functions to:
 \subsection{basic functions}{
 \itemize{

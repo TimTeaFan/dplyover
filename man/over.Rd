@@ -247,18 +247,16 @@ Rating was given. We can easily create a column for each response category:\if{h
   mutate(over(unique(unlist(csat_open)),
               ~ as.integer(grepl(.x, csat_open)),
               .names = "rsp_\{x\}",
-              .names_fn = ~ gsub("\\\\s", "_", .x)))
-#> # A tibble: 150 x 21
-#>   cust_id type  product csat  csat_open postal_contact postal_rating
-#>   <chr>   <fct> <fct>   <chr> <list>    <chr>          <chr>        
-#> 1 61297   exis~ advanc~ Neut~ <chr [1]> within 1 to 3~ Neutral      
-#> 2 07545   exis~ advanc~ Unsa~ <chr [1]> within 1 to 3~ Unsatisfied  
-#> 3 03822   exis~ premium Unsa~ <chr [3]> within 1 to 3~ Very satisfi~
-#> 4 88219   reac~ basic   Sati~ <chr [3]> within last y~ Very satisfi~
-#> # ... with 146 more rows, and 14 more variables: phone_contact <chr>,
-#> #   phone_rating <chr>, email_contact <chr>, email_rating <chr>,
-#> #   website_contact <chr>, website_rating <chr>, shop_contact <chr>,
-#> #   shop_rating <chr>, ...
+              .names_fn = ~ gsub("\\\\s", "_", .x)),
+              .keep = "none")
+#> # A tibble: 150 x 6
+#>   rsp_good_service rsp_unfriendly rsp_too_expensive rsp_no_response rsp_friendly_staff rsp_great_product
+#>              <int>          <int>             <int>           <int>              <int>             <int>
+#> 1                1              0                 0               0                  0                 0
+#> 2                0              1                 0               0                  0                 0
+#> 3                0              1                 1               1                  0                 0
+#> 4                1              0                 0               0                  1                 1
+#> # ... with 146 more rows
 }\if{html}{\out{</div>}}
 }
 
