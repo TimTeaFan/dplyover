@@ -20,7 +20,11 @@ Suggests:
     testthat (>= 3.0.0),
     knitr,
     rmarkdown,
-    covr
+    covr,
+    stringr,
+    tidyr,
+    bench,
+    ggplot2
 Imports: 
     dplyr (>= 1.0.0),
     rlang (>= 0.4.7),

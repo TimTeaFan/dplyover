@@ -65,21 +65,18 @@ str_remove_all(names(iris), "Width")
 extract_names("Length|Width", .vars = names(iris))
 #> [1] "Length" "Width"
 str_extract(rep(names(iris), 2), "Length|Width")
-#>  [1] "Length" "Width"  "Length" "Width"  NA       "Length" "Width"  "Length"
-#>  [9] "Width"  NA
+#>  [1] "Length" "Width"  "Length" "Width"  NA       "Length" "Width"  "Length" "Width"  NA
 }\if{html}{\out{</div>}}
 
 (2) \code{cut_names()} and \code{extract_names()} return only unique values:\if{html}{\out{<div class="r">}}\preformatted{cut_names("Width", .vars = rep(names(iris), 2))
 #> [1] "Sepal." "Petal."
 str_remove_all(rep(names(iris), 2), "Width")
-#>  [1] "Sepal.Length" "Sepal."       "Petal.Length" "Petal."       "Species"     
-#>  [6] "Sepal.Length" "Sepal."       "Petal.Length" "Petal."       "Species"
+#>  [1] "Sepal.Length" "Sepal."       "Petal.Length" "Petal."       "Species"      "Sepal.Length" "Sepal."       "Petal.Length" "Petal."       "Species"
 
 extract_names("Length|Width", .vars = names(iris))
 #> [1] "Length" "Width"
 str_extract(rep(names(iris), 2), "Length|Width")
-#>  [1] "Length" "Width"  "Length" "Width"  NA       "Length" "Width"  "Length"
-#>  [9] "Width"  NA
+#>  [1] "Length" "Width"  "Length" "Width"  NA       "Length" "Width"  "Length" "Width"  NA
 }\if{html}{\out{</div>}}
 
 The examples above do not show that \code{cut_names()} removes \emph{all} strings matching
@@ -101,26 +98,26 @@ mutate(over(cut_names(".Width"),
             ~ .("\{.x\}.Width") * .("\{.x\}.Length"),
             .names = "Product_\{x\}"))
 #> # A tibble: 150 x 7
-#>   Sepal.Length Sepal.Width Petal.Length Petal.Width Species Product_Sepal
-#>          <dbl>       <dbl>        <dbl>       <dbl> <fct>           <dbl>
-#> 1          5.1         3.5          1.4         0.2 setosa           17.8
-#> 2          4.9         3            1.4         0.2 setosa           14.7
-#> 3          4.7         3.2          1.3         0.2 setosa           15.0
-#> 4          4.6         3.1          1.5         0.2 setosa           14.3
-#> # ... with 146 more rows, and 1 more variable: Product_Petal <dbl>
+#>   Sepal.Length Sepal.Width Petal.Length Petal.Width Species Product_Sepal Product_Petal
+#>          <dbl>       <dbl>        <dbl>       <dbl> <fct>           <dbl>         <dbl>
+#> 1          5.1         3.5          1.4         0.2 setosa           17.8         0.280
+#> 2          4.9         3            1.4         0.2 setosa           14.7         0.280
+#> 3          4.7         3.2          1.3         0.2 setosa           15.0         0.26 
+#> 4          4.6         3.1          1.5         0.2 setosa           14.3         0.3  
+#> # ... with 146 more rows
 
 iris \%>\%
   mutate(over(extract_names("Length|Width"),
               ~.("Petal.\{.x\}") * .("Sepal.\{.x\}"),
              .names = "Product_\{x\}"))
 #> # A tibble: 150 x 7
-#>   Sepal.Length Sepal.Width Petal.Length Petal.Width Species Product_Length
-#>          <dbl>       <dbl>        <dbl>       <dbl> <fct>            <dbl>
-#> 1          5.1         3.5          1.4         0.2 setosa            7.14
-#> 2          4.9         3            1.4         0.2 setosa            6.86
-#> 3          4.7         3.2          1.3         0.2 setosa            6.11
-#> 4          4.6         3.1          1.5         0.2 setosa            6.9 
-#> # ... with 146 more rows, and 1 more variable: Product_Width <dbl>
+#>   Sepal.Length Sepal.Width Petal.Length Petal.Width Species Product_Length Product_Width
+#>          <dbl>       <dbl>        <dbl>       <dbl> <fct>            <dbl>         <dbl>
+#> 1          5.1         3.5          1.4         0.2 setosa            7.14          0.7 
+#> 2          4.9         3            1.4         0.2 setosa            6.86          0.6 
+#> 3          4.7         3.2          1.3         0.2 setosa            6.11          0.64
+#> 4          4.6         3.1          1.5         0.2 setosa            6.9           0.62
+#> # ... with 146 more rows
 }\if{html}{\out{</div>}}
 
 What problem does \code{cut_names()} solve?
