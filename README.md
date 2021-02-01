@@ -22,8 +22,8 @@ will:
 
   - *reduce the amount of code* to create variables derived from
     existing colums, which is especially helpful when doing explanatory
-    data analysis (e.g. lagging, collapsing many variables in a similar
-    way).
+    data analysis (e.g. lagging, collapsing, recoding many variables in
+    a similar way).
   - *provide a clean {dplyr} approach* to create many variables which
     are calculated based on two or more varialbes.
   - *improve our mental model* so that it is easier to tackle problems
@@ -33,19 +33,12 @@ The functions in the *over-apply function family* create columns by
 applying one or several functions to:
 
   - `dplyr::across()`: a set of columns (not part of dplyover)
-
   - `over()`: a vector (list or atomic vector)
-
   - `over2()` two vectors of the same length (pairwise)
-
   - `over2x()` two vectors (nested)
-
   - `across2()` two sets of columns (pairwise)
-
   - `across2x()` two sets of columns (nested)
-
   - `crossover()` a set of columns and a vector (pairwise)
-
   - `crossoverx()` a set of columns and a vector (nested)
 
 ## Installation
@@ -85,24 +78,19 @@ variables. Below we use column ‘a’ to create lag and lead variables by
 nice names on the output columns.
 
 ``` r
-tibble(a = 1:10) %>%
+tibble(a = 1:25) %>%
   mutate(over(c(1:3),
               list(lag  = ~ lag(a, .x),
                    lead = ~ lead(a, .x)),
               .names = "a_{fn}{x}"))
-#> # A tibble: 10 x 7
-#>        a a_lag1 a_lead1 a_lag2 a_lead2 a_lag3 a_lead3
-#>    <int>  <int>   <int>  <int>   <int>  <int>   <int>
-#>  1     1     NA       2     NA       3     NA       4
-#>  2     2      1       3     NA       4     NA       5
-#>  3     3      2       4      1       5     NA       6
-#>  4     4      3       5      2       6      1       7
-#>  5     5      4       6      3       7      2       8
-#>  6     6      5       7      4       8      3       9
-#>  7     7      6       8      5       9      4      10
-#>  8     8      7       9      6      10      5      NA
-#>  9     9      8      10      7      NA      6      NA
-#> 10    10      9      NA      8      NA      7      NA
+#> # A tibble: 25 x 7
+#>       a a_lag1 a_lead1 a_lag2 a_lead2 a_lag3 a_lead3
+#>   <int>  <int>   <int>  <int>   <int>  <int>   <int>
+#> 1     1     NA       2     NA       3     NA       4
+#> 2     2      1       3     NA       4     NA       5
+#> 3     3      2       4      1       5     NA       6
+#> 4     4      3       5      2       6      1       7
+#> # ... with 21 more rows
 ```
 
 #### Applying a function with a varying argument to a set of columns
@@ -124,16 +112,16 @@ iris %>%
    glimpse
 #> Rows: 150
 #> Columns: 10
-#> $ Sepal.Length_lag1 <dbl> NA, 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6, 5.0, 4.4, 4.…
-#> $ Sepal.Length_lag2 <dbl> NA, NA, 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6, 5.0, 4.4…
-#> $ Sepal.Length_lag3 <dbl> NA, NA, NA, 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6, 5.0,…
-#> $ Sepal.Length_lag4 <dbl> NA, NA, NA, NA, 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6, …
-#> $ Sepal.Length_lag5 <dbl> NA, NA, NA, NA, NA, 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4…
-#> $ Sepal.Width_lag1  <dbl> NA, 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4, 3.4, 2.9, 3.…
-#> $ Sepal.Width_lag2  <dbl> NA, NA, 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4, 3.4, 2.9…
-#> $ Sepal.Width_lag3  <dbl> NA, NA, NA, 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4, 3.4,…
-#> $ Sepal.Width_lag4  <dbl> NA, NA, NA, NA, 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4, …
-#> $ Sepal.Width_lag5  <dbl> NA, NA, NA, NA, NA, 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3…
+#> $ Sepal.Length_lag1 <dbl> NA, 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6, 5.0, 4.4, ...
+#> $ Sepal.Length_lag2 <dbl> NA, NA, 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6, 5.0, 4...
+#> $ Sepal.Length_lag3 <dbl> NA, NA, NA, 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6, 5....
+#> $ Sepal.Length_lag4 <dbl> NA, NA, NA, NA, 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6...
+#> $ Sepal.Length_lag5 <dbl> NA, NA, NA, NA, NA, 5.1, 4.9, 4.7, 4.6, 5.0, 5.4,...
+#> $ Sepal.Width_lag1  <dbl> NA, 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4, 3.4, 2.9, ...
+#> $ Sepal.Width_lag2  <dbl> NA, NA, 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4, 3.4, 2...
+#> $ Sepal.Width_lag3  <dbl> NA, NA, NA, 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4, 3....
+#> $ Sepal.Width_lag4  <dbl> NA, NA, NA, NA, 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4...
+#> $ Sepal.Width_lag5  <dbl> NA, NA, NA, NA, NA, 3.5, 3.0, 3.2, 3.1, 3.6, 3.9,...
 ```
 
 #### Applying functions to a pair of variables
@@ -155,19 +143,13 @@ iris %>%
                    .names = "{pre}_{fn}",
                    .names_fn = tolower))
 #> # A tibble: 150 x 4
-#>    sepal_product sepal_sum petal_product petal_sum
-#>            <dbl>     <dbl>         <dbl>     <dbl>
-#>  1          17.8       8.6         0.280      1.60
-#>  2          14.7       7.9         0.280      1.60
-#>  3          15.0       7.9         0.26       1.5 
-#>  4          14.3       7.7         0.3        1.7 
-#>  5          18         8.6         0.280      1.60
-#>  6          21.1       9.3         0.68       2.1 
-#>  7          15.6       8           0.42       1.7 
-#>  8          17         8.4         0.3        1.7 
-#>  9          12.8       7.3         0.280      1.60
-#> 10          15.2       8           0.15       1.6 
-#> # … with 140 more rows
+#>   sepal_product sepal_sum petal_product petal_sum
+#>           <dbl>     <dbl>         <dbl>     <dbl>
+#> 1          17.8       8.6         0.280      1.60
+#> 2          14.7       7.9         0.280      1.60
+#> 3          15.0       7.9         0.26       1.5 
+#> 4          14.3       7.7         0.3        1.7 
+#> # ... with 146 more rows
 ```
 
 ## Performance and Compability
@@ -184,7 +166,7 @@ negative effects in terms of performance and compability.
 
 In a nutshell this means:
 
-  - The **over-across function family** in {dplyover} is somewhat slower
+  - The *over-across function family* in {dplyover} is somewhat slower
     than the original `dplyr::across`.
   - Although {dplyover} is designed to work in {dplyr}, some features
     and edge cases will not work correctly.
@@ -210,8 +192,8 @@ very special case version of `over` (or to that time `mutate_over`) into
 available in a separate package. While I was working on this very
 special case version of `over`, I realized that its more general use
 case looks more like a `purrr::map` function for inside {dplyr} verbs
-with different variants, which led me to the **over-across function
-family**.
+with different variants, which led me to the *over-across function
+family*.
 
 ## Acknowledgements and Disclaimer
 
@@ -224,8 +206,8 @@ My own contribution merely consists of:
 
 1.  removing the underlying dependencies on dplyr’s internal functions,
     and
-2.  slightly changing `across`’ logic to make it work for vectors and or
-    a combination of two vectors and / or sets columns.
+2.  slightly changing `across`’ logic to make it work for vectors and a
+    combination of two vectors and/or sets of columns.
 
-By this I probably managed to introduce some bugs and edge cases which
+By this I most defniitely introduced some bugs and edge cases which
 won’t work, and in which case I am the only one to blame.

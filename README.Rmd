@@ -4,20 +4,14 @@ output: github_document
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-```{r, include = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
-  fig.path = "man/figures/README-",
-  out.width = "100%"
-)
+```{r, child = "man/rmd/setup.Rmd"}
 ```
 
 # dplyover
 
 <!-- badges: start -->
-[![CodeFactor](https://www.codefactor.io/repository/github/timteafan/dplyover/badge)](https://www.codefactor.io/repository/github/timteafan/dplyover)
 [![Codecov test coverage](https://codecov.io/gh/TimTeaFan/dplyover/branch/main/graph/badge.svg)](https://codecov.io/gh/TimTeaFan/dplyover?branch=main)
+[![CodeFactor](https://www.codefactor.io/repository/github/timteafan/dplyover/badge)](https://www.codefactor.io/repository/github/timteafan/dplyover)
 <!-- badges: end -->
 
 
@@ -43,7 +37,6 @@ one or several functions to:
 
  - `dplyr::across()`: a set of columns (not part of dplyover)
  - `over()`: a vector (list or atomic vector)
-
  - `over2()` two vectors of the same length (pairwise)
  - `over2x()` two vectors (nested)
  - `across2()` two sets of columns (pairwise)
@@ -88,7 +81,7 @@ function. A good example are `lag` and `lead` variables. Below we use column
 `over()`'s `.names` argument lets us put nice names on the output columns.
 
 ```{r} 
-tibble(a = 1:10) %>%
+tibble(a = 1:25) %>%
   mutate(over(c(1:3),
               list(lag  = ~ lag(a, .x),
                    lead = ~ lead(a, .x)),
