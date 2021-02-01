@@ -2,30 +2,39 @@
 title: "Performance and Compability"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{benchmark}
+  %\VignetteIndexEntry{Performance and Compability}
   %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteDepends{bench}
+  %\VignetteDepends{ggplot2}
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include = FALSE}
+```{r, setup}
+options(
+  tibble.print_min = 4,
+  tibble.max_extra_cols = 8,
+  digits = 2,
+  crayon.enabled = FALSE,
+  cli.unicode = FALSE
+)
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-```
-
-```{r setup, include = FALSE}
-library(tidyverse)
+library(dplyr)
+library(tidyr)
 library(dplyover)
+library(ggplot2)
 library(bench)
 ```
 
 # Introduction
 
 Although {dplyover} is an extension of {dplyr}, it doesn't make use of (read: copy)
-{dplyr} internals. This made it relatively easy to create this package without
-copying dplyr functions and rewriting the major verbs (e.g. `mutate`, `summarise` etc.).
-However, this has some negative side effects in terms of performance and compability.
+{dplyr} internals. This made it relatively easy to develop the package without
+copying tons of dplyr code and overwritting existing functions, such as `mutate`
+and other one table verbs. However, this has some negative side effects in terms
+of performance and compability.
 
 In a nutshell this means:
   - the over-across function family in {dplyover} is somewhat slower than the 
