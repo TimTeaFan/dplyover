@@ -588,75 +588,7 @@ crossoverx_setup <- function(cols, y1, fns, names, names_fn) {
   value
 }
 
-
-crossXover_int <- function(.cols, .x, .fns, .data, ..., .names = NULL){
-
-  .cnames <- names(.data)
-
-  check_keep()
-
-  setup <- crossXover_setup({{.cols}},
-                            .x,
-                            fns = .fns,
-                            names = .names,
-                            cnames = .cnames,
-                            data = .data)
-
-  vars <- setup$vars
-  x <- setup$x
-
-  if (length(vars) == 0L) {
-    return(new_tibble(list(), nrow = 1L))
-  }
-
-  fns <- setup$fns
-  names <- setup$names
-
-  if (any(names %in% .cnames)) {
-    dnames <- .cnames[.cnames %in% names]
-    names_l <- ifelse(length(dnames) > 3, 3, length(dnames))
-
-    rlang::abort(c("Problem with `crossover()`.",
-                   i = "Output must not contain existing column names.",
-                   x = paste0("`crossover()` tried to create the following existing column names: ",
-                              paste0(paste0("'", dnames[seq_along(1:names_l)], "'"), collapse = ", "),
-                              ifelse(length(dnames) > 3, " etc. ", ".")),
-                   i = "If you want to transform existing columns try using `across()`.",
-                   i = "If you want to change the output names use the `.names` argument"))
-
-  }
-
-  data <- dplyr::select(dplyr::cur_data(), dplyr::all_of(vars))
-
-  n_cols <- length(data)
-  n_x <- length(x)
-  n_fns <- length(fns)
-  seq_n_cols <- seq_len(n_cols)
-  seq_n_x <- seq_len(n_x)
-  seq_fns <- seq_len(n_fns)
-
-  k <- 1L
-  out <- vector("list", n_cols * n_x * n_fns)
-
-  for (i in seq_n_cols) {
-    col <- data[[i]]
-    for(l in seq_n_x) {
-      xl <- x[[l]]
-      for (j in seq_fns) {
-        fn <- fns[[j]]
-        out[[k]] <- fn(col, xl, ...)
-        k <- k + 1L
-      }
-    }
-  }
-
-  size <- vctrs::vec_size_common(!!!out)
-  out <- vctrs::vec_recycle_common(!!!out, .size = size)
-  names(out) <- names
-  tibble::new_tibble(out, nrow = size)
-}
-
-
+# this is the only internal dplyr function internalized in dplyover
 data_mask_top <- function(env, recursive = FALSE, inherit = FALSE) {
    while (rlang::env_has(env, ".__tidyeval_data_mask__.", inherit = inherit)) {
      env <- rlang::env_parent(rlang::env_get(env, ".top_env", inherit = inherit))
