@@ -5,9 +5,10 @@
 
 <!-- badges: start -->
 
-[![CodeFactor](https://www.codefactor.io/repository/github/timteafan/dplyover/badge)](https://www.codefactor.io/repository/github/timteafan/dplyover)
+[![R-CMD-check](https://github.com/TimTeaFan/dplyover/workflows/R-CMD-check/badge.svg)](https://github.com/TimTeaFan/dplyover/actions)
 [![Codecov test
 coverage](https://codecov.io/gh/TimTeaFan/dplyover/branch/main/graph/badge.svg)](https://codecov.io/gh/TimTeaFan/dplyover?branch=main)
+[![CodeFactor](https://www.codefactor.io/repository/github/timteafan/dplyover/badge)](https://www.codefactor.io/repository/github/timteafan/dplyover)
 <!-- badges: end -->
 
 ## Overview
