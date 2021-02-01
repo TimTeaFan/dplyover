@@ -1,5 +1,5 @@
 Package: dplyover
-Title: Create columns by looping over vectors and / or columns in 'dplyr'.
+Title: Create columns by applying functions to vectors and/or columns in 'dplyr'.
 Version: 0.0.0.9000
 Authors@R: 
     person(given = "Tim",
