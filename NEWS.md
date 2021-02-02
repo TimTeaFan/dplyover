@@ -1,3 +1,3 @@
-# dplyover 0.0.0.9000
+# dplyover 0.0.7
 
-* Added a `NEWS.md` file to track changes to the package.
+* pre-release with basic functionality
