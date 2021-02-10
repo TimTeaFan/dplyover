@@ -147,22 +147,21 @@ test_that("over() works with a data.frame", {
 test_that("over() works with list-columns", {
 
   df_over <- csat %>%
-    transmute(over(unique(unlist(csat_open)),
-                ~ as.integer(grepl(.x, csat_open)),
-                .names = "rsp_{x}",
-                .names_fn = ~ gsub("\\s", "_", .x)))
+       mutate(over(dist_values(csat_open, ", "),
+                   ~ as.integer(grepl(.x, csat_open)),
+                   .names = "rsp_{x}",
+                   .names_fn = ~ gsub("\\s", "_", .x)),
+                   .keep = "none")
 
 
   df_expect <- csat %>%
-    select(cust_id, csat_open) %>%
-    tidyr::unnest(csat_open) %>%
-    mutate(val = 1L) %>%
-    tidyr::pivot_wider(id_cols = cust_id,
-                       names_from = csat_open,
-                       values_from = val,
-                       values_fill = 0L) %>%
-    select(-cust_id) %>%
-    rename_with(~ paste0("rsp_", gsub("\\s", "_", .x)))
+    mutate(rsp_friendly_staff = as.integer(grepl("friendly staff", csat_open)),
+           rsp_good_service = as.integer(grepl("good service", csat_open)),
+           rsp_great_product = as.integer(grepl("great product", csat_open)),
+           rsp_no_response = as.integer(grepl("no response", csat_open)),
+           rsp_too_expensive = as.integer(grepl("too expensive", csat_open)),
+           rsp_unfriendly = as.integer(grepl("unfriendly", csat_open)),
+           .keep = "none")
 
   expect_equal(df_over, df_expect)
 
@@ -752,13 +751,14 @@ test_that("over() can be used with other functions that use `.keep` without warn
       mutate(data2 = list(nest_by(data, Species, .keep = TRUE) %>%
                             mutate(over(1, paste))))},
     NA)
-# working locally but not in test_check
-  # expect_warning({
-  #   iris %>%
-  #     mutate(data2 = list(mutate(over(1, paste))),
-  #            .keep = "unused")},
-  #   "does not support the `.keep`"
-  #   )
+
+  expect_warning({
+      iris %>%
+        nest_by(Sepal.Length < 6, .keep = TRUE) %>%
+        mutate(data2 = list(mutate(over(1, paste))),
+               .keep = "unused")},
+      "does not support the `.keep`"
+      )
 
   expect_warning({
     iris %>%

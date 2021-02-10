@@ -20,13 +20,15 @@ create_coded_rsp <- function(inp, c_good, c_bad, c_all) {
 
   size <- round(runif(length(inp), 1, 3))
 
-  res <- lapply(seq_along(inp), function(x) {
+  res <- vapply(seq_along(inp),
+                FUN.VALUE = character(1),
+                FUN = function(x) {
     if (inp[x] > 3) {
-      sample(c_good, size[x])
+      paste(sample(c_good, size[x]), collapse = ", ")
     } else if (inp[x] < 3) {
-      sample(c_bad, size[x])
+      paste(sample(c_bad, size[x]), collapse = ", ")
     } else {
-      sample(c_all, size[x])
+      paste(sample(c_all, size[x]), collapse = ", ")
     }
   })
 
@@ -82,14 +84,29 @@ csat <- csat %>%
                          `2` = "Unsatisfied",
                          `3` = "Neutral",
                          `4` = "Satisfied",
-                         `5` = "Very satisfied")),
+                         `5` = "Very satisfied") %>%
+                  factor(., levels = c("Very unsatisfied",
+                                       "Unsatisfied",
+                                       "Neutral",
+                                       "Satisfied",
+                                       "Very satisfied"))),
          across(ends_with("_contact"),
                 ~ recode(.x,
                          `0` = "no contact",
                          `1` = "more than 3 years ago",
                          `2` = "within 1 to 3 years",
-                         `3` = "within last year")),
-         csat_open = purrr::map(csat_open, ~ recode(.x, !!! lookup_ls)))
+                         `3` = "within last year")  %>%
+                  factor(., levels = c("no contact",
+                                       "more than 3 years ago",
+                                       "within 1 to 3 years",
+                                       "within last year"))),
+         csat_open = purrr::map(csat_open, ~ recode(.x, !!! lookup_ls)),
+         csat_open = gsub("11", "great product", csat_open) %>%
+           gsub("12", "good service", .) %>%
+           gsub("13", "friendly staff", .) %>%
+           gsub("21", "too expensive", .) %>%
+           gsub("22", "unfriendly", .) %>%
+           gsub("23", "no response", .))
 
 usethis::use_data(csat, overwrite = TRUE)
 

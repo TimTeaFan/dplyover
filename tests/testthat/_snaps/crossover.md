@@ -1,8 +1,7 @@
 # crossover() gives meaningful messages
 
-    Problem with `mutate()` input `..1`.
-    x Problem with `crossover()` inputs `.xcols` and `.y`.
-    i The number of `.xcols` must be equal to the number of elements in  `.y`.
-    x 1 columns are selected in `.xcols`, while `.y` contains 2 elements.
-    i Input `..1` is `crossover(x, c(2:3), mean)`.
+    Problem with `summarise()` input `..1`.
+    x Can't subset columns that don't exist.
+    x Column `y` doesn't exist.
+    i Input `..1` is `crossover_old(c(y, z), dist_values, ~if_else(.x == .y, 1L, 0L))`.
 

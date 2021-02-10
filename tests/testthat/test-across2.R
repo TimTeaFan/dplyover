@@ -384,18 +384,14 @@ test_that("across2() retains original ordering", {
 # snapshot tests for across2 and across2x specific errors come here
 
 
-
-
-
-# FAILING
-# test_that("monitoring cache - across2() can be used twice in the same expression", {
-#   df <- tibble(a = 1, b = 2)
-#   expect_equal(
-#     mutate(df,
-#            x = ncol(across2(a, b, ~ .x + .y)) + ncol(across2(where(is.numeric), where(is.numeric), ~ .x + .y))),
-#     tibble(a = 1, b = 2, x = 4L)
-#   )
-# })
+test_that("monitoring cache - across2() can be used twice in the same expression", {
+  df <- tibble(a = 1, b = 2)
+  expect_equal(
+    mutate(df,
+           x = ncol(across2(a, b, ~ .x + .y)) + ncol(across2(where(is.numeric), where(is.numeric), ~ .x + .y))),
+    tibble(a = 1, b = 2, x = 3L)
+  )
+})
 
 test_that("monitoring cache - across2() can be used in separate expressions", {
   df <- tibble(a = 1, b = 2)
@@ -497,7 +493,7 @@ test_that("across2() uses environment from the current quosure (#5460)", {
                df)
 
   # Recursive case fails because the `y` column has precedence (#5498)
-  # `dplyr::across()` is currently *not* failing this test => skip test
+  # `dplyr::across()` is currently (dplyr 1.0.2) *not* failing this test => skip test
   # expect_error(df %>% summarise(summarise(across2(), across2(all_of(y), mean))))
 
   # Inherited case
@@ -505,7 +501,7 @@ test_that("across2() uses environment from the current quosure (#5460)", {
   expect_equal(out, data.frame(x = 1))
 })
 
-# `dplyr::across()` is currently failing this test => skip test
+# `dplyr::across()` is currently (dplyr 1.0.2) failing this test => skip test
 # test_that("across2() sees columns in the recursive case (#5498)", {
   # df <- tibble(
   #   vars = list("foo"),
