@@ -11,9 +11,12 @@
 #'
 #' * [seq_range()] returns the sequence between the `range()` of a variable `x`.
 #'
-#' @param x An atomic vector. For [seq_range()] x must be numeric or date.
+#' @param x An atomic vector or list. For [seq_range()] x must be numeric or date.
+#' @param .sep  A character vector containing regular expression(s) which are used
+#'   for splitting the values (works only if x is a character vector).
 #' @param .sort A character string indicating which sorting scheme is to be applied
-#'   to distinct values: ascending ("asc" = default), descending ("desc") or "none".
+#'   to distinct values: ascending ("asc"), descending ("desc") or "none". The
+#'   default is ascending, only if x is a factor the default is "none",
 #' @param .by A number (or date expression) representing the increment of the sequence.
 #'
 #' @return
@@ -48,8 +51,8 @@
 #'          .keep = "none")
 #' ```
 #'
-#' While the output in the example above is identical to `unique()`,
-#' `dist_values()` has three differences:
+#' `dist_values()` is just a wrapper around unique. However, it has five
+#' differences:
 #'
 #' (1) `NA` values are automatically stripped. Compare:
 #'
@@ -63,12 +66,10 @@
 #'
 #' ```{r, comment = "#>", collapse = TRUE}
 #' factor(c(1:3, NA)) %>%
-#'   as.factor() %>%
 #'   unique() %>%
 #'   class()
 #'
 #' factor(c(1:3, NA)) %>%
-#'   as.factor() %>%
 #'   dist_values() %>%
 #'   class()
 #' ```
@@ -84,12 +85,30 @@
 #' dist_values(c(3,1,2), .sort = "none")
 #' ```
 #'
+#' (4) When used on a character vector `dist_values` can take a separator
+#' `.sep` to split the elements accordingly:
 #'
+#' #' ```{r, comment = "#>", collapse = TRUE}
+#' c("1, 2, 3",
+#'   "2, 4, 5",
+#'   "4, 1, 7") %>%
+#'   dist_values(., .sep = ", ")
+#' ```
+#'
+#' (5) When used on lists `dist_values` automatically simplifiies its input
+#' into a vector using `unlist`:
+#'
+#' #' ```{r, comment = "#>", collapse = TRUE}
+#' list(a = c(1:4), b = (4:6), c(5:10)) %>%
+#'   dist_values()
+#' ```
+#'
+#' ----------
 #' `seq_range()` generates a numeric sequence between the `min` and `max`
 #' values of its input variable. This is helpful when creating many dummy
 #' variables with varying thresholds.
 #'
-#' ```{r, comment = "#>", collapse = TRUE}
+#' #' ```{r, comment = "#>", collapse = TRUE}
 #' iris %>%
 #'   mutate(over(seq_range(Sepal.Length, 1),
 #'               ~ if_else(Sepal.Length > .x, 1, 0),
@@ -129,24 +148,37 @@ NULL
 
 #' @rdname select_values
 #' @export
-dist_values <- function(x, .sort = c("asc", "desc", "none")) {
+dist_values <- function(x, .sep = NULL, .sort = c("asc", "desc", "none")) {
 
+  is_null <- identical(.sort, c("asc", "desc", "none"))
   sort <- match.arg(.sort)
 
-  if (is.factor(x)) {
-    res <- levels(x)
-  } else {
+  if (is.list(x)) {
+    x <- unlist(x)
+  }
+  if (!is.null(.sep)) {
+    x <- unlist(strsplit(x, .sep))
+  }
+
+  if (!is.factor(x)) {
     res <- as.vector(na.omit(unique(x)))
-  }
-
-  if (sort == "asc") {
-    sort(res)
-  } else if (sort == "desc") {
-    sort(res, decreasing = TRUE)
+    if (sort == "asc") {
+      return(sort(res))
+    } else if (sort == "desc") {
+      return(sort(res, decreasing = TRUE))
+    } else {
+      return(res)
+    }
   } else {
-    res
+    x <- levels(x)
+    if (is_null || .sort == "none") {
+      return(x)
+    } else if (sort == "asc") {
+      return(sort(x))
+    } else if (sort == "desc") {
+      return(sort(x, descreasing = TRUE))
   }
-
+  }
 }
 
 #' @rdname select_values
