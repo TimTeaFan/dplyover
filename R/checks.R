@@ -3,7 +3,6 @@ is.date <- function(x) {
   inherits(x, c("Date", "POSIXt"))
 }
 
-
 inspect_call <- function() {
 
   out <- list(warn = FALSE)
@@ -14,8 +13,7 @@ inspect_call <- function() {
 
   if (length(mut_id) > 0) {
 
-    # calling_fn <- sub(".*::(.*)", "\\1", "dplyover::over")
-    last_mut <- as.list(trace_bck$calls[[max(mut_id)-2]])
+    last_mut <- as.list(trace_bck$calls[[max(mut_id) - 2]])
 
     keep_arg <- grepl("^\\.keep$", names(last_mut), perl = TRUE)
 
@@ -28,4 +26,17 @@ inspect_call <- function() {
     }
   }
   out
+}
+
+# this is the only internal dplyr function internalized in dplyover
+# see README section Acknowledgements as well as dplyr's license and copyright
+data_mask_top <- function(env, recursive = FALSE, inherit = FALSE) {
+  while (rlang::env_has(env, ".__tidyeval_data_mask__.", inherit = inherit)) {
+    env <- rlang::env_parent(rlang::env_get(env, ".top_env", inherit = inherit))
+    if (!recursive) {
+      return(env)
+    }
+  }
+
+  env
 }
