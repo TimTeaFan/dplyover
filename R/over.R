@@ -1,4 +1,4 @@
-#' Loop a vector or list over one or several functions in 'dplyr'
+#' Apply functions to a list or vector in 'dplyr'
 #'
 #' @description
 #' `over()` makes it easy to create new colums inside a [dplyr::mutate()] or
@@ -176,9 +176,9 @@
 #' ```
 #'
 #' `over()` can also loop over columns of a data.frame. In the example below we
-#' want to create four different dummy variables out  `item1`: (i) the top and (ii)
+#' want to create four different dummy variables of `item1`: (i) the top and (ii)
 #' bottom category as well as (iii) the top two and (iv) the bottom two categories.
-#' We can create a lookup data.frame and use all columns but the first as input to
+#' We can create a lookup `data.frame` and use all columns but the first as input to
 #' `over()`. In the function call we make use of base R's `match()`, where `.x`
 #' represents the new values and `recode_df[, 1]` refers to the old values.
 #'
@@ -197,17 +197,20 @@
 #'   select(starts_with("item1"))
 #' ```
 #'
-#' `over()` does also work with list-columns. In the example below, the colum
-#' `csat_open` contains one or more reasons why a specific Customer Satisfaction
-#' Rating was given. We can easily create a column for each response category:
+#' `over()` work nicely with comma separated values stored in character vectors.
+#' In the example below, the colum `csat_open` contains one or more comma
+#' separated reasons why a specific customer satisfaction rating was given.
+#' We can easily create a column for each response category with the help of
+#' `dist_values` - a wrapper around `unique` which can split vector elements
+#' using a separator:
 #'
 #' ```{r, comment = "#>", collapse = TRUE}
 #' csat %>%
-#'   mutate(over(unique(unlist(csat_open)),
+#'   mutate(over(dist_values(csat_open, .sep = ", ")),
 #'               ~ as.integer(grepl(.x, csat_open)),
 #'               .names = "rsp_{x}",
 #'               .names_fn = ~ gsub("\\s", "_", .x)),
-#'               .keep = "none")
+#'               .keep = "none") %>% glimpse
 #' ```
 #'
 #'
