@@ -86,15 +86,12 @@
 #'   in case the resulting names need to be further cleaned or trimmed.
 #'
 #' @returns
-#' `crossover()` returns a tibble with one column for each pair of columns in `.xcols`
-#' and elements in `.y` combined with each function in `.fns`.
+#' `crossover()` returns a tibble with one column for each combination of
+#' columns in `.xcols`, elements in `.y` and functions in `.fns`.
 #'
 #' If a function is supplied as `.y` argument, `crossover()` returns a tibble with
 #' one column for each pair of output elements of `.y` and the column in `.xcols`
 #' that generated the output combined with each function in `.fns`.
-#'
-#' `crossoverx()` returns a tibble with one column for each combination of
-#' columns in `.xcols`, elements in `.y` and functions in `.fns`.
 #'
 #' @seealso
 #' Other members of the <[`over-across function family`][over_across_family]>.
