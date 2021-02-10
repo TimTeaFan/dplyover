@@ -4,11 +4,13 @@
 
 to_do.R
 
+R/crossover_old.R
 R/cross_matrix.R
 R/dplyr_context_internals.R
 R/dplyr_data_mask.R
 R/across_new.R
 
 tests/testthat/test-across_new.R
+tests/testthat/test-crossover_old.R
 
 inst/doc
