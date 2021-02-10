@@ -13,6 +13,13 @@ coverage](https://codecov.io/gh/TimTeaFan/dplyover/branch/main/graph/badge.svg)]
 [![CodeFactor](https://www.codefactor.io/repository/github/timteafan/dplyover/badge)](https://www.codefactor.io/repository/github/timteafan/dplyover)
 <!-- badges: end -->
 
+## A note of caution
+
+I have not yet officially released (read: announced) this package, which
+is still under active development. I am happy for feedback of any kind,
+but please consider any of the functions as “experimental” at this
+point.
+
 ## Overview
 
 {dplyover} extends {dplyr}’s functionality by building a function family
@@ -37,16 +44,15 @@ applying one or several functions to:
 
   - `dplyr::across()` a set of columns (not part of dplyover)
   - `over()` a vector (list or atomic vector)
-  - `over2()` two vectors of the same length (pairwise<sup>\#</sup>)
+  - `over2()` two vectors of the same length (sequentially<sup>\#</sup>)
   - `over2x()` two vectors (nested<sup>+</sup>)
-  - `across2()` two sets of columns (pairwise<sup>\#</sup>)
+  - `across2()` two sets of columns (sequentially<sup>\#</sup>)
   - `across2x()` two sets of columns (nested<sup>+</sup>)
-  - `crossover()` a set of columns and a vector (pairwise<sup>\#</sup>)
-  - `crossoverx()` a set of columns and a vector (nested<sup>+</sup>)
+  - `crossover()` a set of columns and a vector (nested<sup>+</sup>)
 
-<small>\# “pairwise” means that the function is sequentially applied to
-the first two elements of `x[[1]]` and `y[[1]]`, then to the second pair
-of elements and so on.</small><br> <small>+ “nested” means that the
+<small>\# “sequentially” means that the function is sequentially applied
+to the first two elements of `x[[1]]` and `y[[1]]`, then to the second
+pair of elements and so on.</small><br> <small>+ “nested” means that the
 function is applied to all combinations between elements in `x` and `y`
 similar to a nested loop.</small>
 
@@ -62,9 +68,9 @@ devtools::install_github("TimTeaFan/dplyover")
 
 ## Getting started
 
-Below are a few examples of the *over-across function family*. More
-functions and workarounds of how to tackle the problems below without
-{dplyover} can be found in the vignette “Why dplyover?”.
+Below are a few examples of the {dplyover}’s *over-across function
+family*. More function and workarounds of how to tackle the problems
+below without {dplyover} can be found in the vignette “Why dplyover?”.
 
 ``` r
 # dplyover is an extention of dplyr on won't work without it
@@ -75,7 +81,7 @@ library(dplyover)
 iris <- as_tibble(iris)
 ```
 
-#### Applying a function with an iterating argument to one column
+#### Apply functions iterating over an object to one column
 
 `over()` applies one or several functions to a vector. We can use it
 inside `dplyr::mutate()` to create several similar variables that we
@@ -102,9 +108,9 @@ tibble(a = 1:25) %>%
 #> # ... with 21 more rows
 ```
 
-#### Applying a function with an iterating argument to a set of columns
+#### Apply functions iterating over an object to a set of columns
 
-`crossoverx()` applies the functions in `.fns` to every combination of
+`crossover()` applies the functions in `.fns` to every combination of
 colums in `.xcols` with elements in `.y`. This is similar to the example
 above, but this time, we use a set of columns. Below we create five
 lagged variables for each ‘Sepal.Length’ and ‘Sepal.Width’. Again, we
@@ -114,7 +120,7 @@ specifying the glue syntax in `.names.`
 ``` r
 iris %>%
    transmute(
-     crossoverx(starts_with("sepal"),
+     crossover(starts_with("sepal"),
                 1:5,
                 list(lag = ~ lag(.x, .y)),
                 .names = "{xcol}_{fn}{y}")) %>%
@@ -133,7 +139,7 @@ iris %>%
 #> $ Sepal.Width_lag5  <dbl> NA, NA, NA, NA, NA, 3.5, 3.0, 3.2, 3.1, 3.6, 3.9,...
 ```
 
-#### Applying functions to a set of variable pairs
+#### Apply functions to a set of variable pairs
 
 `across2()` can be used to transform pairs of variables in one or more
 functions. In the example below we want to calculate the product and the
@@ -177,14 +183,17 @@ However, the downside is that not relying on {dplyr} internals has some
 negative effects in terms of performance and compability.
 
 In a nutshell this means:<br> - The *over-across function family* in
-{dplyover} is somewhat slower than the original `dplyr::across`.<br> -
-Although {dplyover} is designed to work in {dplyr}, some features and
-edge cases will not work correctly.
+{dplyover} is slower than the original `dplyr::across`. Up until {dplyr}
+1.0.3 the overhead was not too big, but `dplyr::across` got much faster
+with {dplyr} 1.0.4 which why the gap has widend a lot. <br> - Although
+{dplyover} is designed to work in {dplyr}, some features and edge cases
+will not work correctly.
 
-The good news is, that even without relying on {dplyr} internals most of
-the original functionality can be replicated, and although being a bit
-less performant, the current setup is optimized to fall not too far
-behind in terms of speed (at least in most cases).
+The good news is that even without relying on {dplyr} internals most of
+the original functionality can be replicated and although being less
+performant, the current setup is optimized and falls not too far behind
+in terms of speed - at least when compared to the pre v1.0.4
+`dplyr::across`.
 
 Regarding compability, I have spent quite some time testing the package
 and I was able to replicate most of the tests for `dplyr::across`
@@ -211,10 +220,10 @@ This package is not only an extention of {dplyr}. The main functions in
 license and copyrights apply\!). So if this package is working
 correctly, all the credit should go to the dplyr team.
 
-My own contribution merely consists of:
+My own “contribution” (if you want to call it like that) merely consists
+of:
 
-1.  removing the underlying dependencies on {dplyr}’s internal
-    functions, and
+1.  removing the dependencies on {dplyr}’s internal functions, and
 2.  slightly changing `across`’ logic to make it work for vectors and a
     combination of two vectors and/or sets of columns.
 
