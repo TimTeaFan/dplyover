@@ -1,8 +1,8 @@
-#' Loop two columns simultaneaously over one or several functions in 'dplyr'
+#' Apply functions to two sets of columns simultaniously in 'dplyr'
 #'
 #' @description
-#' `across2()` and `across2x()` are variants of [`dplyr::across()`][dplyr::across] that iterate over
-#' two columns simultaneously. `across2()` loops each *pair of columns* in `.xcols`
+#' `across2()` and `across2x()` are variants of [`dplyr::across()`] that iterate
+#' over two columns simultaneously. `across2()` loops each *pair of columns* in `.xcols`
 #' and  `.ycols` over one or more functions, while `across2x()` loops
 #' *every combination between columns* in `.xcols` and `.ycols` over one or more functions.
 #'
@@ -117,7 +117,7 @@
 #' @export
 across2 <- function(.xcols, .ycols, .fns, ..., .names = NULL, .names_fn = NULL){
 
-   .data <- tryCatch({
+  .data <- tryCatch({
     dplyr::cur_data()
   }, error = function(e) {
     rlang::abort("`across2()` must only be used inside dplyr verbs.")
@@ -360,8 +360,8 @@ across2x <- function(.xcols, .ycols, .fns, ..., .names = NULL, .names_fn = NULL,
   fns <- setup$fns
   names <- setup$names
 
-  xdata <- dplyr::select(dplyr::cur_data(), dplyr::all_of(xvars))
-  ydata <- dplyr::select(dplyr::cur_data(), dplyr::all_of(yvars))
+  xdata <- .data[xvars]
+  ydata <- .data[yvars]
 
   n_xcols <- length(xdata)
   n_ycols <- length(ydata)
@@ -530,59 +530,4 @@ across2x_setup <- function(xcols, ycols, fns, names, cnames, data, names_fn, com
 
   value <- list(xvars = xvars, yvars = yvars, fns = fns, names = names, is_glue = is_glue)
   value
-}
-
-
-
-across2x_int <- function(.xcols, .ycols, .fns, .data, ..., .names = NULL){
-
-  .cnames <- names(.data)
-
-  check_keep()
-
-  setup <- across2x_setup({{.xcols}},
-                          {{.ycols}},
-                          fns = .fns,
-                          names = .names,
-                          cnames = .cnames,
-                          data = .data)
-
-  vars1 <- setup$vars1
-  vars2 <- setup$vars2
-
-  if (length(vars1) == 0L && length(vars2)) {
-    return(tibble::new_tibble(list(), nrow = 1L))
-  }
-
-  fns <- setup$fns
-  names <- setup$names
-
-  data1 <- dplyr::select(dplyr::cur_data(), dplyr::all_of(vars1))
-  data2 <- dplyr::select(dplyr::cur_data(), dplyr::all_of(vars2))
-
-  n_xcols <- length(data1)
-  n_ycols <- length(data2)
-  n_fns <- length(fns)
-  seq_n_xcols <- seq_len(n_xcols)
-  seq_n_ycols <- seq_len(n_ycols)
-  seq_fns <- seq_len(n_fns)
-  k <- 1L
-  out <- vector("list", n_xcols * n_ycols * n_fns)
-
-  for (i in seq_n_xcols) {
-    xcol <- data1[[i]]
-    for(l in seq_n_ycols) {
-      ycol <- data2[[l]]
-      for (j in seq_fns) {
-        fn <- fns[[j]]
-        out[[k]] <- fn(xcol, ycol, ...)
-        k <- k + 1L
-      }
-    }
-  }
-
-  size <- vctrs::vec_size_common(!!!out)
-  out <- vctrs::vec_recycle_common(!!!out, .size = size)
-  names(out) <- names
-  tibble::new_tibble(out, nrow = size)
 }
