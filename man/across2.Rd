@@ -3,7 +3,7 @@
 \name{across2}
 \alias{across2}
 \alias{across2x}
-\title{Loop two columns simultaneaously over one or several functions in 'dplyr'}
+\title{Apply functions to two sets of columns simultaniously in 'dplyr'}
 \usage{
 across2(.xcols, .ycols, .fns, ..., .names = NULL, .names_fn = NULL)
 
@@ -77,8 +77,8 @@ and \code{.ycols} combined with each function in \code{.fns}.
 in \code{.x} and\code{.y} combined with each function in \code{.fns}.
 }
 \description{
-\code{across2()} and \code{across2x()} are variants of \code{\link[dplyr:across]{dplyr::across()}} that iterate over
-two columns simultaneously. \code{across2()} loops each \emph{pair of columns} in \code{.xcols}
+\code{across2()} and \code{across2x()} are variants of \code{\link[dplyr:across]{dplyr::across()}} that iterate
+over two columns simultaneously. \code{across2()} loops each \emph{pair of columns} in \code{.xcols}
 and  \code{.ycols} over one or more functions, while \code{across2x()} loops
 \emph{every combination between columns} in \code{.xcols} and \code{.ycols} over one or more functions.
 }
@@ -131,11 +131,12 @@ by setting the \code{.comb} argument to \code{"minimal"}.\if{html}{\out{<div cla
                                      gsub("Petal", "P", .),
                      .comb = "minimal"))
 #> # A tibble: 3 x 7
-#>   Species    S.Length_S.Width S.Length_P.Length S.Length_P.Width S.Width_P.Length S.Width_P.Width P.Length_P.Width
-#>   <fct>                 <dbl>             <dbl>            <dbl>            <dbl>           <dbl>            <dbl>
-#> 1 setosa                 0.74              0.27             0.28             0.18            0.23             0.33
-#> 2 versicolor             0.53              0.75             0.55             0.56            0.66             0.79
-#> 3 virginica              0.46              0.86             0.28             0.4             0.54             0.32
+#>   Species S.Length_S.Width S.Length_P.Leng~ S.Length_P.Width S.Width_P.Length S.Width_P.Width
+#> * <fct>              <dbl>            <dbl>            <dbl>            <dbl>           <dbl>
+#> 1 setosa              0.74             0.27             0.28             0.18            0.23
+#> 2 versic~             0.53             0.75             0.55             0.56            0.66
+#> 3 virgin~             0.46             0.86             0.28             0.4             0.54
+#> # ... with 1 more variable: P.Length_P.Width <dbl>
 }\if{html}{\out{</div>}}
 }
 

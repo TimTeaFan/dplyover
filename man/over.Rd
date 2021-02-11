@@ -2,7 +2,7 @@
 % Please edit documentation in R/over.R
 \name{over}
 \alias{over}
-\title{Loop a vector or list over one or several functions in 'dplyr'}
+\title{Apply functions to a list or vector in 'dplyr'}
 \usage{
 over(.x, .fns, ..., .names = NULL, .names_fn = NULL)
 }
@@ -193,7 +193,7 @@ comes in handy:\if{html}{\out{<div class="r">}}\preformatted{csatraw \%>\%
                  ~ mean(item1 == .x)))
 #> # A tibble: 3 x 6
 #>   type          `1`   `2`   `3`   `4`    `5`
-#>   <chr>       <dbl> <dbl> <dbl> <dbl>  <dbl>
+#> * <chr>       <dbl> <dbl> <dbl> <dbl>  <dbl>
 #> 1 existing   0.156  0.234 0.234 0.266 0.109 
 #> 2 new        0.0714 0.268 0.357 0.214 0.0893
 #> 3 reactivate 0.0667 0.267 0.133 0.4   0.133
@@ -208,16 +208,16 @@ top two and bottom two categories on the fly:\if{html}{\out{<div class="r">}}\pr
                  ~ mean(item1 \%in\% .x)))
 #> # A tibble: 3 x 4
 #>   type        bot2   mid  top2
-#>   <chr>      <dbl> <dbl> <dbl>
+#> * <chr>      <dbl> <dbl> <dbl>
 #> 1 existing   0.391 0.234 0.375
 #> 2 new        0.339 0.357 0.304
 #> 3 reactivate 0.333 0.133 0.533
 }\if{html}{\out{</div>}}
 
 \code{over()} can also loop over columns of a data.frame. In the example below we
-want to create four different dummy variables out  \code{item1}: (i) the top and (ii)
+want to create four different dummy variables of \code{item1}: (i) the top and (ii)
 bottom category as well as (iii) the top two and (iv) the bottom two categories.
-We can create a lookup data.frame and use all columns but the first as input to
+We can create a lookup \code{data.frame} and use all columns but the first as input to
 \code{over()}. In the function call we make use of base R's \code{match()}, where \code{.x}
 represents the new values and \code{recode_df[, 1]} refers to the old values.\if{html}{\out{<div class="r">}}\preformatted{
 recode_df <- data.frame(old  = c(1, 2, 3, 4, 5),
@@ -233,30 +233,33 @@ csatraw \%>\%
   select(starts_with("item1"))
 #> # A tibble: 150 x 6
 #>   item1 item1_open item1_top1 item1_top2 item1_bot1 item1_bot2
-#>   <dbl> <list>          <dbl>      <dbl>      <dbl>      <dbl>
-#> 1     3 <int [1]>           0          0          0          0
-#> 2     2 <int [1]>           0          0          0          1
-#> 3     2 <int [3]>           0          0          0          1
-#> 4     4 <int [3]>           0          1          0          0
+#>   <dbl> <chr>           <dbl>      <dbl>      <dbl>      <dbl>
+#> 1     3 12                  0          0          0          0
+#> 2     2 22                  0          0          0          1
+#> 3     2 21, 22, 23          0          0          0          1
+#> 4     4 12, 13, 11          0          1          0          0
 #> # ... with 146 more rows
 }\if{html}{\out{</div>}}
 
-\code{over()} does also work with list-columns. In the example below, the colum
-\code{csat_open} contains one or more reasons why a specific Customer Satisfaction
-Rating was given. We can easily create a column for each response category:\if{html}{\out{<div class="r">}}\preformatted{csat \%>\%
-  mutate(over(unique(unlist(csat_open)),
+\code{over()} work nicely with comma separated values stored in character vectors.
+In the example below, the colum \code{csat_open} contains one or more comma
+separated reasons why a specific customer satisfaction rating was given.
+We can easily create a column for each response category with the help of
+\code{dist_values} - a wrapper around \code{unique} which can split vector elements
+using a separator:\if{html}{\out{<div class="r">}}\preformatted{csat \%>\%
+  mutate(over(dist_values(csat_open, .sep = ", "),
               ~ as.integer(grepl(.x, csat_open)),
               .names = "rsp_\{x\}",
               .names_fn = ~ gsub("\\\\s", "_", .x)),
-              .keep = "none")
-#> # A tibble: 150 x 6
-#>   rsp_good_service rsp_unfriendly rsp_too_expensive rsp_no_response rsp_friendly_staff rsp_great_product
-#>              <int>          <int>             <int>           <int>              <int>             <int>
-#> 1                1              0                 0               0                  0                 0
-#> 2                0              1                 0               0                  0                 0
-#> 3                0              1                 1               1                  0                 0
-#> 4                1              0                 0               0                  1                 1
-#> # ... with 146 more rows
+              .keep = "none") \%>\% glimpse
+#> Rows: 150
+#> Columns: 6
+#> $ rsp_friendly_staff <int> 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, ...
+#> $ rsp_good_service   <int> 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, ...
+#> $ rsp_great_product  <int> 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, ...
+#> $ rsp_no_response    <int> 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, ...
+#> $ rsp_too_expensive  <int> 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, ...
+#> $ rsp_unfriendly     <int> 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, ...
 }\if{html}{\out{</div>}}
 }
 

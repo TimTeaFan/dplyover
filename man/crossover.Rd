@@ -2,19 +2,9 @@
 % Please edit documentation in R/crossover.R
 \name{crossover}
 \alias{crossover}
-\alias{crossoverx}
-\title{Loop columns and a vector over one or several functions in 'dplyr'}
+\title{Apply functions to a set of columns and a vector simultaniously in 'dplyr'}
 \usage{
 crossover(
-  .xcols = dplyr::everything(),
-  .y,
-  .fns,
-  ...,
-  .names = NULL,
-  .names_fn = NULL
-)
-
-crossoverx(
   .xcols = dplyr::everything(),
   .y,
   .fns,
@@ -31,21 +21,20 @@ Because \code{crossover()} is used within functions like \code{summarise()} and
 \item{.y}{An atomic vector or list to apply functions to. \code{crossover()} also
 accepts a function as \code{.y} argument. In this case each column in \code{.xcols}
 is looped over all the outputs that it generated with the function supplied
-to \code{.y}.
+to \code{.y}. Note: the underyling data must not be grouped, if a function
+is supplied to \code{.y}.
 
 If a function is supplied, the following values are possible:
 \itemize{
-\item A bare function name, e.g. \code{mean}
-\item An anonymous function, e.g. \code{function(x) mean(x)}
-\item A purrr-style lambda, e.g. \code{~ mean(.x, na.rm = TRUE)}
+\item A bare function name, e.g. \code{unique}
+\item An anonymous function, e.g. \code{function(x) unique(x)}
+\item A purrr-style lambda, e.g. \code{~ unique(.x, fromLast = TRUE)}
 }
 
 Note that additional arguments can only be specified with an anonymous
 function, a purrr-style lamba or with a pre-filled custom function.}
 
 \item{.fns}{Functions to apply to each column in \code{.xcols} and element in \code{.y}.
-Note that <\code{\link[rlang:nse-force]{rlang's forcing operators}}> are not
-supported.
 
 Possible values are:
 \itemize{
@@ -94,31 +83,34 @@ specification in \code{.names} has been evaluated. This is, for example, helpful
 in case the resulting names need to be further cleaned or trimmed.}
 }
 \value{
-\code{crossover()} returns a tibble with one column for each pair of columns in \code{.xcols}
-and elements in \code{.y} combined with each function in \code{.fns}.
+\code{crossover()} returns a tibble with one column for each combination of
+columns in \code{.xcols}, elements in \code{.y} and functions in \code{.fns}.
 
 If a function is supplied as \code{.y} argument, \code{crossover()} returns a tibble with
 one column for each pair of output elements of \code{.y} and the column in \code{.xcols}
 that generated the output combined with each function in \code{.fns}.
-
-\code{crossoverx()} returns a tibble with one column for each combination of
-columns in \code{.xcols}, elements in \code{.y} and functions in \code{.fns}.
 }
 \description{
-\code{crossover()} and \code{crossoverx()} combine the functionality of \code{\link[dplyr:across]{dplyr::across()}}
-with \code{\link[=over]{over()}} by iterating simultaneously over (i) one or more columns (\code{.xcols})
-and (ii) elements of a vector or list (\code{.y}). \code{crossover()} loops each
-\emph{pair} of columns in \code{.xcols} and elements  \code{.y} over one or more functions,
-while \code{crossoverx()} loops \emph{every pairwise combination} between columns in \code{.xcols}
-and elements in \code{.y} over one or more functions.
+\code{crossover()} combines the functionality of \code{\link[dplyr:across]{dplyr::across()}} with \code{\link[=over]{over()}}
+by iterating simultaneously over (i) a set of columns (\code{.xcols}) and (ii)
+a vector or list (\code{.y}). \code{crossover()} \emph{always} applies the functions in
+\code{.fns} in a \emph{nested} way to a combination of both inputs. There are, however,
+two different ways in which the functions in \code{.fns} are applied.
+
+When \code{.y} is a vector or list, each function in \code{.fns} is applied to
+\emph{all pairwise combinations} between columns in \code{.xcols} and elements in
+\code{.y} (this resembles the behavior of \code{over2x()} and \code{across2x()}).
 
 \code{crossover()} has one trick up it's sleeves, which sets it apart from the other
 functions in the <\code{\link[=over_across_family]{over-across family}}>: Its second input
 (\code{.y}) can be a function. This changes the originial behavior slightly: First
 the function in \code{.y} is applied to all columns in \code{.xcols} to \emph{generate} an
-object which will be used as \code{.y} input. Then each column is looped over all
-the outputs that it generated with the function supplied to \code{.y}. For examples
-see the example section below.
+input object which will be used as \code{.y} in the function calls in \code{.fns}.
+In this case each function is applied to all pairs between (i) columns in
+\code{.xcols} with (ii) the output elements that they generated through the
+function that was originally supplied to \code{.y}. Note that the underyling
+data must not be grouped, if a function is supplied to \code{.y}. For examples see
+the example section below.
 }
 \section{Examples}{
 
@@ -129,29 +121,33 @@ For the basic functionality please refer to the examples in \code{\link[=over]{o
 # For better printing
 iris <- as_tibble(iris)
 }\if{html}{\out{</div>}}
-\subsection{A simple example}{
+\subsection{Creating many similar variables for mulitple columns}{
 
-Here is a simple toy example of \code{crossover()}. The first argument selects
-all columns starting with "Sepal" (here: 'Sepal.Length' and 'Sepal.Width').
-The  second argument is a vector of \code{5} and \code{3}. The function \code{.x <= .y} is
-applied to each pair of colums and elements, where \code{.x} stands for the column in
-\code{.xcols} and \code{.y} for the element in \code{.y}. In this case two \code{logical} columns
-are created: 'Sepal.Length_5' shows whether 'Sepal.Length' is equal or smaller
-than 5, and 'Sepal.Width_3' shows whether 'Sepal.Length' is equal or smaller
-than 3.\if{html}{\out{<div class="r">}}\preformatted{ iris \%>\%
-   mutate(crossover(starts_with("Sepal"),
-                    c(5,3),
-                     ~ .x <= .y)) \%>\%
+If \code{.y} is a vector or list, \code{crossover()} loops every combination between
+columns in \code{.xcols} and elements in \code{.y} over the functions in \code{.fns}. This
+is helpful in cases where we want to create a batch of similar variables with
+only slightly changes in the arguments of the calling function. A good example
+are lagged variables. Below we create five lagged variables for each
+'Sepal.Length' and  'Sepal.Width'. To create nice names we use a named list
+as argument in \code{.fns} and specify the glue syntax in \code{.names}.\if{html}{\out{<div class="r">}}\preformatted{ iris \%>\%
+   transmute(
+     crossover(starts_with("sepal"),
+               1:5,
+               list(lag = ~ lag(.x, .y)),
+               .names = "\{xcol\}_\{fn\}\{y\}")) \%>\%
    glimpse
 #> Rows: 150
-#> Columns: 7
-#> $ Sepal.Length   <dbl> 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6, 5.0, 4.4, 4.9, 5.4, 4.8, 4.8, 4.3, 5.8, 5.7, 5.4, 5.1, 5.7, 5.1, 5.4, 5.1, 4.6, 5.1, 4.8, 5...
-#> $ Sepal.Width    <dbl> 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4, 3.4, 2.9, 3.1, 3.7, 3.4, 3.0, 3.0, 4.0, 4.4, 3.9, 3.5, 3.8, 3.8, 3.4, 3.7, 3.6, 3.3, 3.4, 3...
-#> $ Petal.Length   <dbl> 1.4, 1.4, 1.3, 1.5, 1.4, 1.7, 1.4, 1.5, 1.4, 1.5, 1.5, 1.6, 1.4, 1.1, 1.2, 1.5, 1.3, 1.4, 1.7, 1.5, 1.7, 1.5, 1.0, 1.7, 1.9, 1...
-#> $ Petal.Width    <dbl> 0.2, 0.2, 0.2, 0.2, 0.2, 0.4, 0.3, 0.2, 0.2, 0.1, 0.2, 0.2, 0.1, 0.1, 0.2, 0.4, 0.4, 0.3, 0.3, 0.3, 0.2, 0.4, 0.2, 0.5, 0.2, 0...
-#> $ Species        <fct> setosa, setosa, setosa, setosa, setosa, setosa, setosa, setosa, setosa, setosa, setosa, setosa, setosa, setosa, setosa, setosa...
-#> $ Sepal.Length_5 <lgl> FALSE, TRUE, TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALS...
-#> $ Sepal.Width_3  <lgl> FALSE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALS...
+#> Columns: 10
+#> $ Sepal.Length_lag1 <dbl> NA, 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6, 5.0, 4.4, 4.9, 5.4, 4.8, 4.8...
+#> $ Sepal.Length_lag2 <dbl> NA, NA, 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6, 5.0, 4.4, 4.9, 5.4, 4.8,...
+#> $ Sepal.Length_lag3 <dbl> NA, NA, NA, 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6, 5.0, 4.4, 4.9, 5.4, ...
+#> $ Sepal.Length_lag4 <dbl> NA, NA, NA, NA, 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6, 5.0, 4.4, 4.9, 5...
+#> $ Sepal.Length_lag5 <dbl> NA, NA, NA, NA, NA, 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6, 5.0, 4.4, 4....
+#> $ Sepal.Width_lag1  <dbl> NA, 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4, 3.4, 2.9, 3.1, 3.7, 3.4, 3.0...
+#> $ Sepal.Width_lag2  <dbl> NA, NA, 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4, 3.4, 2.9, 3.1, 3.7, 3.4,...
+#> $ Sepal.Width_lag3  <dbl> NA, NA, NA, 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4, 3.4, 2.9, 3.1, 3.7, ...
+#> $ Sepal.Width_lag4  <dbl> NA, NA, NA, NA, 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4, 3.4, 2.9, 3.1, 3...
+#> $ Sepal.Width_lag5  <dbl> NA, NA, NA, NA, NA, 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4, 3.4, 2.9, 3....
 }\if{html}{\out{</div>}}
 }
 
@@ -163,10 +159,10 @@ We supply the function \code{\link[=dist_values]{dist_values()}} to \code{.y}, w
 base R's \code{unique()}. This generates all distinct values for all three selected
 variables. Now, the function in \code{.fns}, \code{~ if_else(.y == .x, 1, 0)}, is applied
 to each pair of distinct value in \code{.y} and the column in \code{.xcols} that generated
-this value. This basically creates a dummy variable each value of each variable.
-Since some of the values contain space characters, we can use the \code{.names_fn}
-argument to supply a \emph{third} function that cleans the output names by replacing
-spaces with an underscore and setting all characters \code{tolower()}.\if{html}{\out{<div class="r">}}\preformatted{ csat \%>\%
+this value. This basically creates a dummy variable for each value of each
+variable. Since some of the values contain whitespace characters, we can use the
+\code{.names_fn} argument to supply a \emph{third} function that cleans the output names
+by replacing spaces with an underscore and setting all characters \code{tolower()}.\if{html}{\out{<div class="r">}}\preformatted{ csat \%>\%
    transmute(
      crossover(.xcols = c(type, product, csat),
                .y = dist_values,
@@ -176,47 +172,17 @@ spaces with an underscore and setting all characters \code{tolower()}.\if{html}{
    glimpse
 #> Rows: 150
 #> Columns: 11
-#> $ type_existing         <dbl> 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0,...
-#> $ type_new              <dbl> 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1,...
-#> $ type_reactivate       <dbl> 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,...
-#> $ product_advanced      <dbl> 1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0,...
-#> $ product_basic         <dbl> 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0,...
-#> $ product_premium       <dbl> 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1,...
-#> $ csat_neutral          <dbl> 1, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0,...
-#> $ csat_satisfied        <dbl> 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,...
-#> $ csat_unsatisfied      <dbl> 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,...
-#> $ csat_very_satisfied   <dbl> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,...
-#> $ csat_very_unsatisfied <dbl> 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0,...
-}\if{html}{\out{</div>}}
-}
-
-\subsection{Creating many similar variables for mulitple columns}{
-
-\code{crossoverx()} loops every combination of colums in \code{.xcols} and elements
-\code{.y} over the functions in \code{.fns}. This is helpful in cases where we want to
-create a batch of similar variables with only slightly changes in the arguments
-of the calling function. A good example are lagged variables. Below we create
-five lagged variables for each 'Sepal.Length' and  'Sepal.Width'. To create
-nice names we use a named list as argument in \code{.fns} and specify the glue
-syntax in \code{.names}.\if{html}{\out{<div class="r">}}\preformatted{ iris \%>\%
-   transmute(
-     crossoverx(starts_with("sepal"),
-                1:5,
-                list(lag = ~ lag(.x, .y)),
-                .names = "\{xcol\}_\{fn\}\{y\}")) \%>\%
-   glimpse
-#> Rows: 150
-#> Columns: 10
-#> $ Sepal.Length_lag1 <dbl> NA, 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6, 5.0, 4.4, 4.9, 5.4, 4.8, 4.8, 4.3, 5.8, 5.7, 5.4, 5.1, 5.7, 5.1, 5.4, 5.1, 4.6, 5.1,...
-#> $ Sepal.Length_lag2 <dbl> NA, NA, 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6, 5.0, 4.4, 4.9, 5.4, 4.8, 4.8, 4.3, 5.8, 5.7, 5.4, 5.1, 5.7, 5.1, 5.4, 5.1, 4.6, ...
-#> $ Sepal.Length_lag3 <dbl> NA, NA, NA, 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6, 5.0, 4.4, 4.9, 5.4, 4.8, 4.8, 4.3, 5.8, 5.7, 5.4, 5.1, 5.7, 5.1, 5.4, 5.1, 4...
-#> $ Sepal.Length_lag4 <dbl> NA, NA, NA, NA, 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6, 5.0, 4.4, 4.9, 5.4, 4.8, 4.8, 4.3, 5.8, 5.7, 5.4, 5.1, 5.7, 5.1, 5.4, 5....
-#> $ Sepal.Length_lag5 <dbl> NA, NA, NA, NA, NA, 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6, 5.0, 4.4, 4.9, 5.4, 4.8, 4.8, 4.3, 5.8, 5.7, 5.4, 5.1, 5.7, 5.1, 5.4...
-#> $ Sepal.Width_lag1  <dbl> NA, 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4, 3.4, 2.9, 3.1, 3.7, 3.4, 3.0, 3.0, 4.0, 4.4, 3.9, 3.5, 3.8, 3.8, 3.4, 3.7, 3.6, 3.3,...
-#> $ Sepal.Width_lag2  <dbl> NA, NA, 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4, 3.4, 2.9, 3.1, 3.7, 3.4, 3.0, 3.0, 4.0, 4.4, 3.9, 3.5, 3.8, 3.8, 3.4, 3.7, 3.6, ...
-#> $ Sepal.Width_lag3  <dbl> NA, NA, NA, 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4, 3.4, 2.9, 3.1, 3.7, 3.4, 3.0, 3.0, 4.0, 4.4, 3.9, 3.5, 3.8, 3.8, 3.4, 3.7, 3...
-#> $ Sepal.Width_lag4  <dbl> NA, NA, NA, NA, 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4, 3.4, 2.9, 3.1, 3.7, 3.4, 3.0, 3.0, 4.0, 4.4, 3.9, 3.5, 3.8, 3.8, 3.4, 3....
-#> $ Sepal.Width_lag5  <dbl> NA, NA, NA, NA, NA, 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4, 3.4, 2.9, 3.1, 3.7, 3.4, 3.0, 3.0, 4.0, 4.4, 3.9, 3.5, 3.8, 3.8, 3.4...
+#> $ type_new              <dbl> 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, ...
+#> $ type_existing         <dbl> 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0, ...
+#> $ type_reactivate       <dbl> 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, ...
+#> $ product_basic         <dbl> 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, ...
+#> $ product_advanced      <dbl> 1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, ...
+#> $ product_premium       <dbl> 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, ...
+#> $ csat_very_unsatisfied <dbl> 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, ...
+#> $ csat_unsatisfied      <dbl> 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, ...
+#> $ csat_neutral          <dbl> 1, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, ...
+#> $ csat_satisfied        <dbl> 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, ...
+#> $ csat_very_satisfied   <dbl> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, ...
 }\if{html}{\out{</div>}}
 }
 }

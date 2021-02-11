@@ -7,11 +7,11 @@
 \code{dplyover} extends \code{dplyr}'s functionality by building a function family
 around \code{dplyr::across()}.
 
-The goal of this function family is to provide a concise and uniform, syntax
-which can be used to create columns by applying functions to vectors and / or
-sets of columns in dplyr. Ideally, this will improve our mental model so that
-it is easier to tackle problems where the solution is based on creating
-new columns.
+The goal of this \strong{over-across function family} is to provide a concise and
+uniform syntax which can be used to create columns by applying functions to
+vectors and / or sets of columns in dplyr. Ideally, this will improve our
+mental model so that it is easier to tackle problems where the solution is
+based on creating new columns.
 
 The functions in the over-apply function family create columns by applying
 one or several functions to:
@@ -29,7 +29,6 @@ one or several functions to:
 \item \code{\link[=across2]{across2()}} two sets of columns (pairwise)
 \item \code{\link[=across2x]{across2x()}} two sets of columns (nested)
 \item \code{\link[=crossover]{crossover()}} a set of columns and a vector (pairwise)
-\item \code{\link[=crossoverx]{crossoverx()}} a set of columns and a vector (nested)
 }
 }
 }

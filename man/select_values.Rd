@@ -6,15 +6,19 @@
 \alias{seq_range}
 \title{Select values from variables}
 \usage{
-dist_values(x, .sort = c("asc", "desc", "none"))
+dist_values(x, .sep = NULL, .sort = c("asc", "desc", "none"))
 
 seq_range(x, .by)
 }
 \arguments{
-\item{x}{An atomic vector. For \code{\link[=seq_range]{seq_range()}} x must be numeric or date.}
+\item{x}{An atomic vector or list. For \code{\link[=seq_range]{seq_range()}} x must be numeric or date.}
+
+\item{.sep}{A character vector containing regular expression(s) which are used
+for splitting the values (works only if x is a character vector).}
 
 \item{.sort}{A character string indicating which sorting scheme is to be applied
-to distinct values: ascending ("asc" = default), descending ("desc") or "none".}
+to distinct values: ascending ("asc"), descending ("desc") or "none". The
+default is ascending, only if x is a factor the default is "none",}
 
 \item{.by}{A number (or date expression) representing the increment of the sequence.}
 }
@@ -60,8 +64,8 @@ This is helpful when creating dummy variables in a loop using \code{over()}.\if{
 #> # ... with 146 more rows
 }\if{html}{\out{</div>}}
 
-While the output in the example above is identical to \code{unique()},
-\code{dist_values()} has three differences:
+\code{dist_values()} is just a wrapper around unique. However, it has five
+differences:
 
 (1) \code{NA} values are automatically stripped. Compare:\if{html}{\out{<div class="r">}}\preformatted{unique(c(1:3, NA))
 #> [1]  1  2  3 NA
@@ -71,13 +75,11 @@ dist_values(c(1:3, NA))
 
 (2) Applied on factors, \code{dist_values()} returns all distinct \code{levels} as
 character. Compare:\if{html}{\out{<div class="r">}}\preformatted{factor(c(1:3, NA)) \%>\%
-  as.factor() \%>\%
   unique() \%>\%
   class()
 #> [1] "factor"
 
 factor(c(1:3, NA)) \%>\%
-  as.factor() \%>\%
   dist_values() \%>\%
   class()
 #> [1] "character"
@@ -95,42 +97,46 @@ dist_values(c(3,1,2), .sort = "none")
 #> [1] 3 1 2
 }\if{html}{\out{</div>}}
 
+(4) When used on a character vector \code{dist_values} can take a separator
+\code{.sep} to split the elements accordingly:
+
+#' ```{r, comment = "#>", collapse = TRUE}
+c("1, 2, 3",
+"2, 4, 5",
+"4, 1, 7") \%>\%
+dist_values(., .sep = ", ")\preformatted{
+(5) When used on lists `dist_values` automatically simplifiies its input
+into a vector using `unlist`:
+
+#' ```\{r, comment = "#>", collapse = TRUE\}
+list(a = c(1:4), b = (4:6), c(5:10)) \%>\%
+  dist_values()
+}
+
 \code{seq_range()} generates a numeric sequence between the \code{min} and \code{max}
 values of its input variable. This is helpful when creating many dummy
-variables with varying thresholds.\if{html}{\out{<div class="r">}}\preformatted{iris \%>\%
-  mutate(over(seq_range(Sepal.Length, 1),
-              ~ if_else(Sepal.Length > .x, 1, 0),
-              .names = "Sepal.Length.\{x\}"),
-         .keep = "none")
-#> # A tibble: 150 x 3
-#>   Sepal.Length.5 Sepal.Length.6 Sepal.Length.7
-#>            <dbl>          <dbl>          <dbl>
-#> 1              1              0              0
-#> 2              0              0              0
-#> 3              0              0              0
-#> 4              0              0              0
-#> # ... with 146 more rows
-}\if{html}{\out{</div>}}
+variables with varying thresholds.
 
-Note that if the input variable does not have decimal places, \code{min} and \code{max} are
-wrapped in \code{ceiling} and \code{floor} accordingly. This will prevent the creation of
-variables that contain only \code{0} or \code{1}. Compare the output below with the
-example above:\if{html}{\out{<div class="r">}}\preformatted{iris \%>\%
+#' ```{r, comment = "#>", collapse = TRUE}
+iris \%>\%
+mutate(over(seq_range(Sepal.Length, 1),
+~ if_else(Sepal.Length > .x, 1, 0),
+.names = "Sepal.Length.{x}"),
+.keep = "none")\preformatted{
+Note that if the input variable does not have decimal places, `min` and `max` are
+wrapped in `ceiling` and `floor` accordingly. This will prevent the creation of
+variables that contain only `0` or `1`. Compare the output below with the
+example above:
+
+```\{r, comment = "#>", collapse = TRUE\}
+iris \%>\%
   mutate(over(seq(round(min(Sepal.Length), 0),
                   round(max(Sepal.Length), 0),
                   1),
               ~ if_else(Sepal.Length > .x, 1, 0),
               .names = "Sepal.Length.\{x\}"),
          .keep = "none")
-#> # A tibble: 150 x 5
-#>   Sepal.Length.4 Sepal.Length.5 Sepal.Length.6 Sepal.Length.7 Sepal.Length.8
-#>            <dbl>          <dbl>          <dbl>          <dbl>          <dbl>
-#> 1              1              1              0              0              0
-#> 2              1              0              0              0              0
-#> 3              1              0              0              0              0
-#> 4              1              0              0              0              0
-#> # ... with 146 more rows
-}\if{html}{\out{</div>}}
+}
 
 \code{seq_range()} also works on dates:\if{html}{\out{<div class="r">}}\preformatted{some_dates <- c(as.Date("2020-01-02"),
                 as.Date("2020-05-02"),
