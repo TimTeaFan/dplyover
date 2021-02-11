@@ -206,7 +206,7 @@
 #'
 #' ```{r, comment = "#>", collapse = TRUE}
 #' csat %>%
-#'   mutate(over(dist_values(csat_open, .sep = ", ")),
+#'   mutate(over(dist_values(csat_open, .sep = ", "),
 #'               ~ as.integer(grepl(.x, csat_open)),
 #'               .names = "rsp_{x}",
 #'               .names_fn = ~ gsub("\\s", "_", .x)),
