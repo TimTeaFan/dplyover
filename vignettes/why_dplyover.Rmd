@@ -1,0 +1,270 @@
+---
+title: "Why dplyover?"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Why dplyover?}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteDepends{tidyr}
+  %\VignetteDepends{bench}
+  %\VignetteDepends{ggplot2}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+options(
+  tibble.print_min = 4,
+  tibble.max_extra_cols = 8,
+  digits = 2,
+  crayon.enabled = FALSE,
+  cli.unicode = FALSE
+)
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, warning = FALSE, message = FALSE}
+library(dplyr)
+library(tidyr)
+library(purrr)
+library(dplyover)
+library(ggplot2)
+library(bench)
+
+diamonds_10grp <- diamonds %>% 
+  group_by(grp_id = row_number() %% 10)
+
+diamonds_100grp <- diamonds %>% 
+  group_by(grp_id = row_number() %% 100)
+```
+
+## Introduction
+
+{dplyover} extends {dplyr}'s functionality by building a function family
+around `dplyr::across()`.
+
+The goal of this *over-across function family* is to provide a concise and
+uniform syntax which can be used to create columns by applying functions to
+vectors and/or sets of columns in {dplyr}. Ideally, this will:
+
+- **reduce the amount of code** to create variables derived from existing colums, 
+which is especially helpful when doing explanatory data analysis (e.g. lagging, 
+collapsing, recoding etc. many variables in a similar way).
+- **provide a clean {dplyr} approach** to create many variables which are
+calculated based on two or more variables.
+- **improve our mental model** so that it is easier to tackle problems where the
+solution is based on creating new columns.
+
+To illustrate the points above it is helpful to look at a couple of use cases.
+This vignette will (i) look at the three examples, (ii) present some alternatives
+that do not rely on {dplyover} and (iii) elaborate on the performance as well
+as the compability of {dplyover} in general.
+
+## Use cases and workarounds
+
+In this section we will look at three different use cases of {dplyover}:
+
+1. Summarizing data in wide format
+1. Creating several lagged variables for a set of columns
+1. Applying functions to a set of variable pairs
+
+#### Summarizing data in wide format
+Sometimes we want to summarize data in wide format. In the example below we are
+looking at the `csat` data from a customer experience survey. We would like 
+to compare the customers of each "type" by looking at how many percent give
+which customer satifaction rating (column "csat"). If we want each category of
+"csat" in a new column, then `over` makes this pretty easy:
+
+```{r, eval = TRUE}
+csat %>%
+  group_by(type) %>%
+  summarise(over(levels(csat),
+                 ~ mean(csat == .x)))
+```
+Of course there are many cases, where we do want the output to be in long format.
+For example when creating a graph with {ggplot2}. The summary in wide format, 
+however, is useful when we want to print a table in a report, for example.
+
+Of course, we can create the same output using regular {dplyr} and {tidyr}
+functions:
+```{r, eval = FALSE}
+csat %>%
+  group_by(type, csat) %>%
+  summarise(n = n()) %>% 
+  mutate(n = prop.table(n)) %>%
+  pivot_wider(values_from = n,
+              names_from = csat)
+```
+The first part (up until `pivot_wider`) would be our go-to approach if the result
+should be in long format. Compared to `over` the `pivot_wider` approach is not
+only more verbose, it also has a higher cognitive load. 
+
+Of course, we could also use {purrr}'s `map_dfc` inside `summarise`:
+```{r, eval = FALSE}
+csat %>%
+  group_by(type) %>%
+  summarise(map_dfc(set_names(levels(csat), levels(csat)),
+                    ~ mean(csat == .x)))
+```
+Code-wise this comes pretty close to `over`. However, the major drawback is that
+we have to take care of the column names with `set_names` (alternatively we 
+would need to setup a named vector outside of the pipe).
+
+Looking at the performance of each approach, we can see that `map_dfc` is fastest,
+closely followed by `over` while `pivot_wider` is the least performant.
+```{r, eval = TRUE, echo = FALSE, warning = FALSE, message = FALSE}
+over_bench <- bench::mark(iterations = 200L, check = FALSE, 
+  over = {
+    csat %>%
+  group_by(type) %>%
+  summarise(over(dist_values(csat),
+                 ~ mean(csat == .x)))
+  },
+  pvior_wider = {
+    csat %>%
+  group_by(type, csat) %>%
+  summarise(n = n()) %>% 
+  mutate(n = prop.table(n)) %>%
+  pivot_wider(values_from = n,
+              names_from = csat)
+  },
+  map_dfc = {
+    csat %>%
+  group_by(type) %>%
+  summarise(map_dfc(set_names(levels(csat), levels(csat)),
+                    ~ mean(csat == .x)))
+  }
+)
+over_bench
+```
+
+Summing up ... .
+
+
+
+#### Creating several lagged variables for a set of columns
+
+Sometimes we want to create a range of lagged variants of several variables. 
+Let's take the `diamonds` data set from {ggplot2} and create five lagged
+versions of columns 'x', 'y' and 'z' by positions `1` to `5`. `crossover`
+allows us to iterate a set of columns over a vector:
+```{r}
+# crossover
+diamonds %>% 
+  mutate(crossover(c(x,y,z),
+                   1:5,
+                   list(lag = ~ lag(.x, .y)),
+                   .names = "{xcol}_{fn}{y}"))
+```
+This was easy. Of course there are different ways to approach this problem. We
+could use `dplyr::across` and just insert the call to `lag` five times manually
+in the `.fns` argument:
+```{r, eval = FALSE}
+# across
+diamonds %>% 
+  mutate(across(c(x,y,z),
+                list(lag1 = ~ lag(.x, 1),
+                     lag2 = ~ lag(.x, 2),
+                     lag3 = ~ lag(.x, 3),
+                     lag4 = ~ lag(.x, 4),
+                     lag5 = ~ lag(.x, 5))))
+```
+However, with an increasing size of lagged variables or functions^#^ this
+approach becomes inefficient in terms of repeating similar code patterns (^#^ for
+example if we'd also wanted to create five `lead` variables per column).
+
+Another option is using {purrr}'s `map_dfc` inside `dplyr::mutate`:
+```{r, eval = FALSE}
+# across and map_dfc
+diamonds %>% 
+  mutate(across(c(x,y,z),
+                ~ map_dfc(set_names(1:5, paste0("lag", 1:5)),
+                          function(y) lag(.x, y))
+                )) %>% 
+  do.call(data.frame, .)
+```
+This approach is pretty close to `crossover`, but we need to take care of two 
+things. First, we have to create the variable names using `purrr::set_names`,
+otherwise our new variables would be named `x...1`, `x...2` and so on. Second,
+the original output of calling `purrr::map_dfc` within `dplyr::across` on three
+columns are three `tibble`s, each containing the lagged variants of one column.
+To turn each `tibble` into five proper columns of our original `diamonds` data
+we need to pipe the final result into `do.call(data.frame, .)`. All in all,
+although staying in the tidyverse, the nested `map` call, together with
+`set_names` and the final `do.call` make this approach less readable.
+
+Finally, another approach would be to build a custom function and use
+`purrr::reduce2` to call several `dplyr::mutate` calls in a row, each with the
+input of the last call's output.
+```{r, eval = FALSE}
+# custom function with purrr::reduce
+create_lags <- function(df, .x, .y) {
+    mutate(df, "{.x}_lag{.y}" := lag(!! sym(.x), .y))
+}
+
+diamonds %>% 
+  reduce2(rep(c("x", "y", "z"), 5),
+          rep(1:5, 3),
+          create_lags,
+          .init = .)
+```
+This approach is very clever, and {purrr}'s `reduce` function is a pipe-friendly
+approach which works great with {dplyr}'s one-table verbs. However, here too we
+have to take care of two things: First, using NSE in the custom function requires
+some advanced knowledge of the tidyverse. (i) How do we create nice names on the 
+lefthand side of the walrus operator? (ii) How do we evaluate strings as column
+names? Second, figuring out how to setup `reduce2` to work with the custom
+function. Our original data goes in to `.init` argument, the arguments we want
+to loop over need to be repeated in a way that ensures that each combination of
+elements is created.
+
+Finally, we compare the performance of each operation. The table below shows that
+using `dplyr::across` with repititive code parts is the most performant approach, 
+while using a custom function with `reduce` is the least performant. Using
+`map_dfc` within `across` does not perform much worse than `across` alone and
+also `crossover` is not too far off in terms of speed.
+
+```{r, echo = FALSE, eval = TRUE, warning = FALSE, message = FALSE}
+create_lags <- function(df, .x, .y) {
+    mutate(df, "{.x}_lag{.y}" := lag(!! sym(.x), .y))
+}
+
+crossover_bench <- bench::mark(iterations = 50L, check = FALSE, 
+  across = {
+    diamonds %>% 
+      mutate(across(c(x,y,z),
+                    list(lag1 = ~ lag(.x, 1),
+                         lag2 = ~ lag(.x, 2),
+                         lag3 = ~ lag(.x, 3),
+                         lag4 = ~ lag(.x, 4),
+                         lag5 = ~ lag(.x, 5))))
+  },
+  across_map_dfc = {
+    diamonds %>% 
+      mutate(across(c(x,y,z),
+                    ~ map_dfc(set_names(1:5, paste0("lag", 1:5)),
+                              function(y) lag(.x, y)))) %>% 
+    do.call(data.frame, .)
+  },
+  
+  custom_fct_reduce = {
+    diamonds %>% 
+  reduce2(rep(c("x", "y", "z"), 5),
+          rep(1:5, 3),
+          create_lags,
+          .init = .)
+  },
+  crossover = {
+    diamonds %>% 
+      mutate(crossover(c(x,y,z),
+                       1:5,
+                       list(lag = ~ lag(.x, .y)),
+                       .names = "{xcol}_{fn}{y}"))
+  }
+)
+crossover_bench
+```
+
+#### Applying functions to a set of variable pairs
+
