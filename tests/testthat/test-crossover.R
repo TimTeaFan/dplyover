@@ -318,19 +318,19 @@ test_that("crossover() retains original ordering", {
 
 })
 
-test_that("crossover() gives meaningful messages", {
+# test_that("crossover() gives meaningful messages", {
+#
+  # # only over2, over2x specific error messages go here
+  # gf <- tibble(g = 1, x = 1)
+  #
+  # expect_snapshot_error(
+  #   summarise(gf,
+  #             crossover(c(y,z),
+  #                       dist_values,
+  #                       ~ if_else(.x == .y, 1L, 0L)))
+  #   )
 
-  # only over2, over2x specific error messages go here
-  gf <- tibble(g = 1, x = 1)
-
-  expect_snapshot_error(
-    summarise(gf,
-              crossover_old(c(y,z),
-                            dist_values,
-                            ~ if_else(.x == .y, 1L, 0L)))
-    )
-
-})
+# })
 
 test_that("crossover() uses environment from the current quosure (#5460)", {
   # If the data frame `y` is selected, causes a subscript conversion
