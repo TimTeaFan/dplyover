@@ -45,9 +45,10 @@ test_that("over() can control names", {
                .keep = "none")
 
   df_expect <- iris %>%
-    mutate(over(seq(4, 7, by = 1),
-                ~ if_else(Sepal.Length < .x, 1, 0),
-                .names = "Sepal.Length_{x}"),
+    mutate(Sepal.Length_4 = if_else(Sepal.Length < 4, 1, 0),
+           Sepal.Length_5 = if_else(Sepal.Length < 5, 1, 0),
+           Sepal.Length_6 = if_else(Sepal.Length < 6, 1, 0),
+           Sepal.Length_7 = if_else(Sepal.Length < 7, 1, 0),
            .keep = "none")
 
   expect_equal(df_over, df_expect)
@@ -231,7 +232,7 @@ test_that("over() works named lists", {
 
 })
 
-test_that("over() works named lists", {
+test_that("over() works with named lists", {
 
   df_over <-  iris %>%
     mutate(over(c("Sepal", "Petal"),
