@@ -1,3 +1,15 @@
+# deprase call (similar to dplyr:::key_deparse)
+# this function is copied from dplyr
+# see README section Acknowledgements as well as dplyr's license and copyright
+deparse_call <- function(call) {
+  deparse(call,
+          width.cutoff = 500L,
+          backtick = TRUE,
+          nlines = 1L,
+          control = NULL)
+}
+
+# meta setup use by all major dplyover functions (tests passing)
 meta_setup <- function(grp_id, dep_call, par_frame, setup_fn, ...) { # data = NULL, xcols = NULL, ycols = NULL
 
   call_nm <- sub("([a-z0-9]+).*", "\\1()", dep_call)
@@ -30,9 +42,11 @@ meta_setup <- function(grp_id, dep_call, par_frame, setup_fn, ...) { # data = NU
       # new setup
       if (grp_id == 1) {
         call_info <- inspect_call()
-        if (call_info[["warn"]])
+        if (call_info[["warn"]]){
         rlang::warn(glue::glue("`{call_nm}` does not support the `.keep` argument in `dplyr::mutate()` when set to 'used' or 'unused'."))
         }
+      }
+
       par_frame[[".__dplyover_setup__."]][["call_his"]] <- grp_id
       par_frame[[".__dplyover_setup__."]][["call_lang"]] <- dep_call
       call_id <- paste0("call", grp_id)
