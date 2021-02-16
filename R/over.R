@@ -5,12 +5,12 @@
 #' [dplyr::summarise()] call by applying a function (or a set of functions) to
 #' an atomic vector or list using a syntax similar to [dplyr::across()].
 #' The main difference is that [dplyr::across()] transforms or creates new columns
-#' based on existing ones, while `over()` can only create new columns based on a
-#' vector or list to which it will apply one or several functions. Whereas [dplyr::across()]
-#' allows `tidy-selection` helpers to select columns, `over()` provides its own
-#' helper functions to select strings or values based on either (1) values of
-#' specified columns or (2) column names. See the examples below and the
-#' `vignette("over")` for more details.
+#' based on existing ones, while `over()` can create new columns based on a
+#' vector or list to which it will apply one or several functions.
+#' Whereas [dplyr::across()] allows `tidy-selection` helpers to select columns,
+#' `over()` provides its own helper functions to select strings or values based
+#' on either (1) values of specified columns or (2) column names. See the
+#' examples below and the `vignette("why_dplyover")` for more details.
 #'
 #' @param .x An atomic vector or list to apply functions to. Alternatively a
 #'   <[`selection helper`][selection_helpers]> can be used to create
@@ -59,17 +59,13 @@
 #'   specification described above is not supported.
 #'
 #' @param .names_fn Optionally, a function that is applied after the glue
-#'   specification in `.names` has been evaluated. This is, for example, helpful,
+#'   specification in `.names` has been evaluated. This is, for example, helpful
 #'   in case the resulting names need to be further cleaned or trimmed.
 #'
 #' @returns
 #' A tibble with one column for each element in `.x` and each function in `.fns`.
 #'
 #' @section Note:
-#' `over()` must only be used to create 'new' columns and will throw an error if
-#' the new columns created contain existing column names. To transform existing
-#' columns use [dplyr::across()]¥.
-#'
 #' Similar to `dplyr::across()` `over()` works only inside dplyr verbs.
 #'
 #' @seealso
@@ -112,8 +108,6 @@
 #'              ~ if_else(Species == .x, 1, 0)),
 #'          .keep = "none")
 #' ```
-#' Note that `dplyover` comes with a helper function similar to `unique` called
-#' [`dist_values()`] which will handle `NA`s differently.
 #'
 #' With `over()` it is also possible to create several dummy variables with
 #' different thresholds. We can use the `.names` argument to control the output
@@ -150,11 +144,11 @@
 #'
 #' `over()` can summarise data in wide format. In the example below, we want to
 #' know for each group of customers (`new`, `existing`, `reactivate`), how much
-#' percent of the respondents gave which rating on a five point likert scale (`item1`).
-#' A usual approach in the tidyverse would be to use `count %>% group_by %>% mutate`,
-#' which yields the same result in the usually prefered long format. Sometimes, however,
-#' we might want this kind of summary in the wide format, and in this case `over()`
-#' comes in handy:
+#' percent of the respondents gave which rating on a five point likert scale
+#' (`item1`). A usual approach in the tidyverse would be to use
+#' `count %>% group_by %>% mutate`, which yields the same result in the usually
+#' prefered long format. Sometimes, however, we might want this kind of summary
+#' in the wide format, and in this case `over()` comes in handy:
 #'
 #' ```{r, comment = "#>", collapse = TRUE}
 #' csatraw %>%
@@ -218,9 +212,15 @@
 #' Here strings are supplied to `.x` to construct column names (sharing the
 #' same stem). This allows us to dynamically use more than one column in the
 #' function calls in `.fns`. To work properly, the strings need to be
-#' turned into symbols and evaluated. For this `dplyover` provides a genuine helper
-#' function `.()` that evaluates strings and helps to declutter the otherwise rather
-#' verbose code. `.()` supports glue syntax and takes a string as argument:
+#' turned into symbols and evaluated. For this {dplyover} provides a genuine
+#' helper function `.()` that evaluates strings and helps to declutter the
+#' otherwise rather verbose code. `.()` supports glue syntax and takes a string
+#' as argument.
+#'
+#' Below are a few examples using two colums in the function calls in `.fns`.
+#' For the two column case [across2()] provides a more intuitive API that is
+#' closer to the original `dplyr::across`. Using `.()` inside `over` is really
+#' useful for cases with more than two columns.
 #'
 #' Consider the following example of a purrr-style formula in `.fns` using `.()`:
 #'
@@ -237,15 +237,6 @@
 #'   mutate(over(c("Sepal", "Petal"),
 #'               ~ eval(sym(paste0(.x, ".Width"))) +
 #'                 eval(sym(paste0(.x, ".Length")))
-#'               ))
-#' ```
-#'
-#' Note that `rlang`'s forcing operator `!!` is not supported inside `over()`.
-#' ```{r, error = TRUE}
-#' iris %>%
-#'   mutate(over(c("Sepal", "Petal"),
-#'               ~ !! sym(paste0(.x, ".Width")) +
-#'                 !! sym(paste0(.x, ".Length"))
 #'               ))
 #' ```
 #'
@@ -285,14 +276,8 @@ over <- function(.x, .fns, ..., .names = NULL, .names_fn = NULL){
     rlang::abort("`over()` must only be used inside dplyr verbs.")
   })
 
-    deparse_call <- deparse(sys.call(),
-                            width.cutoff = 500L,
-                            backtick = TRUE,
-                            nlines = 1L,
-                            control = NULL)
-
-    setup <- meta_setup(grp_id = grp_id,
-                        dep_call = deparse_call,
+    setup <- meta_setup(dep_call = deparse_call(sys.call()),
+                        grp_id = grp_id,
                         par_frame = parent.frame(),
                         setup_fn = "over_setup",
                         x1 = .x,

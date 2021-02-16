@@ -42,7 +42,7 @@
 #'   specification in `.names` has been evaluated. This is, for example, helpful,
 #'   in case the resulting names need to be further cleaned or trimmed.
 #'
-#' @param .comb  This argument allows to control in `across2x()` which
+#' @param .comb  In `across2x()` this argument allows to control which
 #'   combinations of columns are to be created. This argument only matters, if
 #'   the columns specified in `.xcols` and `.ycols` overlap to some extent.
 #'
@@ -55,11 +55,11 @@
 #'   `foo(column_x, column_x)` *will not* be created)
 #'
 #' @returns
-#' `across2()` returns a tibble with one column for each pair of elements in `.xcols`
-#' and `.ycols` combined with each function in `.fns`.
+#' `across2()` returns a tibble with one column for each pair of elements in
+#' `.xcols` and `.ycols` combined with each function in `.fns`.
 #'
-#' `across2x()` returns a tibble with one column for each combination between elements
-#' in `.x` and`.y` combined with each function in `.fns`.
+#' `across2x()` returns a tibble with one column for each combination between
+#' elements in `.x` and`.y` combined with each function in `.fns`.
 #'
 #' @section Examples:
 #'
