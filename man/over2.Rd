@@ -57,7 +57,7 @@ be created can be supplied to \code{.names}. Note that in this case, the glue
 specification described above is not supported.}
 
 \item{.names_fn}{Optionally, a function that is applied after the glue
-specification in \code{.names} has been evaluated. This is, for example, helpful,
+specification in \code{.names} has been evaluated. This is, for example, helpful
 in case the resulting names need to be further cleaned or trimmed.}
 }
 \value{

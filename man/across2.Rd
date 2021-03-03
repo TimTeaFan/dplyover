@@ -56,7 +56,7 @@ Note that in this case, the glue specification described above is not supported.
 specification in \code{.names} has been evaluated. This is, for example, helpful,
 in case the resulting names need to be further cleaned or trimmed.}
 
-\item{.comb}{This argument allows to control in \code{across2x()} which
+\item{.comb}{In \code{across2x()} this argument allows to control which
 combinations of columns are to be created. This argument only matters, if
 the columns specified in \code{.xcols} and \code{.ycols} overlap to some extent.
 \itemize{
@@ -70,11 +70,11 @@ in \code{.xcols} and \code{.ycols} \emph{including all permutations} (e.g.
 }}
 }
 \value{
-\code{across2()} returns a tibble with one column for each pair of elements in \code{.xcols}
-and \code{.ycols} combined with each function in \code{.fns}.
+\code{across2()} returns a tibble with one column for each pair of elements in
+\code{.xcols} and \code{.ycols} combined with each function in \code{.fns}.
 
-\code{across2x()} returns a tibble with one column for each combination between elements
-in \code{.x} and\code{.y} combined with each function in \code{.fns}.
+\code{across2x()} returns a tibble with one column for each combination between
+elements in \code{.x} and\code{.y} combined with each function in \code{.fns}.
 }
 \description{
 \code{across2()} and \code{across2x()} are variants of \code{\link[dplyr:across]{dplyr::across()}} that iterate

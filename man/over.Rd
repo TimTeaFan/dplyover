@@ -57,7 +57,7 @@ be created can be supplied to \code{.names}. Note that in this case, the glue
 specification described above is not supported.}
 
 \item{.names_fn}{Optionally, a function that is applied after the glue
-specification in \code{.names} has been evaluated. This is, for example, helpful,
+specification in \code{.names} has been evaluated. This is, for example, helpful
 in case the resulting names need to be further cleaned or trimmed.}
 }
 \value{
@@ -68,18 +68,14 @@ A tibble with one column for each element in \code{.x} and each function in \cod
 \code{\link[dplyr:summarise]{dplyr::summarise()}} call by applying a function (or a set of functions) to
 an atomic vector or list using a syntax similar to \code{\link[dplyr:across]{dplyr::across()}}.
 The main difference is that \code{\link[dplyr:across]{dplyr::across()}} transforms or creates new columns
-based on existing ones, while \code{over()} can only create new columns based on a
-vector or list to which it will apply one or several functions. Whereas \code{\link[dplyr:across]{dplyr::across()}}
-allows \code{tidy-selection} helpers to select columns, \code{over()} provides its own
-helper functions to select strings or values based on either (1) values of
-specified columns or (2) column names. See the examples below and the
-\code{vignette("over")} for more details.
+based on existing ones, while \code{over()} can create new columns based on a
+vector or list to which it will apply one or several functions.
+Whereas \code{\link[dplyr:across]{dplyr::across()}} allows \code{tidy-selection} helpers to select columns,
+\code{over()} provides its own helper functions to select strings or values based
+on either (1) values of specified columns or (2) column names. See the
+examples below and the \code{vignette("why_dplyover")} for more details.
 }
 \section{Note}{
-
-\code{over()} must only be used to create 'new' columns and will throw an error if
-the new columns created contain existing column names. To transform existing
-columns use \code{\link[dplyr:across]{dplyr::across()}}¥.
 
 Similar to \code{dplyr::across()} \code{over()} works only inside dplyr verbs.
 }
@@ -124,9 +120,6 @@ Lets create a dummy variable for each unique value in 'Species':\if{html}{\out{<
 #> 4      1          0         0
 #> # ... with 146 more rows
 }\if{html}{\out{</div>}}
-
-Note that \code{dplyover} comes with a helper function similar to \code{unique} called
-\code{\link[=dist_values]{dist_values()}} which will handle \code{NA}s differently.
 
 With \code{over()} it is also possible to create several dummy variables with
 different thresholds. We can use the \code{.names} argument to control the output
@@ -183,11 +176,11 @@ dat_tbl \%>\%
 
 \code{over()} can summarise data in wide format. In the example below, we want to
 know for each group of customers (\code{new}, \code{existing}, \code{reactivate}), how much
-percent of the respondents gave which rating on a five point likert scale (\code{item1}).
-A usual approach in the tidyverse would be to use \code{count \%>\% group_by \%>\% mutate},
-which yields the same result in the usually prefered long format. Sometimes, however,
-we might want this kind of summary in the wide format, and in this case \code{over()}
-comes in handy:\if{html}{\out{<div class="r">}}\preformatted{csatraw \%>\%
+percent of the respondents gave which rating on a five point likert scale
+(\code{item1}). A usual approach in the tidyverse would be to use
+\code{count \%>\% group_by \%>\% mutate}, which yields the same result in the usually
+prefered long format. Sometimes, however, we might want this kind of summary
+in the wide format, and in this case \code{over()} comes in handy:\if{html}{\out{<div class="r">}}\preformatted{csatraw \%>\%
   group_by(type) \%>\%
   summarise(over(c(1:5),
                  ~ mean(item1 == .x)))
@@ -268,9 +261,15 @@ using a separator:\if{html}{\out{<div class="r">}}\preformatted{csat \%>\%
 Here strings are supplied to \code{.x} to construct column names (sharing the
 same stem). This allows us to dynamically use more than one column in the
 function calls in \code{.fns}. To work properly, the strings need to be
-turned into symbols and evaluated. For this \code{dplyover} provides a genuine helper
-function \code{.()} that evaluates strings and helps to declutter the otherwise rather
-verbose code. \code{.()} supports glue syntax and takes a string as argument:
+turned into symbols and evaluated. For this {dplyover} provides a genuine
+helper function \code{.()} that evaluates strings and helps to declutter the
+otherwise rather verbose code. \code{.()} supports glue syntax and takes a string
+as argument.
+
+Below are a few examples using two colums in the function calls in \code{.fns}.
+For the two column case \code{\link[=across2]{across2()}} provides a more intuitive API that is
+closer to the original \code{dplyr::across}. Using \code{.()} inside \code{over} is really
+useful for cases with more than two columns.
 
 Consider the following example of a purrr-style formula in \code{.fns} using \code{.()}:\if{html}{\out{<div class="r">}}\preformatted{iris \%>\%
   mutate(over(c("Sepal", "Petal"),
@@ -300,14 +299,6 @@ The above syntax is equal to the more verbose:\if{html}{\out{<div class="r">}}\p
 #> 4          4.6         3.1          1.5         0.2 setosa    7.7  1.7 
 #> # ... with 146 more rows
 }\if{html}{\out{</div>}}
-
-Note that \code{rlang}'s forcing operator \verb{!!} is not supported inside \code{over()}.\if{html}{\out{<div class="r">}}\preformatted{iris \%>\%
-  mutate(over(c("Sepal", "Petal"),
-              ~ !! sym(paste0(.x, ".Width")) +
-                !! sym(paste0(.x, ".Length"))
-              ))
-}\if{html}{\out{</div>}}\preformatted{## Error in paste0(.x, ".Width"): object '.x' not found
-}
 
 \code{.()} also works with anonymous functions:\if{html}{\out{<div class="r">}}\preformatted{iris \%>\%
   summarise(over(c("Sepal", "Petal"),
