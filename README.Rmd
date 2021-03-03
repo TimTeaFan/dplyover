@@ -72,7 +72,7 @@ devtools::install_github("TimTeaFan/dplyover")
 
 Below are a few examples of the {dplyover}'s *over-across function family*. More
 function and workarounds of how to tackle the problems below without {dplyover}
-can be found in the vignette "Why dplyover?": `vignette("why_dplyover")`.
+can be found in the vignette "Why dplyover?".
 
 ```{r, setup, warning = FALSE, message = FALSE}
 # dplyover is an extention of dplyr on won't work without it
@@ -172,7 +172,7 @@ Regarding compability, I have spent quite some time testing the package and
  I was able to replicate most of the tests for `dplyr::across` successfully. 
 
 For more information on the performance and compability of {dplyover} see the
-vignette "Performance and Compability" (`vignette("performance")`).
+vignette "Performance and Compability".
 
 
 ## History
