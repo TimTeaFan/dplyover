@@ -7,6 +7,7 @@
 
 [![Release
 status](https://img.shields.io/badge/status-not%20released-orange)](https://img.shields.io/badge/status-not%20released-important)
+[![Lifecycle](man/figures/lifecycle-experimental.svg)](man/figures/lifecycle-experimental.svg)
 [![R-CMD-check](https://github.com/TimTeaFan/dplyover/workflows/R-CMD-check/badge.svg)](https://github.com/TimTeaFan/dplyover/actions)
 [![Codecov test
 coverage](https://codecov.io/gh/TimTeaFan/dplyover/branch/main/graph/badge.svg)](https://codecov.io/gh/TimTeaFan/dplyover?branch=main)
@@ -31,7 +32,7 @@ functions to vectors and/or sets of columns in {dplyr}. Ideally, this
 will:
 
   - **reduce the amount of code** to create variables derived from
-    existing colums, which is especially helpful when doing explanatory
+    existing colums, which is especially helpful when doing exploratory
     data analysis (e.g. lagging, collapsing, recoding etc. many
     variables in a similar way).
   - **provide a clean {dplyr} approach** to create many variables which
@@ -70,7 +71,8 @@ devtools::install_github("TimTeaFan/dplyover")
 
 Below are a few examples of the {dplyover}’s *over-across function
 family*. More function and workarounds of how to tackle the problems
-below without {dplyover} can be found in the vignette “Why dplyover?”.
+below without {dplyover} can be found in the vignette “Why dplyover?”:
+`vignette("why_dplyover")`.
 
 ``` r
 # dplyover is an extention of dplyr on won't work without it
@@ -81,7 +83,7 @@ library(dplyover)
 iris <- as_tibble(iris)
 ```
 
-#### Apply functions iterating over an object to one column
+#### Apply functions to a vector to create columns
 
 `over()` applies one or several functions to a vector. We can use it
 inside `dplyr::mutate()` to create several similar variables that we
@@ -108,7 +110,7 @@ tibble(a = 1:25) %>%
 #> # ... with 21 more rows
 ```
 
-#### Apply functions iterating over an object to a set of columns
+#### Apply functions to a set of columns and a vector simultaniously
 
 `crossover()` applies the functions in `.fns` to every combination of
 colums in `.xcols` with elements in `.y`. This is similar to the example
@@ -182,12 +184,14 @@ add-on packages, like for example {tidylog}.
 However, the downside is that not relying on {dplyr} internals has some
 negative effects in terms of performance and compability.
 
-In a nutshell this means:<br> - The *over-across function family* in
-{dplyover} is slower than the original `dplyr::across`. Up until {dplyr}
-1.0.3 the overhead was not too big, but `dplyr::across` got much faster
-with {dplyr} 1.0.4 which why the gap has widend a lot. <br> - Although
-{dplyover} is designed to work in {dplyr}, some features and edge cases
-will not work correctly.
+In a nutshell this means:
+
+  - The *over-across function family* in {dplyover} is slower than the
+    original `dplyr::across`. Up until {dplyr} 1.0.3 the overhead was
+    not too big, but `dplyr::across` got much faster with {dplyr} 1.0.4
+    which is why the gap has widend a lot.
+  - Although {dplyover} is designed to work in {dplyr}, some features
+    and edge cases will not work correctly.
 
 The good news is that even without relying on {dplyr} internals most of
 the original functionality can be replicated and although being less
@@ -227,5 +231,5 @@ of:
 2.  slightly changing `across`’ logic to make it work for vectors and a
     combination of two vectors and/or sets of columns.
 
-By this I most defniitely introduced some bugs and edge cases which
+By this I most definitely introduced some bugs and edge cases which
 won’t work, and in which case I am the only one to blame.
