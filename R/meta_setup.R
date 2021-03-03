@@ -39,8 +39,9 @@ meta_setup <- function(grp_id, dep_call, par_frame, setup_fn, ...) { # data = NU
   }
   # if this is a new call to over or if setup went wrong
   if (!setup_exists || wrong_setup) {
+
       # new setup
-      if (grp_id == 1) {
+      if (grp_id == 1 && !grepl("^over", call_nm, perl = TRUE)) {
         call_info <- inspect_call()
         if (call_info[["warn"]]){
         rlang::warn(glue::glue("`{call_nm}` does not support the `.keep` argument in `dplyr::mutate()` when set to 'used' or 'unused'."))
