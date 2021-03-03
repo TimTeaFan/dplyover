@@ -695,30 +695,6 @@ test_that("over() custom errors and warnings", {
     summarise(tibble(x = 1), over(1, 42))
   )
 
-  # check keep used
-    expect_warning({
-    mutate(tibble(x = 1),
-           over(1, mean),
-           .keep = "used")},
-    "does not support the `.keep`"
-  )
-
-  # check keep unused
-    expect_warning({
-    mutate(tibble(x = 1),
-           over(1, mean),
-           .keep = "unused")},
-    "does not support the `.keep`"
-  )
-  # check even if function is renamed:
-    expect_warning({
-     myfun <- dplyr::mutate
-      myfun(tibble(x = 1),
-            over(1, mean),
-            .keep = "unused")},
-      "does not support the `.keep`"
-    )
-
 })
 
 # dplyr compability
@@ -737,38 +713,30 @@ test_that("over() can use cur_data()", {
 
 })
 
-test_that("over() can be used with other functions that use `.keep` without warning", {
+test_that("over() can be used with mutate's `.keep` argument", {
 
-  expect_warning({
-    iris %>%
-      mutate(new = 1, .keep = "unused") %>%
-      nest_by(Species, .keep = FALSE) %>%
-      mutate(over(1, paste))},
-    NA)
+  df_none <- iris %>%
+    mutate(over(1, ~ Sepal.Length + .x), .keep = "none")
 
-  expect_warning({
-    iris %>%
-      nest_by(Sepal.Length < 6, .keep = TRUE) %>%
-      mutate(data2 = list(nest_by(data, Species, .keep = TRUE) %>%
-                            mutate(over(1, paste))))},
-    NA)
+  expect_named(df_none, "1")
 
-# works locally, but not in devtools::check()
-  # expect_warning({
-  #     iris %>%
-  #       nest_by(Sepal.Length < 6, .keep = TRUE) %>%
-  #       mutate(data2 = list(mutate(over(1, paste))),
-  #              .keep = "unused")},
-  #     "does not support the `.keep`"
-  #     )
 
-  expect_warning({
-    iris %>%
-      nest_by(Sepal.Length < 6, .keep = TRUE) %>%
-      mutate(data2 = list(mutate(data, new = 1) %>%
-                            nest_by(Species, .keep = TRUE) %>%
-                            mutate(over(1, paste))))},
-    NA)
+  df_all <- iris %>%
+    mutate(over(1, ~ Sepal.Length + .x), .keep = "all")
+
+  expect_named(df_all, c(names(iris),"1"))
+
+
+  df_used <- iris %>%
+    mutate(over(1, ~ Sepal.Length + .x), .keep = "used")
+
+  expect_named(df_used, c("Sepal.Length","1"))
+
+
+  df_unused <- iris %>%
+    mutate(over(1, ~ Sepal.Length + .x), .keep = "unused")
+
+  expect_named(df_unused, c(names(iris)[-1],"1"))
 
 })
 
