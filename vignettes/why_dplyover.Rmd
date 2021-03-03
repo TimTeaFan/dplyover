@@ -31,12 +31,6 @@ library(purrr)
 library(dplyover)
 library(ggplot2)
 library(bench)
-
-diamonds_10grp <- diamonds %>% 
-  group_by(grp_id = row_number() %% 10)
-
-diamonds_100grp <- diamonds %>% 
-  group_by(grp_id = row_number() %% 100)
 ```
 
 ## Introduction
@@ -57,98 +51,25 @@ calculated based on two or more variables.
 solution is based on creating new columns.
 
 To illustrate the points above it is helpful to look at a couple of use cases.
-This vignette will (i) look at the three examples, (ii) present some alternatives
-that do not rely on {dplyover} and (iii) elaborate on the performance as well
-as the compability of {dplyover} in general.
+This vignette will (i) look at the four examples, (ii) present some alternatives
+that do not rely on {dplyover} and (iii) elaborate on pros and cons.
 
 ## Use cases and workarounds
 
 In this section we will look at three different use cases of {dplyover}:
 
-1. Summarizing data in wide format
 1. Creating several lagged variables for a set of columns
 1. Applying functions to a set of variable pairs
-
-#### Summarizing data in wide format
-Sometimes we want to summarize data in wide format. In the example below we are
-looking at the `csat` data from a customer experience survey. We would like 
-to compare the customers of each "type" by looking at how many percent give
-which customer satifaction rating (column "csat"). If we want each category of
-"csat" in a new column, then `over` makes this pretty easy:
-
-```{r, eval = TRUE}
-csat %>%
-  group_by(type) %>%
-  summarise(over(levels(csat),
-                 ~ mean(csat == .x)))
-```
-Of course there are many cases, where we do want the output to be in long format.
-For example when creating a graph with {ggplot2}. The summary in wide format, 
-however, is useful when we want to print a table in a report, for example.
-
-Of course, we can create the same output using regular {dplyr} and {tidyr}
-functions:
-```{r, eval = FALSE}
-csat %>%
-  group_by(type, csat) %>%
-  summarise(n = n()) %>% 
-  mutate(n = prop.table(n)) %>%
-  pivot_wider(values_from = n,
-              names_from = csat)
-```
-The first part (up until `pivot_wider`) would be our go-to approach if the result
-should be in long format. Compared to `over` the `pivot_wider` approach is not
-only more verbose, it also has a higher cognitive load. 
-
-Of course, we could also use {purrr}'s `map_dfc` inside `summarise`:
-```{r, eval = FALSE}
-csat %>%
-  group_by(type) %>%
-  summarise(map_dfc(set_names(levels(csat), levels(csat)),
-                    ~ mean(csat == .x)))
-```
-Code-wise this comes pretty close to `over`. However, the major drawback is that
-we have to take care of the column names with `set_names` (alternatively we 
-would need to setup a named vector outside of the pipe).
-
-Looking at the performance of each approach, we can see that `map_dfc` is fastest,
-closely followed by `over` while `pivot_wider` is the least performant.
-```{r, eval = TRUE, echo = FALSE, warning = FALSE, message = FALSE}
-over_bench <- bench::mark(iterations = 200L, check = FALSE, 
-  over = {
-    csat %>%
-  group_by(type) %>%
-  summarise(over(dist_values(csat),
-                 ~ mean(csat == .x)))
-  },
-  pvior_wider = {
-    csat %>%
-  group_by(type, csat) %>%
-  summarise(n = n()) %>% 
-  mutate(n = prop.table(n)) %>%
-  pivot_wider(values_from = n,
-              names_from = csat)
-  },
-  map_dfc = {
-    csat %>%
-  group_by(type) %>%
-  summarise(map_dfc(set_names(levels(csat), levels(csat)),
-                    ~ mean(csat == .x)))
-  }
-)
-over_bench
-```
-
-Summing up ... .
-
+1. Summarizing data in wide format
 
 
 #### Creating several lagged variables for a set of columns
 
-Sometimes we want to create a range of lagged variants of several variables. 
-Let's take the `diamonds` data set from {ggplot2} and create five lagged
-versions of columns 'x', 'y' and 'z' by positions `1` to `5`. `crossover`
-allows us to iterate a set of columns over a vector:
+In exploratory data analysis of time series data, creating a range of lagged
+variants of several variables is not an uncommon use case. Let's take the
+`diamonds` data set from {ggplot2} and create five lagged versions of columns
+'x', 'y' and 'z' by positions `1` to `5`. `crossover` allows us to iterate a set
+of columns over a vector:
 ```{r}
 # crossover
 diamonds %>% 
@@ -157,7 +78,7 @@ diamonds %>%
                    list(lag = ~ lag(.x, .y)),
                    .names = "{xcol}_{fn}{y}"))
 ```
-This was easy. Of course there are different ways to approach this problem. We
+While this was easy, there are of course other ways to approach this problem. We
 could use `dplyr::across` and just insert the call to `lag` five times manually
 in the `.fns` argument:
 ```{r, eval = FALSE}
@@ -190,9 +111,9 @@ otherwise our new variables would be named `x...1`, `x...2` and so on. Second,
 the original output of calling `purrr::map_dfc` within `dplyr::across` on three
 columns are three `tibble`s, each containing the lagged variants of one column.
 To turn each `tibble` into five proper columns of our original `diamonds` data
-we need to pipe the final result into `do.call(data.frame, .)`. All in all,
-although staying in the tidyverse, the nested `map` call, together with
-`set_names` and the final `do.call` make this approach less readable.
+we need to pipe the final result into a `do.call(data.frame, .)`. All in all,
+although staying in the tidyverse, the `map` call nested in `across`, together
+with `set_names` and the final `do.call` make this approach less readable.
 
 Finally, another approach would be to build a custom function and use
 `purrr::reduce2` to call several `dplyr::mutate` calls in a row, each with the
@@ -213,8 +134,8 @@ This approach is very clever, and {purrr}'s `reduce` function is a pipe-friendly
 approach which works great with {dplyr}'s one-table verbs. However, here too we
 have to take care of two things: First, using NSE in the custom function requires
 some advanced knowledge of the tidyverse. (i) How do we create nice names on the 
-lefthand side of the walrus operator? (ii) How do we evaluate strings as column
-names? Second, figuring out how to setup `reduce2` to work with the custom
+lefthand side of the walrus operator `:=`? (ii) How do we evaluate strings as
+column names? Second, figuring out how to setup `reduce2` to work with our custom
 function. Our original data goes in to `.init` argument, the arguments we want
 to loop over need to be repeated in a way that ensures that each combination of
 elements is created.
@@ -223,7 +144,10 @@ Finally, we compare the performance of each operation. The table below shows tha
 using `dplyr::across` with repititive code parts is the most performant approach, 
 while using a custom function with `reduce` is the least performant. Using
 `map_dfc` within `across` does not perform much worse than `across` alone and
-also `crossover` is not too far off in terms of speed.
+also `crossover` is not too far off in terms of speed. The big gain of using
+`crossover` is that it either (i) saves us from typing repetitive code (compared
+to `dplyr::across`) or it reduces the cognitive load of figuring out how to use 
+advanced tidyverse workarounds (like `reduce` or a `map` call nested in `across`).
 
 ```{r, echo = FALSE, eval = TRUE, warning = FALSE, message = FALSE}
 create_lags <- function(df, .x, .y) {
@@ -263,8 +187,338 @@ crossover_bench <- bench::mark(iterations = 50L, check = FALSE,
                        .names = "{xcol}_{fn}{y}"))
   }
 )
-crossover_bench
+crossover_bench[c("expression", "median", "mem_alloc")]
+
 ```
 
 #### Applying functions to a set of variable pairs
+
+Some data sets contain many variable with similar patterns. A 'tiny' example is
+the `ìris` data set, containing columns with combinations of 'Sepal' and 'Petal'
+with 'Length' and 'Width'. In the example below we want to calculate the product
+and the sum of both pairs of 'Length' and 'Width' variables. `across2` 
+works just like `dplyr::across`, but let's us choose *two* sets of columns -
+`.xcols` and `.ycols`. `across2` allows us to use a special glue specification,
+`{pre}`, in its `.names` argument, which will evaluate to the common prefix of
+each variable pair. 
+
+```{r}
+iris %>%
+  mutate(across2(ends_with("Length"),
+                 ends_with("Width"),
+                 .fns = list(product = ~ .x * .y,
+                             sum = ~ .x + .y),
+                 .names = "{pre}_{fn}")) %>%
+  glimpse
+```
+
+While in this case a simple call to `mutate` (defining two new varialbes) would
+have done the job, `across2` really comes in handy when we are dealing with  
+data sets with many variables that need to be computed in a similar way.
+
+Again, there are different workarounds to produce the same result. One option is
+to use `dplyr::across` and `dplyr::cur_column`. First we shorten the names of
+'Sepal.Length' and 'Petal.Length' to their stem using `dplyr::rename_with`.
+Then we can construct the names of the 'Width' variables using `paste0`. Below we
+use `get` (alternatively we could also use `eval(sym())`) on the so constructed
+names to get the underlying values. While this comes close to our desired result,
+we probably want to restore the original names. Unfortunatly, this requires an
+additional setup, which is why we rename the variables manually below.
+
+```{r, eval = FALSE}
+iris %>%
+  rename_with(.fn = ~ gsub(".Length", "", .x),
+              .cols = ends_with("Length")) %>% 
+  mutate(across(c(Sepal, Petal), 
+                list(product = ~ .x * get(paste0(cur_column(), ".Width")),
+                     sum = ~ .x + get(paste0(cur_column(), ".Width"))))) %>% 
+  rename(Sepal.Length = Sepal,
+         Petal.Length = Petal)
+```
+
+Another approach is again {purrr}'s `reduce2` in combination with a custom 
+function. Apart from the data, `df`, our custom function takes two strings as 
+arguments: `.x` is the common stem of our variable pairs, and `.y` which is the
+name of the operation we want to perform. The downside of this approach was
+already mentioned above: (i) advanced NSE knowledge and (ii) figuring out how 
+to use `reduce2`, especially building the inputs using `rep`.
+
+```{r, eval = FALSE}
+create_vars <- function(df, .x, .y) {
+    mutate(df, "{.x}_{.y}" := switch(.y,
+                                     sum = !! sym(paste0(.x, ".Width")) +
+                                           !! sym(paste0(.x, ".Length")),
+                                     product = !! sym(paste0(.x, ".Width")) *
+                                               !! sym(paste0(.x, ".Length")))
+    )
+}
+
+iris %>% 
+  reduce2(rep(c("Sepal", "Petal"), each = 2),
+          rep(c("product", "sum"), 2),
+          create_vars,
+          .init = .) 
+```
+
+Comparing the performance of the three operations above shows that
+`dplyr::across` is, as always, the most performant. This time, `reduce2` follows
+closely and `across2` is the least performant. Although showing a lower 
+performance, `across2` has several advantages: 
+1. No knowledge of NSE or {purrr}'s `reduce` is needed.
+1. Its the most readable approach.
+1. It allows us to produce nice names, including a common pre- or suffix.
+1. It does not depend on the variables having to share a common stem. 
+
+```{r, echo = FALSE, eval = TRUE, warning = FALSE, message = FALSE}
+create_vars <- function(df, .x, .y) {
+  mutate(df, "{.x}_{.y}" := switch(.y,
+                                   sum = !! sym(paste0(.x, ".Width")) + !! sym(paste0(.x, ".Length")),
+                                   product = !! sym(paste0(.x, ".Width")) * !! sym(paste0(.x, ".Length")))
+  )
+}
+
+across2_bench <- bench::mark(iterations = 50L, check = FALSE, 
+  across = {
+    iris %>%
+      rename_with(.fn = ~ gsub(".Length", "", .x),
+                  .cols = ends_with("Length")) %>% 
+      mutate(across(c(Sepal, Petal), 
+                    list(product = ~ .x * get(paste0(cur_column(), ".Width")),
+                         sum = ~ .x + get(paste0(cur_column(), ".Width"))))) %>% 
+      rename(Sepal.Length = Sepal,
+             Petal.Length = Petal)
+  },
+  custom_fct_reduce = {
+    iris %>% 
+      reduce2(rep(c("Sepal", "Petal"), each = 2),
+              rep(c("product", "sum"), 2),
+              create_vars,
+              .init = .) 
+  },
+  across2 = {
+    iris %>%
+      mutate(across2(ends_with("Length"),
+                        ends_with("Width"),
+                        .fns = list(product = ~ .x * .y,
+                                    sum = ~ .x + .y),
+                       .names = "{pre}_{fn}"))
+  }
+)
+across2_bench[c("expression", "median", "mem_alloc")]
+
+```
+
+#### Create columns derived from a comma separated character vector
+
+{dplyover} helps us to think in terms of columns that we want to create. A good
+example, when this kind of thinking is useful, is when dealing with a comma 
+separated character vector. In the example below the column 'csat_open' contains
+one or several comma separated reasons why a good or bad satisfaction rating was
+given. We want to transform the data so that each unique reason in 'csat_open'
+gets its own column in form of a dummy variable: taking `1` when the reason was
+given and `0` otherwise. To do this we use `over` together with `dist_values`
+which is a wrapper around `unique` that splits comma separated strings when a
+separator is provided in `.sep`:
+
+```{r, eval = TRUE}
+csat %>%
+  transmute(over(dist_values(csat_open, .sep = ", "),
+              ~ as.integer(grepl(.x, csat_open)),
+              .names = "rsp_{x}",
+              .names_fn = ~ gsub(" ", "_", .x))) %>%
+  glimpse # for better printing
+```
+
+`over` makes it easy to think about the problem we are dealing with. We just
+iterate over all unique values in `csat_open` and check with `grepl` if the 
+value is present. The first two arguments would suffice to produce a useable 
+result. Here, we additionally use the `.names` and `.names_fn` arguments to
+create nice column names by appending a prefix ('rsp_') and replacing the white
+spaces with underscores.
+
+A tidyverse approach that comes close to `over`s functionality is to use
+`purrr::map_dfc` inside `mutate`. The only difference is that we have to create
+a named vector, which holds the new column names as names, and the unique
+values of "csat_open" as values. This makes this approach less pipe-friendly.
+```{r, eval = FALSE}
+var_nms <- strsplit(csat$csat_open, ", ") %>% unlist %>% unique %>%
+  set_names(., paste0("rsp_", gsub(" ", "_", .)))
+
+csat %>%
+  transmute(map_dfc(var_nms,
+              ~ as.integer(grepl(.x, csat_open))))
+```
+
+While `purrr::map_dfc` is a valid workaround, it is less known and therefore not
+often used in the wild (at least this is my anecdotal evidence that comes from
+looking at answers to similar questions on Stackoverflow). 
+
+A more common way to tackle this problem within the tidyverse would be to use
+{tidyr}. Here we would first use `separate_rows` and make the data longer.
+Then we'd use `pivot_wider` to generate the columns we are interested in. 
+Although the code is not much longer, we have to do some thinking about how to
+set up `pviot_wider` to yield our desired result. And although we make use of a
+lot of `pivot_wider`s arguments, the column names still require a finishing
+touch.
+
+```{r, eval = TRUE}
+csat %>%
+  separate_rows(csat_open, sep = ", ") %>% 
+  pivot_wider(names_from = csat_open,
+              names_prefix = "rsp_",
+              names_repair = "universal",
+              values_from = csat_open,
+              values_fn = function(x) 1,
+              values_fill = 0) %>%
+  select(starts_with("rsp_")) %>% # for better printing
+  glimpse # for better printing
+```
+
+Another approach is to (i) get all unique values in "csat_open", (ii) create 
+empty columns with zeros, and then (iii) use `cur_column` with `grepl` inside
+`dplyr::across` to test if current column name is present in "csat_open". This 
+approach has two negative aspects. First, it is not pipe-friendly. Second, 
+creating nice column names isn't easy. This comes as a surprise, since
+`dplyr::across` has a `.names` argument. This lets us append a prefix, but it 
+does not let us replace whitespaces with underscores. Further, once we make use
+of the `.names` argument, new copies of the input columns are generated, so we
+need to get rid of the old columns.
+
+```{r, eval = TRUE}
+var_nms <- strsplit(csat$csat_open, ", ") %>% unlist %>% unique
+
+# instead of the set_names below we could do the following in base R:
+# csat[, var_nms] <- 0
+csat %>% 
+  transmute(!!! set_names(rep(0, length(var_nms)), var_nms), 
+            across(all_of(var_nms), 
+                   ~ grepl(cur_column(), csat_open) %>% as.integer,
+                   .names = "rsp_{col}")) %>%
+  select(!all_of(var_nms)) %>% 
+  glimpse # for better printing
+```
+
+If we look at the performance of each approach, we can see that `map_dfc` and
+`across` are fastest, while `pivot_wider` is the slowest. `over` ranges 
+somewhere in between.
+
+```{r, echo = FALSE, eval = TRUE, warning = FALSE, message = FALSE}
+csat2 <- csat
+over2_bench <- bench::mark(iterations = 50L, check = FALSE, 
+  map_dfc = {
+    local({var_nms <- strsplit(csat$csat_open, ", ") %>% unlist %>% unique %>%
+      set_names(., paste0("rsp_", gsub(" ", "_", .)))
+
+    csat %>%
+      transmute(map_dfc(var_nms,
+                  ~ as.integer(grepl(.x, csat_open))))
+  })},
+  pivot_wider = {
+    csat %>%
+      separate_rows(csat_open, sep = ", ") %>% 
+      pivot_wider(names_from = csat_open,
+                  names_prefix = "rsp_",
+                  names_repair = "universal",
+                  values_from = csat_open,
+                  values_fn = function(x) 1,
+                  values_fill = 0)
+  },
+  across = {
+   local({var_nms2 <- strsplit(csat$csat_open, ", ") %>% unlist %>% unique;
+   csat2[, var_nms2] <- 0
+    csat2 %>%
+      transmute(across(all_of(var_nms2),
+                       ~ grepl(cur_column(), csat_open) %>% as.integer,
+                       .names = "rsp_{col}")) 
+   # %>%
+   #    select(!all_of(var_nms))
+  })},
+  over = {
+    csat %>%
+      transmute(over(dist_values(csat_open, .sep = ", "),
+                  ~ as.integer(grepl(.x, csat_open)),
+                  .names = "rsp_{x}",
+                  .names_fn = ~ gsub(" ", "_", .x)))
+  }
+)
+over2_bench[c("expression", "median", "mem_alloc")]
+
+```
+
+
+#### Summarizing data in wide format
+Sometimes we want to summarize data in wide format. In the example below we are
+looking at the `csat` data from a customer experience survey. We would like 
+to compare the customers of each "type" by looking at how many percent give
+which customer satifaction rating (column "csat"). If we want each category of
+"csat" in a new column, then `over` makes this pretty easy:
+
+```{r, eval = TRUE}
+csat %>%
+  group_by(type) %>%
+  summarise(over(levels(csat),
+                 ~ mean(csat == .x)))
+```
+Of course there are many cases, where we do want the output to be in long format.
+For example when creating a graph with {ggplot2}. The summary in wide format, 
+however, is useful when we want to print a table in a report, for example.
+
+As already seen above, we can {purrr}'s `map_dfc` inside `summarise` to create
+an identical output:
+```{r, eval = FALSE}
+csat %>%
+  group_by(type) %>%
+  summarise(map_dfc(set_names(levels(csat), levels(csat)),
+                    ~ mean(csat == .x)))
+```
+Code-wise this comes pretty close to `over`. The major drawback is, again, that
+we have to take care of the column names with `set_names`.
+
+Finally, we can create the same output using regular {dplyr} and {tidyr} 
+functions:
+```{r, eval = FALSE}
+csat %>%
+  group_by(type, csat) %>%
+  summarise(n = n()) %>% 
+  mutate(n = prop.table(n)) %>%
+  pivot_wider(values_from = n,
+              names_from = csat)
+```
+The first part (up until `pivot_wider`) would be our go-to approach if the result
+should be in long format. Compared to `over` the `pivot_wider` approach is not
+only more verbose, it also has a higher cognitive load. 
+
+Looking at the performance of each approach, we can see that `map_dfc` is
+fastest, followed by `over`, which is a little slower, while `pivot_wider` is
+the least performant.
+```{r, eval = TRUE, echo = FALSE, warning = FALSE, message = FALSE}
+over_bench <- bench::mark(iterations = 50L, check = FALSE, 
+  over = {
+    csat %>%
+  group_by(type) %>%
+  summarise(over(dist_values(csat),
+                 ~ mean(csat == .x)))
+  },
+  pvior_wider = {
+    csat %>%
+  group_by(type, csat) %>%
+  summarise(n = n()) %>% 
+  mutate(n = prop.table(n)) %>%
+  pivot_wider(values_from = n,
+              names_from = csat)
+  },
+  map_dfc = {
+    csat %>%
+  group_by(type) %>%
+  summarise(map_dfc(set_names(levels(csat), levels(csat)),
+                    ~ mean(csat == .x)))
+  }
+)
+over_bench
+```
+
+
+
+Summing up ... .
+
 

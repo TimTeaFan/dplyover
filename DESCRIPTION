@@ -20,6 +20,7 @@ Suggests:
     testthat (>= 3.0.0),
     knitr,
     rmarkdown,
+    lifecycle,
     covr,
     stringr,
     tidyr,
