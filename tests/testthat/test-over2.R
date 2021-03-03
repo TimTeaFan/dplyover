@@ -532,26 +532,6 @@ test_that("over2() custom errors and warnings", {
     summarise(tibble(x = 1), over2x(1, 2, 42))
   )
 
-  # check keep used
-  expect_warning(
-    mutate(tibble(x = 1), over2(1, 2, mean), .keep = "used"),
-    "does not support the `.keep`"
-  )
-  expect_warning(
-    mutate(tibble(x = 1), over2x(1, 2, mean), .keep = "used"),
-    "does not support the `.keep`"
-  )
-
-  # check keep unused
-  expect_warning(
-    mutate(tibble(x = 1), over2(1, 2, mean), .keep = "unused"),
-    "does not support the `.keep`"
-  )
-  expect_warning(
-    mutate(tibble(x = 1), over2x(1, 2, mean), .keep = "unused"),
-    "does not support the `.keep`"
-  )
-
   # over2 specific errors
   # same length of .x and .y
   expect_error(
