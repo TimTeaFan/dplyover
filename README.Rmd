@@ -83,7 +83,7 @@ library(dplyover)
 iris <- as_tibble(iris)
 ```
 
-#### Apply functions to a vector to create columns
+#### Apply functions to a vector
 
 `over()` applies one or several functions to a vector. We can use it inside
 `dplyr::mutate()` to create several similar variables that we derive from an
