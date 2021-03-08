@@ -1,5 +1,65 @@
 title: dplyover
 url: https://timteafan.github.io/dplyover/
+
 template:
   params:
-    bootswatch: superhero
+    bootswatch: sandstone
+
+reference:
+- title: over-across family
+  desc: |
+    The functions in the *over-apply* function family create columns by applying
+    one or several functions to:
+    `over()` a vector (list or atomic vector);
+    `over2()` two vectors of the same length (pairwise)
+    `over2x()` two vectors of the same length (nested)
+    `across2()` two sets of columns (pairwise)
+    `across2x()` two sets of columns (nested)
+    `crossover()` a set of columns and a vector (nested)
+  contents:
+  - over_across_family
+  - over
+  - over2
+  - across2
+  - crossover
+
+- title: selection helpers
+  desc: >
+    dplyover provides two three of selection helpers which are intended for use
+    in all functions that accept a vector as argument (that is `over()` and
+    `crossover()` as well as their variants). 1. Helpers which select string
+    parts of the column names (of the underyling data): `cut_names()` removes a
+    specified pattern; `extract_names()` extracts a specified pattern.
+    2. Helpers which select values of a variable: `dist_values()` returns all
+    distinct values; `seq_range()` returns the sequence between the range of a
+    variable. 3. A helper function that takes a glue specifcation as input, and
+    evaluates the final argument string as name in the caller environment.
+  contents:
+  - selection_helpers
+  - dist_values
+  - cut_names
+  - ".()"
+
+- title: data
+  desc: >
+    dplyyover comes with a randomly generated data from a customer satisfaction
+    survey using CSAT (Customer Satisfaction Score) for a contract-based
+    product. The data set comes in two versions: recoded and raw.
+  contents:
+  - csat
+  - csatraw
+
+navbar:
+  structure:
+    right: [home, reference, articles, news, twitter, github]
+  components:
+    articles:
+     text: Articles
+     menu:
+     - text: Why dplyover?
+       href: articles/why_dplyover.html
+     - text: Performance and Compability
+       href: articles/performance.html
+     twitter:
+       icon: "fab fa-twitter fa-lg"
+       href: https://twitter.com/timteafan
