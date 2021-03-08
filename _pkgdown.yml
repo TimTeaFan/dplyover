@@ -51,10 +51,11 @@ reference:
 
 navbar:
   structure:
-    right: [home, functions, articles, news, twitter, github]
+    right: [home, reference, articles, news, twitter, github]
   components:
-    functions:
-       href: reference/index.html
+    reference:
+      text: Functions
+      href: reference/index.html
     articles:
      text: Articles
      menu:
@@ -63,7 +64,8 @@ navbar:
      - text: Performance and Compability
        href: articles/performance.html
     news:
-       href: news/index.html
+      text: News
+      href: news/index.html
     twitter:
-       icon: "fab fa-twitter"
-       href: https://twitter.com/timteafan
+      icon: "fab fa-twitter"
+      href: https://twitter.com/timteafan
