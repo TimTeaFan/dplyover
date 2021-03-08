@@ -36,11 +36,7 @@
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
-      <ul class="nav navbar-nav">
-<li>
-  <a href="../reference/index.html">Reference</a>
-</li>
-      </ul>
+      <ul class="nav navbar-nav"></ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
   <a href="../index.html">
@@ -49,7 +45,7 @@
   </a>
 </li>
 <li>
-  <a href="../reference/index.html"></a>
+  <a href="../reference/index.html">Functions</a>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
@@ -67,7 +63,7 @@
   </ul>
 </li>
 <li>
-  <a href="../news/index.html"></a>
+  <a href="../news/index.html">News</a>
 </li>
 <li>
   <a href="https://twitter.com/timteafan">
@@ -227,8 +223,8 @@
 <pre><code>#&gt; # A tibble: 2 x 6
 #&gt;   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #&gt;   &lt;bch:expr&gt; &lt;bch:tm&gt; &lt;bch:tm&gt;     &lt;dbl&gt; &lt;bch:byt&gt;    &lt;dbl&gt;
-#&gt; 1 across       5.97ms   6.54ms      150.  235.62KB     9.56
-#&gt; 2 over          3.9ms   5.59ms      183.    6.77KB     7.62</code></pre>
+#&gt; 1 across       5.19ms   5.28ms      188.  235.62KB     12.0
+#&gt; 2 over         3.47ms   3.52ms      283.    6.77KB     11.8</code></pre>
 <p>If we compare the performance of both operations, we can see that <code>over</code> is slightly faster than <code><a href="https://dplyr.tidyverse.org/reference/across.html">dplyr::across</a></code>. This changes, however, when we consider grouped data. To demonstrate this, we take the <code>diamonds</code> data set and create four versions: an ungrouped version, one with 10, 50 and one with 100 groups. Then we compare the same operations again. Now, we also add <code>crossover</code> and <code>across2</code> to the benchmark.</p>
 <p>Below is a code snippet for the 100 groups case:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
@@ -305,9 +301,9 @@ Benchmark of major dplyover functions
 <pre><code>#&gt; # A tibble: 3 x 6
 #&gt;   expression          min   median `itr/sec` mem_alloc `gc/sec`
 #&gt;   &lt;bch:expr&gt;     &lt;bch:tm&gt; &lt;bch:tm&gt;     &lt;dbl&gt; &lt;bch:byt&gt;    &lt;dbl&gt;
-#&gt; 1 over             27.7ms   30.4ms      32.7    15.5MB     58.2
-#&gt; 2 across_map_dfc   19.6ms   20.6ms      46.6    15.5MB     59.3
-#&gt; 3 reduce_cst_fct     66ms   72.2ms      13.8    15.7MB     22.5</code></pre>
+#&gt; 1 over             24.1ms   25.4ms      39.1    15.5MB     69.6
+#&gt; 2 across_map_dfc   17.3ms   17.7ms      55.3    15.5MB     70.4
+#&gt; 3 reduce_cst_fct   57.3ms   58.6ms      16.9    15.7MB     27.6</code></pre>
 <p>This picture gets a little bit more complex when we compare each approach across different group sizes. In the lower range (up until about 15 groups) <code>map_dfc</code> nested in <code>across</code> is the fastest approach, with <code>crossover</code> being not much slower. With increasing group size <code>crossover</code> starts to outperform <code>map_dfc</code> up until around 60 groups where <code>reduce</code> finally takes over and delivers the fastest performance. This benchmark stopped at 100 groups, but extrapolating from the existing data, we see that <code>reduce</code> is the most scaleable approach (although having the highest setup costs). If speed is a pressing concern, then the use of repetitive code patterns in a regular <code><a href="https://dplyr.tidyverse.org/reference/across.html">dplyr::across</a></code> call is a valid option that is still faster than any of the approaches shown here.</p>
 <div class="figure">
 <img src="benchmark2.png" alt="Benchmark: lagging many variables" width="100%"><p class="caption">
