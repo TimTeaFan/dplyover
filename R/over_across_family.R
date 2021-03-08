@@ -23,7 +23,7 @@
 #'  - [over2x()] two vectors (nested)
 #'  - [across2()] two sets of columns (pairwise)
 #'  - [across2x()] two sets of columns (nested)
-#'  - [crossover()] a set of columns and a vector (pairwise)
+#'  - [crossover()] a set of columns and a vector (nested)
 #'
 #' @name over_across_family
 NULL
