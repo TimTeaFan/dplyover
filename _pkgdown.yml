@@ -3,7 +3,7 @@ url: https://timteafan.github.io/dplyover/
 
 template:
   params:
-    bootswatch: sandstone
+    bootswatch: cerulean
 
 reference:
 - title: over-across family
@@ -51,8 +51,10 @@ reference:
 
 navbar:
   structure:
-    right: [home, reference, articles, news, twitter, github]
+    right: [home, functions, articles, news, twitter, github]
   components:
+    functions:
+       href: reference/index.html
     articles:
      text: Articles
      menu:
@@ -60,6 +62,8 @@ navbar:
        href: articles/why_dplyover.html
      - text: Performance and Compability
        href: articles/performance.html
-     twitter:
-       icon: "fab fa-twitter fa-lg"
+    news:
+       href: news/index.html
+    twitter:
+       icon: "fab fa-twitter"
        href: https://twitter.com/timteafan
