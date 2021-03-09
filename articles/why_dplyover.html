@@ -45,7 +45,7 @@
   </a>
 </li>
 <li>
-  <a href="../reference/index.html">Functions</a>
+  <a href="../reference/index.html">Reference</a>
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
@@ -206,10 +206,10 @@
 <pre><code>#&gt; # A tibble: 4 x 3
 #&gt;   expression    median mem_alloc
 #&gt;   &lt;bch:expr&gt;  &lt;bch:tm&gt; &lt;bch:byt&gt;
-#&gt; 1 map_dfc       4.86ms   64.06KB
-#&gt; 2 pivot_wider  14.52ms    1.33MB
-#&gt; 3 across        8.22ms   80.12KB
-#&gt; 4 over          5.68ms   27.22KB</code></pre>
+#&gt; 1 map_dfc       4.98ms   64.06KB
+#&gt; 2 pivot_wider  15.42ms    1.33MB
+#&gt; 3 across        8.78ms   80.12KB
+#&gt; 4 over          6.22ms   27.22KB</code></pre>
 </div>
 <div id="creating-several-lagged-variables-for-a-set-of-columns" class="section level3">
 <h3 class="hasAnchor">
@@ -256,9 +256,9 @@
 <pre><code>#&gt; # A tibble: 3 x 3
 #&gt;   expression          median mem_alloc
 #&gt;   &lt;bch:expr&gt;        &lt;bch:tm&gt; &lt;bch:byt&gt;
-#&gt; 1 crossover           25.3ms    15.5MB
-#&gt; 2 across_map_dfc      17.9ms    15.5MB
-#&gt; 3 custom_fct_reduce   60.5ms    15.7MB</code></pre>
+#&gt; 1 crossover           27.3ms    15.5MB
+#&gt; 2 across_map_dfc      19.4ms    15.5MB
+#&gt; 3 custom_fct_reduce   64.2ms    15.7MB</code></pre>
 </div>
 <div id="applying-functions-to-a-set-of-variable-pairs" class="section level3">
 <h3 class="hasAnchor">
@@ -320,9 +320,9 @@
 <pre><code>#&gt; # A tibble: 3 x 3
 #&gt;   expression          median mem_alloc
 #&gt;   &lt;bch:expr&gt;        &lt;bch:tm&gt; &lt;bch:byt&gt;
-#&gt; 1 across2            19.47ms    26.9KB
-#&gt; 2 across              7.34ms    73.8KB
-#&gt; 3 custom_fct_reduce  10.27ms   124.2KB</code></pre>
+#&gt; 1 across2            20.36ms    26.9KB
+#&gt; 2 across              7.49ms    73.8KB
+#&gt; 3 custom_fct_reduce   10.8ms   124.2KB</code></pre>
 </div>
 </div>
 <div id="conclusion" class="section level2">
