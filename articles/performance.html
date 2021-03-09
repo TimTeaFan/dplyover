@@ -11,7 +11,8 @@
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
-<script src="../pkgdown.js"></script><meta property="og:title" content="Performance and Compability">
+<script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
+<meta property="og:title" content="Performance and Compability">
 <meta property="og:description" content="dplyover">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
@@ -223,8 +224,8 @@
 <pre><code>#&gt; # A tibble: 2 x 6
 #&gt;   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #&gt;   &lt;bch:expr&gt; &lt;bch:tm&gt; &lt;bch:tm&gt;     &lt;dbl&gt; &lt;bch:byt&gt;    &lt;dbl&gt;
-#&gt; 1 across       5.23ms   5.45ms      180.  235.62KB     11.5
-#&gt; 2 over         3.41ms    3.6ms      270.    6.77KB     11.2</code></pre>
+#&gt; 1 across       5.15ms   5.33ms      186.  235.62KB     11.9
+#&gt; 2 over         3.42ms   3.51ms      282.    6.77KB     11.8</code></pre>
 <p>If we compare the performance of both operations, we can see that <code>over</code> is slightly faster than <code><a href="https://dplyr.tidyverse.org/reference/across.html">dplyr::across</a></code>. This changes, however, when we consider grouped data. To demonstrate this, we take the <code>diamonds</code> data set and create four versions: an ungrouped version, one with 10, 50 and one with 100 groups. Then we compare the same operations again. Now, we also add <code>crossover</code> and <code>across2</code> to the benchmark.</p>
 <p>Below is a code snippet for the 100 groups case:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
@@ -301,9 +302,9 @@ Benchmark of major dplyover functions
 <pre><code>#&gt; # A tibble: 3 x 6
 #&gt;   expression          min   median `itr/sec` mem_alloc `gc/sec`
 #&gt;   &lt;bch:expr&gt;     &lt;bch:tm&gt; &lt;bch:tm&gt;     &lt;dbl&gt; &lt;bch:byt&gt;    &lt;dbl&gt;
-#&gt; 1 over             25.2ms   27.8ms      34.5    15.5MB     61.4
-#&gt; 2 across_map_dfc   18.1ms   19.8ms      50.4    15.5MB     64.1
-#&gt; 3 reduce_cst_fct   57.8ms     63ms      15.7    15.7MB     33.3</code></pre>
+#&gt; 1 over             24.1ms   25.3ms      39.4    15.5MB     70.0
+#&gt; 2 across_map_dfc   17.3ms   17.7ms      56.0    15.5MB     71.2
+#&gt; 3 reduce_cst_fct   57.8ms   59.4ms      16.6    15.7MB     27.0</code></pre>
 <p>This picture gets a little bit more complex when we compare each approach across different group sizes. In the lower range (up until about 15 groups) <code>map_dfc</code> nested in <code>across</code> is the fastest approach, with <code>crossover</code> being not much slower. With increasing group size <code>crossover</code> starts to outperform <code>map_dfc</code> up until around 60 groups where <code>reduce</code> finally takes over and delivers the fastest performance. This benchmark stopped at 100 groups, but extrapolating from the existing data, we see that <code>reduce</code> is the most scaleable approach (although having the highest setup costs). If speed is a pressing concern, then the use of repetitive code patterns in a regular <code><a href="https://dplyr.tidyverse.org/reference/across.html">dplyr::across</a></code> call is a valid option that is still faster than any of the approaches shown here.</p>
 <div class="figure">
 <img src="benchmark2.png" alt="Benchmark: lagging many variables" width="100%"><p class="caption">

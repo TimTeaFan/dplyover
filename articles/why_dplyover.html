@@ -11,7 +11,8 @@
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
-<script src="../pkgdown.js"></script><meta property="og:title" content="Why dplyover?">
+<script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
+<meta property="og:title" content="Why dplyover?">
 <meta property="og:description" content="dplyover">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
@@ -206,10 +207,10 @@
 <pre><code>#&gt; # A tibble: 4 x 3
 #&gt;   expression    median mem_alloc
 #&gt;   &lt;bch:expr&gt;  &lt;bch:tm&gt; &lt;bch:byt&gt;
-#&gt; 1 map_dfc       4.98ms   64.06KB
-#&gt; 2 pivot_wider  15.42ms    1.33MB
-#&gt; 3 across        8.78ms   80.12KB
-#&gt; 4 over          6.22ms   27.22KB</code></pre>
+#&gt; 1 map_dfc        4.9ms   64.06KB
+#&gt; 2 pivot_wider  14.69ms    1.33MB
+#&gt; 3 across        8.22ms   80.12KB
+#&gt; 4 over          5.64ms   27.22KB</code></pre>
 </div>
 <div id="creating-several-lagged-variables-for-a-set-of-columns" class="section level3">
 <h3 class="hasAnchor">
@@ -256,9 +257,9 @@
 <pre><code>#&gt; # A tibble: 3 x 3
 #&gt;   expression          median mem_alloc
 #&gt;   &lt;bch:expr&gt;        &lt;bch:tm&gt; &lt;bch:byt&gt;
-#&gt; 1 crossover           27.3ms    15.5MB
-#&gt; 2 across_map_dfc      19.4ms    15.5MB
-#&gt; 3 custom_fct_reduce   64.2ms    15.7MB</code></pre>
+#&gt; 1 crossover           25.2ms    15.5MB
+#&gt; 2 across_map_dfc      17.8ms    15.5MB
+#&gt; 3 custom_fct_reduce   59.5ms    15.7MB</code></pre>
 </div>
 <div id="applying-functions-to-a-set-of-variable-pairs" class="section level3">
 <h3 class="hasAnchor">
@@ -320,9 +321,9 @@
 <pre><code>#&gt; # A tibble: 3 x 3
 #&gt;   expression          median mem_alloc
 #&gt;   &lt;bch:expr&gt;        &lt;bch:tm&gt; &lt;bch:byt&gt;
-#&gt; 1 across2            20.36ms    26.9KB
-#&gt; 2 across              7.49ms    73.8KB
-#&gt; 3 custom_fct_reduce   10.8ms   124.2KB</code></pre>
+#&gt; 1 across2            19.69ms    26.9KB
+#&gt; 2 across              7.63ms    73.8KB
+#&gt; 3 custom_fct_reduce  11.31ms   124.2KB</code></pre>
 </div>
 </div>
 <div id="conclusion" class="section level2">
