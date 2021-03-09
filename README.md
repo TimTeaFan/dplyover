@@ -65,14 +65,18 @@ similar to a nested loop.</small>
 ``` r
 # install.packages("devtools")
 devtools::install_github("TimTeaFan/dplyover")
+#> Using github PAT from envvar GITHUB_PAT
+#> Skipping install of 'dplyover' from a github remote, the SHA1 (55754f43) has not changed since last install.
+#>   Use `force = TRUE` to force installation
 ```
 
 ## Getting started
 
 Below are a few examples of the {dplyover}’s *over-across function
 family*. More function and workarounds of how to tackle the problems
-below without {dplyover} can be found in the vignette “Why dplyover?”:
-`vignette("why_dplyover")`.
+below without {dplyover} can be found in the vignette
+<a href="https://timteafan.github.io/dplyover/articles/why_dplyover.html)">“Why
+dplyover?”</a>.
 
 ``` r
 # dplyover is an extention of dplyr on won't work without it
@@ -83,7 +87,7 @@ library(dplyover)
 iris <- as_tibble(iris)
 ```
 
-#### Apply functions to a vector to create columns
+#### Apply functions to a vector
 
 `over()` applies one or several functions to a vector. We can use it
 inside `dplyr::mutate()` to create several similar variables that we
@@ -129,16 +133,16 @@ iris %>%
    glimpse
 #> Rows: 150
 #> Columns: 10
-#> $ Sepal.Length_lag1 <dbl> NA, 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6, 5.0, 4.4, ...
-#> $ Sepal.Length_lag2 <dbl> NA, NA, 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6, 5.0, 4...
-#> $ Sepal.Length_lag3 <dbl> NA, NA, NA, 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6, 5....
-#> $ Sepal.Length_lag4 <dbl> NA, NA, NA, NA, 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6...
-#> $ Sepal.Length_lag5 <dbl> NA, NA, NA, NA, NA, 5.1, 4.9, 4.7, 4.6, 5.0, 5.4,...
-#> $ Sepal.Width_lag1  <dbl> NA, 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4, 3.4, 2.9, ...
-#> $ Sepal.Width_lag2  <dbl> NA, NA, 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4, 3.4, 2...
-#> $ Sepal.Width_lag3  <dbl> NA, NA, NA, 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4, 3....
-#> $ Sepal.Width_lag4  <dbl> NA, NA, NA, NA, 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4...
-#> $ Sepal.Width_lag5  <dbl> NA, NA, NA, NA, NA, 3.5, 3.0, 3.2, 3.1, 3.6, 3.9,...
+#> $ Sepal.Length_lag1 <dbl> NA, 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6, 5.0, 4.4, 4.9~
+#> $ Sepal.Length_lag2 <dbl> NA, NA, 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6, 5.0, 4.4,~
+#> $ Sepal.Length_lag3 <dbl> NA, NA, NA, 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6, 5.0, ~
+#> $ Sepal.Length_lag4 <dbl> NA, NA, NA, NA, 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6, 5~
+#> $ Sepal.Length_lag5 <dbl> NA, NA, NA, NA, NA, 5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.~
+#> $ Sepal.Width_lag1  <dbl> NA, 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4, 3.4, 2.9, 3.1~
+#> $ Sepal.Width_lag2  <dbl> NA, NA, 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4, 3.4, 2.9,~
+#> $ Sepal.Width_lag3  <dbl> NA, NA, NA, 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4, 3.4, ~
+#> $ Sepal.Width_lag4  <dbl> NA, NA, NA, NA, 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4, 3~
+#> $ Sepal.Width_lag5  <dbl> NA, NA, NA, NA, NA, 3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.~
 ```
 
 #### Apply functions to a set of variable pairs
@@ -204,7 +208,9 @@ and I was able to replicate most of the tests for `dplyr::across`
 successfully.
 
 For more information on the performance and compability of {dplyover}
-see the vignette “Performance and Compability”.
+see the vignette
+<a href="https://timteafan.github.io/dplyover/articles/performance.html">“Performance
+and Compability”</a>.
 
 ## History
 
