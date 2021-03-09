@@ -25,15 +25,15 @@ reference:
 
 - title: selection helpers
   desc: >
-    dplyover provides two three of selection helpers which are intended for use
+    dplyover provides three selection helpers which are intended for use
     in all functions that accept a vector as argument (that is `over()` and
     `crossover()` as well as their variants). 1. Helpers which select string
     parts of the column names (of the underyling data): `cut_names()` removes a
     specified pattern; `extract_names()` extracts a specified pattern.
     2. Helpers which select values of a variable: `dist_values()` returns all
     distinct values; `seq_range()` returns the sequence between the range of a
-    variable. 3. A helper function that takes a glue specifcation as input, and
-    evaluates the final argument string as name in the caller environment.
+    variable. 3. A helper function `.()` that takes a glue specifcation as input,
+    and evaluates the final argument string as name in the caller environment.
   contents:
   - selection_helpers
   - dist_values
