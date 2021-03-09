@@ -53,9 +53,6 @@ navbar:
   structure:
     right: [home, reference, articles, news, twitter, github]
   components:
-    reference:
-      text: Functions
-      href: reference/index.html
     articles:
      text: Articles
      menu:
