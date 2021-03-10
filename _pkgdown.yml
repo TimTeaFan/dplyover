@@ -66,6 +66,7 @@ navbar:
      - text: Performance and Compability
        href: articles/performance.html
     news:
+      icon: fas fa-clipboard-list
       text: News
       href: news/index.html
     twitter:
