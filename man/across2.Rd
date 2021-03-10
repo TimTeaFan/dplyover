@@ -131,11 +131,11 @@ by setting the \code{.comb} argument to \code{"minimal"}.\if{html}{\out{<div cla
                                      gsub("Petal", "P", .),
                      .comb = "minimal"))
 #> # A tibble: 3 x 7
-#>   Species S.Length_S.Width S.Length_P.Leng~ S.Length_P.Width S.Width_P.Length S.Width_P.Width
-#> * <fct>              <dbl>            <dbl>            <dbl>            <dbl>           <dbl>
-#> 1 setosa              0.74             0.27             0.28             0.18            0.23
-#> 2 versic~             0.53             0.75             0.55             0.56            0.66
-#> 3 virgin~             0.46             0.86             0.28             0.4             0.54
+#>   Species  S.Length_S.Width S.Length_P.Leng~ S.Length_P.Width S.Width_P.Length S.Width_P.Width
+#>   <fct>               <dbl>            <dbl>            <dbl>            <dbl>           <dbl>
+#> 1 setosa               0.74             0.27             0.28             0.18            0.23
+#> 2 versico~             0.53             0.75             0.55             0.56            0.66
+#> 3 virgini~             0.46             0.86             0.28             0.4             0.54
 #> # ... with 1 more variable: P.Length_P.Width <dbl>
 }\if{html}{\out{</div>}}
 }

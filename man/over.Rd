@@ -186,7 +186,7 @@ in the wide format, and in this case \code{over()} comes in handy:\if{html}{\out
                  ~ mean(item1 == .x)))
 #> # A tibble: 3 x 6
 #>   type          `1`   `2`   `3`   `4`    `5`
-#> * <chr>       <dbl> <dbl> <dbl> <dbl>  <dbl>
+#>   <chr>       <dbl> <dbl> <dbl> <dbl>  <dbl>
 #> 1 existing   0.156  0.234 0.234 0.266 0.109 
 #> 2 new        0.0714 0.268 0.357 0.214 0.0893
 #> 3 reactivate 0.0667 0.267 0.133 0.4   0.133
@@ -201,7 +201,7 @@ top two and bottom two categories on the fly:\if{html}{\out{<div class="r">}}\pr
                  ~ mean(item1 \%in\% .x)))
 #> # A tibble: 3 x 4
 #>   type        bot2   mid  top2
-#> * <chr>      <dbl> <dbl> <dbl>
+#>   <chr>      <dbl> <dbl> <dbl>
 #> 1 existing   0.391 0.234 0.375
 #> 2 new        0.339 0.357 0.304
 #> 3 reactivate 0.333 0.133 0.533
@@ -247,12 +247,12 @@ using a separator:\if{html}{\out{<div class="r">}}\preformatted{csat \%>\%
               .keep = "none") \%>\% glimpse
 #> Rows: 150
 #> Columns: 6
-#> $ rsp_friendly_staff <int> 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, ...
-#> $ rsp_good_service   <int> 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, ...
-#> $ rsp_great_product  <int> 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, ...
-#> $ rsp_no_response    <int> 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, ...
-#> $ rsp_too_expensive  <int> 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, ...
-#> $ rsp_unfriendly     <int> 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, ...
+#> $ rsp_friendly_staff <int> 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0,~
+#> $ rsp_good_service   <int> 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0,~
+#> $ rsp_great_product  <int> 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0,~
+#> $ rsp_no_response    <int> 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1,~
+#> $ rsp_too_expensive  <int> 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0,~
+#> $ rsp_unfriendly     <int> 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0,~
 }\if{html}{\out{</div>}}
 }
 

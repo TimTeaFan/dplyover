@@ -5,3 +5,5 @@
 ^data-raw$
 ^codecov\.yml$
 ^\.github$
+^doc$
+^Meta$

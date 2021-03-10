@@ -14,3 +14,5 @@ tests/testthat/test-across_new.R
 tests/testthat/test-crossover_old.R
 
 inst/doc
+doc
+Meta

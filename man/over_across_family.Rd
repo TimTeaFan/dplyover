@@ -28,7 +28,7 @@ one or several functions to:
 \item \code{\link[=over2x]{over2x()}} two vectors (nested)
 \item \code{\link[=across2]{across2()}} two sets of columns (pairwise)
 \item \code{\link[=across2x]{across2x()}} two sets of columns (nested)
-\item \code{\link[=crossover]{crossover()}} a set of columns and a vector (pairwise)
+\item \code{\link[=crossover]{crossover()}} a set of columns and a vector (nested)
 }
 }
 }
