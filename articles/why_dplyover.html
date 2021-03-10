@@ -207,10 +207,10 @@
 <pre><code>#&gt; # A tibble: 4 x 3
 #&gt;   expression    median mem_alloc
 #&gt;   &lt;bch:expr&gt;  &lt;bch:tm&gt; &lt;bch:byt&gt;
-#&gt; 1 map_dfc       4.88ms   64.06KB
-#&gt; 2 pivot_wider  14.76ms    1.33MB
-#&gt; 3 across        8.27ms   80.12KB
-#&gt; 4 over          5.65ms   27.22KB</code></pre>
+#&gt; 1 map_dfc       6.24ms   64.06KB
+#&gt; 2 pivot_wider  18.41ms    1.33MB
+#&gt; 3 across       10.04ms   80.12KB
+#&gt; 4 over           7.1ms   27.22KB</code></pre>
 </div>
 <div id="creating-several-lagged-variables-for-a-set-of-columns" class="section level4">
 <h4 class="hasAnchor">
@@ -257,9 +257,9 @@
 <pre><code>#&gt; # A tibble: 3 x 3
 #&gt;   expression          median mem_alloc
 #&gt;   &lt;bch:expr&gt;        &lt;bch:tm&gt; &lt;bch:byt&gt;
-#&gt; 1 crossover           25.4ms    15.5MB
-#&gt; 2 across_map_dfc      17.9ms    15.5MB
-#&gt; 3 custom_fct_reduce   59.3ms    15.7MB</code></pre>
+#&gt; 1 crossover           28.2ms    15.5MB
+#&gt; 2 across_map_dfc      20.7ms    15.5MB
+#&gt; 3 custom_fct_reduce   74.2ms    15.7MB</code></pre>
 </div>
 <div id="applying-functions-to-a-set-of-variable-pairs" class="section level4">
 <h4 class="hasAnchor">
@@ -321,9 +321,9 @@
 <pre><code>#&gt; # A tibble: 3 x 3
 #&gt;   expression          median mem_alloc
 #&gt;   &lt;bch:expr&gt;        &lt;bch:tm&gt; &lt;bch:byt&gt;
-#&gt; 1 across2             19.4ms    26.9KB
-#&gt; 2 across               7.3ms    73.8KB
-#&gt; 3 custom_fct_reduce   10.4ms   124.2KB</code></pre>
+#&gt; 1 across2            23.13ms    26.9KB
+#&gt; 2 across              9.59ms    73.8KB
+#&gt; 3 custom_fct_reduce   13.1ms   124.2KB</code></pre>
 </div>
 </div>
 <div id="conclusion" class="section level2">
