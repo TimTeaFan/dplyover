@@ -178,7 +178,7 @@ a vector.</p></td>
       <td><p>Functions to apply to each of the elements in <code>.x</code>. For
 functions that expect variable names as input, the selected strings need to
 be turned into symbols and evaluated. <code>dplyrover</code> comes with a genuine helper
-function that evaluates strings as names <code><a href='..html'>.()</a></code>.</p>
+function that evaluates strings as names <code><a href='string_eval.html'>.()</a></code>.</p>
 <p>Possible values are:</p><ul>
 <li><p>A function</p></li>
 <li><p>A purrr-style lambda</p></li>
@@ -338,7 +338,7 @@ in the wide format, and in this case <code>over()</code> comes in handy:<div cla
                  <span class='op'>~</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>item1</span> <span class='op'>==</span> <span class='va'>.x</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
 <span class='co'>#&gt; # A tibble: 3 x 6</span>
 <span class='co'>#&gt;   type          `1`   `2`   `3`   `4`    `5`</span>
-<span class='co'>#&gt; * &lt;chr&gt;       &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;</span>
+<span class='co'>#&gt;   &lt;chr&gt;       &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;</span>
 <span class='co'>#&gt; 1 existing   0.156  0.234 0.234 0.266 0.109 </span>
 <span class='co'>#&gt; 2 new        0.0714 0.268 0.357 0.214 0.0893</span>
 <span class='co'>#&gt; 3 reactivate 0.0667 0.267 0.133 0.4   0.133</span>
@@ -352,7 +352,7 @@ top two and bottom two categories on the fly:<div class="r"></p><pre><span class
                  <span class='op'>~</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>item1</span> <span class='op'>%in%</span> <span class='va'>.x</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
 <span class='co'>#&gt; # A tibble: 3 x 4</span>
 <span class='co'>#&gt;   type        bot2   mid  top2</span>
-<span class='co'>#&gt; * &lt;chr&gt;      &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;</span>
+<span class='co'>#&gt;   &lt;chr&gt;      &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;</span>
 <span class='co'>#&gt; 1 existing   0.391 0.234 0.375</span>
 <span class='co'>#&gt; 2 new        0.339 0.357 0.304</span>
 <span class='co'>#&gt; 3 reactivate 0.333 0.133 0.533</span>
@@ -396,12 +396,12 @@ using a separator:<div class="r"></p><pre><span class='va'>csat</span> <span cla
               .keep <span class='op'>=</span> <span class='st'>"none"</span><span class='op'>)</span> <span class='op'>%&gt;%</span> <span class='va'>glimpse</span>
 <span class='co'>#&gt; Rows: 150</span>
 <span class='co'>#&gt; Columns: 6</span>
-<span class='co'>#&gt; $ rsp_friendly_staff &lt;int&gt; 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, ...</span>
-<span class='co'>#&gt; $ rsp_good_service   &lt;int&gt; 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, ...</span>
-<span class='co'>#&gt; $ rsp_great_product  &lt;int&gt; 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, ...</span>
-<span class='co'>#&gt; $ rsp_no_response    &lt;int&gt; 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, ...</span>
-<span class='co'>#&gt; $ rsp_too_expensive  &lt;int&gt; 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, ...</span>
-<span class='co'>#&gt; $ rsp_unfriendly     &lt;int&gt; 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, ...</span>
+<span class='co'>#&gt; $ rsp_friendly_staff &lt;int&gt; 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0,~</span>
+<span class='co'>#&gt; $ rsp_good_service   &lt;int&gt; 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0,~</span>
+<span class='co'>#&gt; $ rsp_great_product  &lt;int&gt; 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0,~</span>
+<span class='co'>#&gt; $ rsp_no_response    &lt;int&gt; 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1,~</span>
+<span class='co'>#&gt; $ rsp_too_expensive  &lt;int&gt; 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0,~</span>
+<span class='co'>#&gt; $ rsp_unfriendly     &lt;int&gt; 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0,~</span>
 </pre><p></div></p>
 
 <h3 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>(2) A Very Specific Use Case</h3>
@@ -411,16 +411,16 @@ using a separator:<div class="r"></p><pre><span class='va'>csat</span> <span cla
 same stem). This allows us to dynamically use more than one column in the
 function calls in <code>.fns</code>. To work properly, the strings need to be
 turned into symbols and evaluated. For this dplyover provides a genuine
-helper function <code><a href='..html'>.()</a></code> that evaluates strings and helps to declutter the
-otherwise rather verbose code. <code><a href='..html'>.()</a></code> supports glue syntax and takes a string
+helper function <code><a href='string_eval.html'>.()</a></code> that evaluates strings and helps to declutter the
+otherwise rather verbose code. <code><a href='string_eval.html'>.()</a></code> supports glue syntax and takes a string
 as argument.</p>
 <p>Below are a few examples using two colums in the function calls in <code>.fns</code>.
 For the two column case <code><a href='across2.html'>across2()</a></code> provides a more intuitive API that is
-closer to the original <code><a href='https://dplyr.tidyverse.org/reference/across.html'>dplyr::across</a></code>. Using <code><a href='..html'>.()</a></code> inside <code>over</code> is really
+closer to the original <code><a href='https://dplyr.tidyverse.org/reference/across.html'>dplyr::across</a></code>. Using <code><a href='string_eval.html'>.()</a></code> inside <code>over</code> is really
 useful for cases with more than two columns.</p>
-<p>Consider the following example of a purrr-style formula in <code>.fns</code> using <code><a href='..html'>.()</a></code>:<div class="r"></p><pre><span class='va'>iris</span> <span class='op'>%&gt;%</span>
+<p>Consider the following example of a purrr-style formula in <code>.fns</code> using <code><a href='string_eval.html'>.()</a></code>:<div class="r"></p><pre><span class='va'>iris</span> <span class='op'>%&gt;%</span>
   <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span><span class='fu'>over</span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"Sepal"</span>, <span class='st'>"Petal"</span><span class='op'>)</span>,
-              <span class='op'>~</span> <span class='fu'><a href='..html'>.</a></span><span class='op'>(</span><span class='st'>"{.x}.Width"</span><span class='op'>)</span> <span class='op'>+</span> <span class='fu'><a href='..html'>.</a></span><span class='op'>(</span><span class='st'>"{.x}.Length"</span><span class='op'>)</span>
+              <span class='op'>~</span> <span class='fu'><a href='string_eval.html'>.</a></span><span class='op'>(</span><span class='st'>"{.x}.Width"</span><span class='op'>)</span> <span class='op'>+</span> <span class='fu'><a href='string_eval.html'>.</a></span><span class='op'>(</span><span class='st'>"{.x}.Length"</span><span class='op'>)</span>
               <span class='op'>)</span><span class='op'>)</span>
 <span class='co'>#&gt; # A tibble: 150 x 7</span>
 <span class='co'>#&gt;   Sepal.Length Sepal.Width Petal.Length Petal.Width Species Sepal Petal</span>
@@ -445,9 +445,9 @@ useful for cases with more than two columns.</p>
 <span class='co'>#&gt; 4          4.6         3.1          1.5         0.2 setosa    7.7  1.7 </span>
 <span class='co'>#&gt; # ... with 146 more rows</span>
 </pre><p></div></p>
-<p><code><a href='..html'>.()</a></code> also works with anonymous functions:<div class="r"></p><pre><span class='va'>iris</span> <span class='op'>%&gt;%</span>
+<p><code><a href='string_eval.html'>.()</a></code> also works with anonymous functions:<div class="r"></p><pre><span class='va'>iris</span> <span class='op'>%&gt;%</span>
   <span class='fu'><a href='https://dplyr.tidyverse.org/reference/summarise.html'>summarise</a></span><span class='op'>(</span><span class='fu'>over</span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"Sepal"</span>, <span class='st'>"Petal"</span><span class='op'>)</span>,
-                <span class='kw'>function</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='fu'><a href='..html'>.</a></span><span class='op'>(</span><span class='st'>"{x}.Width"</span><span class='op'>)</span><span class='op'>)</span>
+                <span class='kw'>function</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='fu'><a href='string_eval.html'>.</a></span><span class='op'>(</span><span class='st'>"{x}.Width"</span><span class='op'>)</span><span class='op'>)</span>
                 <span class='op'>)</span><span class='op'>)</span>
 <span class='co'>#&gt; # A tibble: 1 x 2</span>
 <span class='co'>#&gt;   Sepal Petal</span>
@@ -456,8 +456,8 @@ useful for cases with more than two columns.</p>
 </pre><p></div></p>
 <p>A named list of functions:<div class="r"></p><pre><span class='va'>iris</span> <span class='op'>%&gt;%</span>
   <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span><span class='fu'>over</span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"Sepal"</span>, <span class='st'>"Petal"</span><span class='op'>)</span>,
-              <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>product <span class='op'>=</span> <span class='op'>~</span> <span class='fu'><a href='..html'>.</a></span><span class='op'>(</span><span class='st'>"{.x}.Width"</span><span class='op'>)</span> <span class='op'>*</span> <span class='fu'><a href='..html'>.</a></span><span class='op'>(</span><span class='st'>"{.x}.Length"</span><span class='op'>)</span>,
-                   sum <span class='op'>=</span> <span class='op'>~</span> <span class='fu'><a href='..html'>.</a></span><span class='op'>(</span><span class='st'>"{.x}.Width"</span><span class='op'>)</span> <span class='op'>+</span> <span class='fu'><a href='..html'>.</a></span><span class='op'>(</span><span class='st'>"{.x}.Length"</span><span class='op'>)</span><span class='op'>)</span>
+              <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>product <span class='op'>=</span> <span class='op'>~</span> <span class='fu'><a href='string_eval.html'>.</a></span><span class='op'>(</span><span class='st'>"{.x}.Width"</span><span class='op'>)</span> <span class='op'>*</span> <span class='fu'><a href='string_eval.html'>.</a></span><span class='op'>(</span><span class='st'>"{.x}.Length"</span><span class='op'>)</span>,
+                   sum <span class='op'>=</span> <span class='op'>~</span> <span class='fu'><a href='string_eval.html'>.</a></span><span class='op'>(</span><span class='st'>"{.x}.Width"</span><span class='op'>)</span> <span class='op'>+</span> <span class='fu'><a href='string_eval.html'>.</a></span><span class='op'>(</span><span class='st'>"{.x}.Length"</span><span class='op'>)</span><span class='op'>)</span>
                    <span class='op'>)</span>,
          .keep <span class='op'>=</span> <span class='st'>"none"</span><span class='op'>)</span>
 <span class='co'>#&gt; # A tibble: 150 x 4</span>
@@ -471,8 +471,8 @@ useful for cases with more than two columns.</p>
 </pre><p></div></p>
 <p>Again, use the <code>.names</code> argument to control the output names:<div class="r"></p><pre><span class='va'>iris</span> <span class='op'>%&gt;%</span>
   <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span><span class='fu'>over</span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"Sepal"</span>, <span class='st'>"Petal"</span><span class='op'>)</span>,
-              <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>product <span class='op'>=</span> <span class='op'>~</span> <span class='fu'><a href='..html'>.</a></span><span class='op'>(</span><span class='st'>"{.x}.Width"</span><span class='op'>)</span> <span class='op'>*</span> <span class='fu'><a href='..html'>.</a></span><span class='op'>(</span><span class='st'>"{.x}.Length"</span><span class='op'>)</span>,
-                   sum <span class='op'>=</span> <span class='op'>~</span> <span class='fu'><a href='..html'>.</a></span><span class='op'>(</span><span class='st'>"{.x}.Width"</span><span class='op'>)</span> <span class='op'>+</span> <span class='fu'><a href='..html'>.</a></span><span class='op'>(</span><span class='st'>"{.x}.Length"</span><span class='op'>)</span><span class='op'>)</span>,
+              <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>product <span class='op'>=</span> <span class='op'>~</span> <span class='fu'><a href='string_eval.html'>.</a></span><span class='op'>(</span><span class='st'>"{.x}.Width"</span><span class='op'>)</span> <span class='op'>*</span> <span class='fu'><a href='string_eval.html'>.</a></span><span class='op'>(</span><span class='st'>"{.x}.Length"</span><span class='op'>)</span>,
+                   sum <span class='op'>=</span> <span class='op'>~</span> <span class='fu'><a href='string_eval.html'>.</a></span><span class='op'>(</span><span class='st'>"{.x}.Width"</span><span class='op'>)</span> <span class='op'>+</span> <span class='fu'><a href='string_eval.html'>.</a></span><span class='op'>(</span><span class='st'>"{.x}.Length"</span><span class='op'>)</span><span class='op'>)</span>,
               .names <span class='op'>=</span> <span class='st'>"{fn}_{x}"</span><span class='op'>)</span>,
          .keep <span class='op'>=</span> <span class='st'>"none"</span><span class='op'>)</span>
 <span class='co'>#&gt; # A tibble: 150 x 4</span>

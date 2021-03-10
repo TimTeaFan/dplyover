@@ -245,7 +245,7 @@ the <code>.pattern</code> argument, while <code>extract_names()</code> does only
 <p>Within <code><a href='over.html'>over()</a></code> <code>cut_names()</code> and <code>extract_names()</code> automatically use the
 column names of the underlying data:<div class="r"></p><pre><span class='va'>iris</span> <span class='op'>%&gt;%</span>
 <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span><span class='fu'><a href='over.html'>over</a></span><span class='op'>(</span><span class='fu'>cut_names</span><span class='op'>(</span><span class='st'>".Width"</span><span class='op'>)</span>,
-            <span class='op'>~</span> <span class='fu'><a href='..html'>.</a></span><span class='op'>(</span><span class='st'>"{.x}.Width"</span><span class='op'>)</span> <span class='op'>*</span> <span class='fu'><a href='..html'>.</a></span><span class='op'>(</span><span class='st'>"{.x}.Length"</span><span class='op'>)</span>,
+            <span class='op'>~</span> <span class='fu'><a href='string_eval.html'>.</a></span><span class='op'>(</span><span class='st'>"{.x}.Width"</span><span class='op'>)</span> <span class='op'>*</span> <span class='fu'><a href='string_eval.html'>.</a></span><span class='op'>(</span><span class='st'>"{.x}.Length"</span><span class='op'>)</span>,
             .names <span class='op'>=</span> <span class='st'>"Product_{x}"</span><span class='op'>)</span><span class='op'>)</span>
 <span class='co'>#&gt; # A tibble: 150 x 7</span>
 <span class='co'>#&gt;   Sepal.Length Sepal.Width Petal.Length Petal.Width Species Product_Sepal Product_Petal</span>
@@ -258,7 +258,7 @@ column names of the underlying data:<div class="r"></p><pre><span class='va'>iri
 
 <span class='va'>iris</span> <span class='op'>%&gt;%</span>
   <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span><span class='fu'><a href='over.html'>over</a></span><span class='op'>(</span><span class='fu'>extract_names</span><span class='op'>(</span><span class='st'>"Length|Width"</span><span class='op'>)</span>,
-              <span class='op'>~</span><span class='fu'><a href='..html'>.</a></span><span class='op'>(</span><span class='st'>"Petal.{.x}"</span><span class='op'>)</span> <span class='op'>*</span> <span class='fu'><a href='..html'>.</a></span><span class='op'>(</span><span class='st'>"Sepal.{.x}"</span><span class='op'>)</span>,
+              <span class='op'>~</span><span class='fu'><a href='string_eval.html'>.</a></span><span class='op'>(</span><span class='st'>"Petal.{.x}"</span><span class='op'>)</span> <span class='op'>*</span> <span class='fu'><a href='string_eval.html'>.</a></span><span class='op'>(</span><span class='st'>"Sepal.{.x}"</span><span class='op'>)</span>,
              .names <span class='op'>=</span> <span class='st'>"Product_{x}"</span><span class='op'>)</span><span class='op'>)</span>
 <span class='co'>#&gt; # A tibble: 150 x 7</span>
 <span class='co'>#&gt;   Sepal.Length Sepal.Width Petal.Length Petal.Width Species Product_Length Product_Width</span>
@@ -279,21 +279,21 @@ in handy.</p>
 from a customer satifsaction survey which contains the following variables.<div class="r"></p><pre><span class='va'>csatraw</span> <span class='op'>%&gt;%</span> <span class='fu'><a href='https://pillar.r-lib.org/reference/glimpse.html'>glimpse</a></span><span class='op'>(</span>width <span class='op'>=</span> <span class='fl'>50</span><span class='op'>)</span>
 <span class='co'>#&gt; Rows: 150</span>
 <span class='co'>#&gt; Columns: 15</span>
-<span class='co'>#&gt; $ cust_id    &lt;chr&gt; "61297", "07545", "03822",...</span>
-<span class='co'>#&gt; $ type       &lt;chr&gt; "existing", "existing", "e...</span>
-<span class='co'>#&gt; $ product    &lt;chr&gt; "advanced", "advanced", "p...</span>
-<span class='co'>#&gt; $ item1      &lt;dbl&gt; 3, 2, 2, 4, 4, 3, 1, 3, 3,...</span>
-<span class='co'>#&gt; $ item1_open &lt;chr&gt; "12", "22", "21, 22, 23", ...</span>
-<span class='co'>#&gt; $ item2a     &lt;dbl&gt; 2, 2, 2, 3, 3, 0, 3, 2, 2,...</span>
-<span class='co'>#&gt; $ item2b     &lt;dbl&gt; 3, 2, 5, 5, 2, NA, 3, 3, 4...</span>
-<span class='co'>#&gt; $ item3a     &lt;dbl&gt; 2, 3, 3, 2, 3, 2, 3, 3, 0,...</span>
-<span class='co'>#&gt; $ item3b     &lt;dbl&gt; 2, 4, 5, 3, 5, 3, 4, 2, NA...</span>
-<span class='co'>#&gt; $ item4a     &lt;dbl&gt; 0, 2, 0, 0, 3, 3, 3, 2, 2,...</span>
-<span class='co'>#&gt; $ item4b     &lt;dbl&gt; NA, 3, NA, NA, 5, 2, 3, 5,...</span>
-<span class='co'>#&gt; $ item5a     &lt;dbl&gt; 2, 3, 2, 2, 3, 1, 3, 2, 3,...</span>
-<span class='co'>#&gt; $ item5b     &lt;dbl&gt; 5, 2, 3, 4, 1, 3, 3, 1, 3,...</span>
-<span class='co'>#&gt; $ item6a     &lt;dbl&gt; 2, 2, 3, 1, 3, 3, 3, 2, 3,...</span>
-<span class='co'>#&gt; $ item6b     &lt;dbl&gt; 3, 1, 2, 2, 5, 4, 4, 2, 2,...</span>
+<span class='co'>#&gt; $ cust_id    &lt;chr&gt; "61297", "07545", "03822", "8~</span>
+<span class='co'>#&gt; $ type       &lt;chr&gt; "existing", "existing", "exis~</span>
+<span class='co'>#&gt; $ product    &lt;chr&gt; "advanced", "advanced", "prem~</span>
+<span class='co'>#&gt; $ item1      &lt;dbl&gt; 3, 2, 2, 4, 4, 3, 1, 3, 3, 2,~</span>
+<span class='co'>#&gt; $ item1_open &lt;chr&gt; "12", "22", "21, 22, 23", "12~</span>
+<span class='co'>#&gt; $ item2a     &lt;dbl&gt; 2, 2, 2, 3, 3, 0, 3, 2, 2, 0,~</span>
+<span class='co'>#&gt; $ item2b     &lt;dbl&gt; 3, 2, 5, 5, 2, NA, 3, 3, 4, N~</span>
+<span class='co'>#&gt; $ item3a     &lt;dbl&gt; 2, 3, 3, 2, 3, 2, 3, 3, 0, 1,~</span>
+<span class='co'>#&gt; $ item3b     &lt;dbl&gt; 2, 4, 5, 3, 5, 3, 4, 2, NA, 2~</span>
+<span class='co'>#&gt; $ item4a     &lt;dbl&gt; 0, 2, 0, 0, 3, 3, 3, 2, 2, 2,~</span>
+<span class='co'>#&gt; $ item4b     &lt;dbl&gt; NA, 3, NA, NA, 5, 2, 3, 5, 3,~</span>
+<span class='co'>#&gt; $ item5a     &lt;dbl&gt; 2, 3, 2, 2, 3, 1, 3, 2, 3, 1,~</span>
+<span class='co'>#&gt; $ item5b     &lt;dbl&gt; 5, 2, 3, 4, 1, 3, 3, 1, 3, 2,~</span>
+<span class='co'>#&gt; $ item6a     &lt;dbl&gt; 2, 2, 3, 1, 3, 3, 3, 2, 3, 2,~</span>
+<span class='co'>#&gt; $ item6b     &lt;dbl&gt; 3, 1, 2, 2, 5, 4, 4, 2, 2, 2,~</span>
 </pre><p></div></p>
 <p>The survey has several 'item's consisting of two sub-questions / variables 'a'
 and 'b'. Lets say we want to calculate the product of those two variables for
@@ -303,7 +303,7 @@ However, there is 'item1'  and 'item1_open' which are not followed by <code>a</c
 <code>b</code>. <code>extract_names()</code> lets us exclude these items by setting the <code>.remove</code>
 argument to <code>[^item1]</code>:<div class="r"></p><pre><span class='va'>csatraw</span> <span class='op'>%&gt;%</span>
  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>transmute</a></span><span class='op'>(</span><span class='fu'><a href='over.html'>over</a></span><span class='op'>(</span><span class='fu'>extract_names</span><span class='op'>(</span><span class='st'>"item\\d"</span>, <span class='st'>"^item1"</span><span class='op'>)</span>,
-                <span class='op'>~</span> <span class='fu'><a href='..html'>.</a></span><span class='op'>(</span><span class='st'>"{.x}a"</span><span class='op'>)</span> <span class='op'>*</span> <span class='fu'><a href='..html'>.</a></span><span class='op'>(</span><span class='st'>"{.x}b"</span><span class='op'>)</span><span class='op'>)</span>
+                <span class='op'>~</span> <span class='fu'><a href='string_eval.html'>.</a></span><span class='op'>(</span><span class='st'>"{.x}a"</span><span class='op'>)</span> <span class='op'>*</span> <span class='fu'><a href='string_eval.html'>.</a></span><span class='op'>(</span><span class='st'>"{.x}b"</span><span class='op'>)</span><span class='op'>)</span>
  <span class='op'>)</span>
 <span class='co'>#&gt; # A tibble: 150 x 5</span>
 <span class='co'>#&gt;   item2 item3 item4 item5 item6</span>

@@ -125,9 +125,9 @@
 <li>Creating several lagged variables for a set of columns</li>
 <li>Applying functions to a set of variable pairs</li>
 </ol>
-<div id="create-columns-derived-from-a-comma-separated-character-vector" class="section level3">
-<h3 class="hasAnchor">
-<a href="#create-columns-derived-from-a-comma-separated-character-vector" class="anchor"></a>Create columns derived from a comma separated character vector</h3>
+<div id="create-columns-derived-from-a-comma-separated-character-vector" class="section level4">
+<h4 class="hasAnchor">
+<a href="#create-columns-derived-from-a-comma-separated-character-vector" class="anchor"></a>Create columns derived from a comma separated character vector</h4>
 <p>{dplyover} helps us to think in terms of columns that we want to create. A good example, when this kind of thinking is useful, is when dealing with a comma separated character vector. In the example below the column ‘csat_open’ contains one or several comma separated reasons why a good or bad satisfaction rating was given. We want to transform the data so that each unique reason in ‘csat_open’ gets its own column in form of a dummy variable: taking <code>1</code> when the reason was given and <code>0</code> otherwise. To do this we use <code>over</code> together with <code>dist_values</code> which is a wrapper around <code>unique</code> that splits comma separated strings when a separator is provided in <code>.sep</code>:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">csat</span> <span class="op">%&gt;%</span>
@@ -150,17 +150,17 @@
 <p>A tidyverse approach that comes close to <code>over</code>’s functionality is to use <code><a href="https://purrr.tidyverse.org/reference/map.html">purrr::map_dfc</a></code> inside <code>mutate</code>. The only difference is that we have to create a named vector, which holds the new column names as names, and the unique values of “csat_open” as values. This makes this approach less pipe-friendly.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">var_nms</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/strsplit.html">strsplit</a></span><span class="op">(</span><span class="va">csat</span><span class="op">$</span><span class="va">csat_open</span>, <span class="st">", "</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="va">unlist</span> <span class="op">%&gt;%</span> <span class="va">unique</span> <span class="op">%&gt;%</span>
-  <span class="fu">set_names</span><span class="op">(</span><span class="va">.</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"rsp_"</span>, <span class="fu"><a href="https://rdrr.io/r/base/grep.html">gsub</a></span><span class="op">(</span><span class="st">" "</span>, <span class="st">"_"</span>, <span class="va">.</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
+  <span class="fu"><a href="https://purrr.tidyverse.org/reference/set_names.html">set_names</a></span><span class="op">(</span><span class="va">.</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"rsp_"</span>, <span class="fu"><a href="https://rdrr.io/r/base/grep.html">gsub</a></span><span class="op">(</span><span class="st">" "</span>, <span class="st">"_"</span>, <span class="va">.</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
 
 <span class="va">csat</span> <span class="op">%&gt;%</span>
-  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">transmute</a></span><span class="op">(</span><span class="fu">map_dfc</span><span class="op">(</span><span class="va">var_nms</span>,
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">transmute</a></span><span class="op">(</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map_dfc</a></span><span class="op">(</span><span class="va">var_nms</span>,
               <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html">as.integer</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html">grepl</a></span><span class="op">(</span><span class="va">.x</span>, <span class="va">csat_open</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <p>While <code><a href="https://purrr.tidyverse.org/reference/map.html">purrr::map_dfc</a></code> is a valid workaround, it is less known and therefore not often used in the wild (at least this is my anecdotal evidence that comes from looking at answers to similar questions on Stackoverflow).</p>
 <p>A more common way to tackle this problem within the tidyverse is to use {tidyr}. Here we first use <code>separate_rows</code> and make the data longer. Then we use <code>pivot_wider</code> to generate the columns we are interested in. Although the code is not much longer, we have to do some thinking about how to set up <code>pviot_wider</code> to yield our desired result. And although we make use of a lot of <code>pivot_wider</code>’s arguments, the column names still require a finishing touch.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">csat</span> <span class="op">%&gt;%</span>
-  <span class="fu">separate_rows</span><span class="op">(</span><span class="va">csat_open</span>, sep <span class="op">=</span> <span class="st">", "</span><span class="op">)</span> <span class="op">%&gt;%</span> 
-  <span class="fu">pivot_wider</span><span class="op">(</span>names_from <span class="op">=</span> <span class="va">csat_open</span>,
+  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/separate_rows.html">separate_rows</a></span><span class="op">(</span><span class="va">csat_open</span>, sep <span class="op">=</span> <span class="st">", "</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_wider.html">pivot_wider</a></span><span class="op">(</span>names_from <span class="op">=</span> <span class="va">csat_open</span>,
               names_prefix <span class="op">=</span> <span class="st">"rsp_"</span>,
               names_repair <span class="op">=</span> <span class="st">"universal"</span>,
               values_from <span class="op">=</span> <span class="va">csat_open</span>,
@@ -189,7 +189,7 @@
 <span class="co"># instead of the set_names below we could do the following in base R:</span>
 <span class="co"># csat[, var_nms] &lt;- 0</span>
 <span class="va">csat</span> <span class="op">%&gt;%</span> 
-  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">transmute</a></span><span class="op">(</span><span class="op">!</span><span class="op">!</span><span class="op">!</span> <span class="fu">set_names</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">var_nms</span><span class="op">)</span><span class="op">)</span>, <span class="va">var_nms</span><span class="op">)</span>, 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">transmute</a></span><span class="op">(</span><span class="op">!</span><span class="op">!</span><span class="op">!</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/set_names.html">set_names</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">var_nms</span><span class="op">)</span><span class="op">)</span>, <span class="va">var_nms</span><span class="op">)</span>, 
             <span class="fu"><a href="https://dplyr.tidyverse.org/reference/across.html">across</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/all_of.html">all_of</a></span><span class="op">(</span><span class="va">var_nms</span><span class="op">)</span>, 
                    <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html">grepl</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html">cur_column</a></span><span class="op">(</span><span class="op">)</span>, <span class="va">csat_open</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="va">as.integer</span>,
                    .names <span class="op">=</span> <span class="st">"rsp_{col}"</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
@@ -207,14 +207,14 @@
 <pre><code>#&gt; # A tibble: 4 x 3
 #&gt;   expression    median mem_alloc
 #&gt;   &lt;bch:expr&gt;  &lt;bch:tm&gt; &lt;bch:byt&gt;
-#&gt; 1 map_dfc          5ms   64.06KB
-#&gt; 2 pivot_wider  15.39ms    1.33MB
-#&gt; 3 across        8.65ms   80.12KB
-#&gt; 4 over          5.99ms   27.22KB</code></pre>
+#&gt; 1 map_dfc       4.88ms   64.06KB
+#&gt; 2 pivot_wider  14.76ms    1.33MB
+#&gt; 3 across        8.27ms   80.12KB
+#&gt; 4 over          5.65ms   27.22KB</code></pre>
 </div>
-<div id="creating-several-lagged-variables-for-a-set-of-columns" class="section level3">
-<h3 class="hasAnchor">
-<a href="#creating-several-lagged-variables-for-a-set-of-columns" class="anchor"></a>Creating several lagged variables for a set of columns</h3>
+<div id="creating-several-lagged-variables-for-a-set-of-columns" class="section level4">
+<h4 class="hasAnchor">
+<a href="#creating-several-lagged-variables-for-a-set-of-columns" class="anchor"></a>Creating several lagged variables for a set of columns</h4>
 <p>In exploratory data analysis creating a range of lagged variants of several variables is not an uncommon use case. Let’s take the <code>diamonds</code> data set from {ggplot2} and create five lagged versions of columns ‘x’, ‘y’ and ‘z’ by positions <code>1</code> to <code>5</code>. <code>crossover</code> allows us to iterate a set of columns over a vector:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">diamonds</span> <span class="op">%&gt;%</span> 
@@ -236,7 +236,7 @@
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">diamonds</span> <span class="op">%&gt;%</span> 
   <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/across.html">across</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">x</span>,<span class="va">y</span>,<span class="va">z</span><span class="op">)</span>,
-                <span class="op">~</span> <span class="fu">map_dfc</span><span class="op">(</span><span class="fu">set_names</span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"lag"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span><span class="op">)</span>,
+                <span class="op">~</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map_dfc</a></span><span class="op">(</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/set_names.html">set_names</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"lag"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span><span class="op">)</span>,
                           <span class="kw">function</span><span class="op">(</span><span class="va">y</span><span class="op">)</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/lead-lag.html">lag</a></span><span class="op">(</span><span class="va">.x</span>, <span class="va">y</span><span class="op">)</span><span class="op">)</span>
                 <span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> 
   <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span><span class="op">(</span><span class="va">data.frame</span>, <span class="va">.</span><span class="op">)</span></code></pre></div>
@@ -248,7 +248,7 @@
 <span class="op">}</span>
 
 <span class="va">diamonds</span> <span class="op">%&gt;%</span> 
-  <span class="fu">reduce2</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span>, <span class="st">"z"</span><span class="op">)</span>, <span class="fl">5</span><span class="op">)</span>,
+  <span class="fu"><a href="https://purrr.tidyverse.org/reference/reduce.html">reduce2</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span>, <span class="st">"z"</span><span class="op">)</span>, <span class="fl">5</span><span class="op">)</span>,
           <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="fl">3</span><span class="op">)</span>,
           <span class="va">create_lags</span>,
           .init <span class="op">=</span> <span class="va">.</span><span class="op">)</span></code></pre></div>
@@ -257,13 +257,13 @@
 <pre><code>#&gt; # A tibble: 3 x 3
 #&gt;   expression          median mem_alloc
 #&gt;   &lt;bch:expr&gt;        &lt;bch:tm&gt; &lt;bch:byt&gt;
-#&gt; 1 crossover           25.9ms    15.5MB
-#&gt; 2 across_map_dfc      18.4ms    15.5MB
-#&gt; 3 custom_fct_reduce   63.2ms    15.7MB</code></pre>
+#&gt; 1 crossover           25.4ms    15.5MB
+#&gt; 2 across_map_dfc      17.9ms    15.5MB
+#&gt; 3 custom_fct_reduce   59.3ms    15.7MB</code></pre>
 </div>
-<div id="applying-functions-to-a-set-of-variable-pairs" class="section level3">
-<h3 class="hasAnchor">
-<a href="#applying-functions-to-a-set-of-variable-pairs" class="anchor"></a>Applying functions to a set of variable pairs</h3>
+<div id="applying-functions-to-a-set-of-variable-pairs" class="section level4">
+<h4 class="hasAnchor">
+<a href="#applying-functions-to-a-set-of-variable-pairs" class="anchor"></a>Applying functions to a set of variable pairs</h4>
 <p>Some data sets contain many variable with similar patterns. A ‘tiny’ example is the <code>ìris</code> data set, containing columns with combinations of ‘Sepal’ and ‘Petal’ with ‘Length’ and ‘Width’. In the example below we want to calculate the product and the sum of both pairs of ‘Length’ and ‘Width’ variables. For problems like like this <code>across2</code> is the perfect tool. It works just like <code><a href="https://dplyr.tidyverse.org/reference/across.html">dplyr::across</a></code>, but let’s us choose <em>two</em> sets of columns - <code>.xcols</code> and <code>.ycols</code>. <code>across2</code> allows us to use a special glue specification, <code>{pre}</code>, in its <code>.names</code> argument, which will evaluate to the common prefix of each variable pair.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">iris</span> <span class="op">%&gt;%</span>
@@ -307,7 +307,7 @@
 <span class="op">}</span>
 
 <span class="va">iris</span> <span class="op">%&gt;%</span> 
-  <span class="fu">reduce2</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Sepal"</span>, <span class="st">"Petal"</span><span class="op">)</span>, each <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,
+  <span class="fu"><a href="https://purrr.tidyverse.org/reference/reduce.html">reduce2</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Sepal"</span>, <span class="st">"Petal"</span><span class="op">)</span>, each <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,
           <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"product"</span>, <span class="st">"sum"</span><span class="op">)</span>, <span class="fl">2</span><span class="op">)</span>,
           <span class="va">create_vars</span>,
           .init <span class="op">=</span> <span class="va">.</span><span class="op">)</span> </code></pre></div>
@@ -321,9 +321,9 @@
 <pre><code>#&gt; # A tibble: 3 x 3
 #&gt;   expression          median mem_alloc
 #&gt;   &lt;bch:expr&gt;        &lt;bch:tm&gt; &lt;bch:byt&gt;
-#&gt; 1 across2            19.75ms    26.9KB
-#&gt; 2 across              8.18ms    73.8KB
-#&gt; 3 custom_fct_reduce  11.09ms   124.2KB</code></pre>
+#&gt; 1 across2             19.4ms    26.9KB
+#&gt; 2 across               7.3ms    73.8KB
+#&gt; 3 custom_fct_reduce   10.4ms   124.2KB</code></pre>
 </div>
 </div>
 <div id="conclusion" class="section level2">

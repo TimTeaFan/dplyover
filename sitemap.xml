@@ -16,9 +16,6 @@
     <loc>https://timteafan.github.io/dplyover//reference/csatraw.html</loc>
   </url>
   <url>
-    <loc>https://timteafan.github.io/dplyover//reference/dot-.html</loc>
-  </url>
-  <url>
     <loc>https://timteafan.github.io/dplyover//reference/dplyover-package.html</loc>
   </url>
   <url>
@@ -38,6 +35,9 @@
   </url>
   <url>
     <loc>https://timteafan.github.io/dplyover//reference/selection_helpers.html</loc>
+  </url>
+  <url>
+    <loc>https://timteafan.github.io/dplyover//reference/string_eval.html</loc>
   </url>
   <url>
     <loc>https://timteafan.github.io/dplyover//articles/performance.html</loc>

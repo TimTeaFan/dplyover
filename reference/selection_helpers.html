@@ -42,9 +42,9 @@
   
 
 <meta property="og:title" content="Selection helpers — selection_helpers" />
-<meta property="og:description" content="dplyover provides two kinds of selection helpers which are intended for use
-in all functions that accept a vector as argument (that is over() and
-crossover() as well as all their variants, see here for a full list of the
+<meta property="og:description" content="dplyover provides three kinds of selection helpers which are intended for
+use in all functions that accept a vector as argument (that is over() and
+crossover() as well as their variants, see here for a full list of the
 over-across function family).
 Helpers which select string parts of the column names (of the underyling data):
 cut_names() removes a specified pattern.
@@ -54,6 +54,10 @@ extract_names() extracts a specified pattern.
 Helpers which select values of a variable:
 dist_values() returns all distinct values.
 seq_range() returns the sequence between the range() of a variable.
+
+
+A helper function that evaluates a glue specification as variable
+.() evaluates an interpolated string as symbol
 
 " />
 
@@ -154,9 +158,9 @@ seq_range() returns the sequence between the range() of a variable.
     </div>
 
     <div class="ref-description">
-    <p><code>dplyover</code> provides two kinds of selection helpers which are intended for use
-in all functions that accept a vector as argument (that is <code><a href='over.html'>over()</a></code> and
-<code><a href='crossover.html'>crossover()</a></code> as well as all their variants, see here for a full list of the
+    <p><code>dplyover</code> provides three kinds of selection helpers which are intended for
+use in all functions that accept a vector as argument (that is <code><a href='over.html'>over()</a></code> and
+<code><a href='crossover.html'>crossover()</a></code> as well as their variants, see here for a full list of the
 <a href='over_across_family.html'>over-across function family</a>).</p>
 <p>Helpers which select <strong>string parts</strong> of the <strong>column names</strong> (of the underyling data):</p><ul>
 <li><p><code><a href='select_vars.html'>cut_names()</a></code> removes a specified pattern.</p></li>
@@ -166,6 +170,10 @@ in all functions that accept a vector as argument (that is <code><a href='over.h
 <p>Helpers which select <strong>values</strong> of a variable:</p><ul>
 <li><p><code><a href='select_values.html'>dist_values()</a></code> returns all distinct values.</p></li>
 <li><p><code><a href='select_values.html'>seq_range()</a></code> returns the sequence between the <code><a href='https://rdrr.io/r/base/range.html'>range()</a></code> of a variable.</p></li>
+</ul>
+
+<p>A helper function that evaluates a glue specification as variable</p><ul>
+<li><p><code><a href='string_eval.html'>.()</a></code> evaluates an interpolated string as symbol</p></li>
 </ul>
 
     </div>

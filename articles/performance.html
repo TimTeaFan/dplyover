@@ -107,14 +107,21 @@
 <p>Although {dplyover} is an extension of {dplyr}, it doesn’t make use of (read: copy) {dplyr} internals. This made it relatively easy to develop the package without (i) copying tons of {dplyr} code, (ii) having to figure out which dplyr-functions use the copied internals and (iii) finally overwritting these functions (like <code>mutate</code> and other one-table verbs), which would eventually lead to conflicts with other add-on packages, like for example {tidylog}.</p>
 <p>However, the downside is that not relying on {dplyr} internals has some negative effects in terms of performance and compability.</p>
 <p>In a nutshell this means:</p>
-<p>In a nutshell this means:</p>
 <ul>
 <li>The <em>over-across function family</em> in {dplyover} is slower than the original <code><a href="https://dplyr.tidyverse.org/reference/across.html">dplyr::across</a></code>. Up until {dplyr} 1.0.3 the overhead was not too big, but <code><a href="https://dplyr.tidyverse.org/reference/across.html">dplyr::across</a></code> got much faster with {dplyr} 1.0.4 which why the gap has widend a lot.</li>
 <li>Although {dplyover} is designed to work in {dplyr}, some features and edge cases will not work correctly.</li>
 </ul>
 <p>The good news is that even without relying on {dplyr} internals most of the original functionality can be replicated, and although being less performant, the current setup is optimized and falls not too far behind in terms of speed - at least when compared to the 1.0.3 &lt;= version of <code><a href="https://dplyr.tidyverse.org/reference/across.html">dplyr::across</a></code>.</p>
 <p>Regarding compability, I have spent quite some time testing the package and I was able to replicate most of the tests for <code><a href="https://dplyr.tidyverse.org/reference/across.html">dplyr::across</a></code> successfully.</p>
-<p>Below both issues, compability and performance, are addressed in more detail:</p>
+<p>Below both issues, compability and performance, are addressed in more detail.</p>
+<p>Before we begin, here is our setup:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org">tidyr</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="http://purrr.tidyverse.org">purrr</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/TimTeaFan/dplyover">dplyover</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org">ggplot2</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/r-lib/bench">bench</a></span><span class="op">)</span></code></pre></div>
 </div>
 <div id="compability" class="section level2">
 <h2 class="hasAnchor">
@@ -124,7 +131,7 @@
 <h4 class="hasAnchor">
 <a href="#only-partial-support-of-mutates--keep-argument" class="anchor"></a>Only partial support of <code>mutate()</code>’s .keep argument</h4>
 <p>Since {dplyr} 1.0 <code>mutate</code> has gained a <code>.keep</code> argument, which allows us to control which columns are retained in the output. This works well with genuine {dplyr} functions like <code>across</code>:</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">diamonds</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/across.html">across</a></span><span class="op">(</span><span class="va">z</span>, <span class="op">~</span> <span class="va">.x</span> <span class="op">+</span> <span class="va">y</span><span class="op">)</span>,
                     .keep <span class="op">=</span> <span class="st">"used"</span><span class="op">)</span>
 <span class="co">#&gt; # A tibble: 53,940 x 2</span>
@@ -136,7 +143,7 @@
 <span class="co">#&gt; 4  4.23  6.86</span>
 <span class="co">#&gt; # ... with 53,936 more rows</span></code></pre></div>
 <p><code>.keep</code> not only recognizes that <code>across</code> is <em>used</em> on colum ‘z’, it also registers that we <em>used</em> column ‘y’ in <code>across</code>’s <code>.fns</code> argument. Unfortunately, <code>.keep</code> is only partially supported within {dplyover}. It works with columns that are used inside the <code>.fns</code> argument.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">diamonds</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span><span class="fu"><a href="../reference/over.html">over</a></span><span class="op">(</span><span class="fl">1</span>, <span class="op">~</span> <span class="va">y</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span>,
                     .keep <span class="op">=</span> <span class="st">"used"</span><span class="op">)</span>
 <span class="co">#&gt; # A tibble: 53,940 x 2</span>
@@ -148,7 +155,7 @@
 <span class="co">#&gt; 4  4.23  5.23</span>
 <span class="co">#&gt; # ... with 53,936 more rows</span></code></pre></div>
 <p>But it does not work with columns provide in the <code>.xcols</code> or <code>.ycols</code> argument in <code>crossover</code> or <code>across2</code>.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">diamonds</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span><span class="fu"><a href="../reference/crossover.html">crossover</a></span><span class="op">(</span><span class="va">y</span>, <span class="fl">1</span>, <span class="op">~</span> <span class="va">.x</span> <span class="op">+</span> <span class="va">z</span><span class="op">)</span>,
                     .keep <span class="op">=</span> <span class="st">"unused"</span><span class="op">)</span>
 <span class="co">#&gt; Warning: `crossover()` does not support the `.keep` argument in</span>
@@ -169,7 +176,7 @@
 </h4>
 <p><code><a href="https://dplyr.tidyverse.org/reference/across.html">dplyr::across()</a></code> allows the use of local variables in addition to <code>{col}</code> and <code>{fn}</code> in the glue syntax of its <code>.names</code> argument. This is currently not supported by the <em>over-across functions</em> in {dplyover}. To somewhat leviate this issue the <em>over-across</em> functions allow character vectors to be supplied to the <code>.names</code> argument (similar to <code>poorman::across</code>).</p>
 <p>Example:<br> We can do this with <code><a href="https://dplyr.tidyverse.org/reference/across.html">dplyr::across</a></code>:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">prefix</span> <span class="op">&lt;-</span> <span class="st">"lag1"</span>
 <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span>a <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">25</span><span class="op">)</span> <span class="op">%&gt;%</span>
   <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/across.html">across</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/everything.html">everything</a></span><span class="op">(</span><span class="op">)</span>, <span class="va">lag</span>, <span class="fl">1</span>, .names <span class="op">=</span> <span class="st">"{.col}_{prefix}"</span><span class="op">)</span><span class="op">)</span>
@@ -182,7 +189,7 @@
 <span class="co">#&gt; 4     4      3</span>
 <span class="co">#&gt; # ... with 21 more rows</span></code></pre></div>
 <p>In {dplyover} we would need to construct the names outside of the function call and supply this vector to <code>.names</code>:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">col_nms</span> <span class="op">&lt;-</span> <span class="st">"a_lag1"</span>
 <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span>a <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">25</span><span class="op">)</span> <span class="op">%&gt;%</span>
   <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span><span class="fu"><a href="../reference/over.html">over</a></span><span class="op">(</span><span class="fl">1</span>, <span class="op">~</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/lead-lag.html">lag</a></span><span class="op">(</span><span class="va">a</span>, <span class="va">.x</span><span class="op">)</span>, .names <span class="op">=</span> <span class="va">col_nms</span><span class="op">)</span><span class="op">)</span>
@@ -212,7 +219,7 @@
 <h4 class="hasAnchor">
 <a href="#internal-setup" class="anchor"></a>Internal setup</h4>
 <p>To compare the performance of <code><a href="https://dplyr.tidyverse.org/reference/across.html">dplyr::across</a></code> with the <em>over-across functions</em> from {dplyover} we take the <code>diamonds</code> data set from the {ggplot2} package. Since we are only interested in comparing the efficiency of the internal setup, we just loop over a couple of columns / elements and apply a function returning <code>1</code> to make sure that no computation is involved. Finally, we use the <code>.names</code> argument to name the output columns.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">diamonds</span> <span class="op">%&gt;%</span>
   <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarise</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/across.html">across</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">x</span>,<span class="va">y</span>,<span class="va">z</span><span class="op">)</span>,
                    <span class="op">~</span> <span class="fl">1</span>,
@@ -224,11 +231,11 @@
 <pre><code>#&gt; # A tibble: 2 x 6
 #&gt;   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #&gt;   &lt;bch:expr&gt; &lt;bch:tm&gt; &lt;bch:tm&gt;     &lt;dbl&gt; &lt;bch:byt&gt;    &lt;dbl&gt;
-#&gt; 1 across       5.27ms   5.48ms      176.  235.62KB     11.3
-#&gt; 2 over         3.46ms   3.62ms      271.    6.77KB     11.3</code></pre>
+#&gt; 1 across       5.21ms   5.88ms      174.  235.62KB     11.1
+#&gt; 2 over         3.44ms   3.73ms      268.    6.77KB     11.2</code></pre>
 <p>If we compare the performance of both operations, we can see that <code>over</code> is slightly faster than <code><a href="https://dplyr.tidyverse.org/reference/across.html">dplyr::across</a></code>. This changes, however, when we consider grouped data. To demonstrate this, we take the <code>diamonds</code> data set and create four versions: an ungrouped version, one with 10, 50 and one with 100 groups. Then we compare the same operations again. Now, we also add <code>crossover</code> and <code>across2</code> to the benchmark.</p>
 <p>Below is a code snippet for the 100 groups case:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R">
 <span class="va">diamonds_100grp</span> <span class="op">&lt;-</span> <span class="va">diamonds</span> <span class="op">%&gt;%</span>
   <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span>grp_id <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/ranking.html">row_number</a></span><span class="op">(</span><span class="op">)</span> <span class="op">%%</span> <span class="fl">100</span><span class="op">)</span>
@@ -265,14 +272,14 @@ Benchmark of major dplyover functions
 <div id="the-performance-of-an-actual-operation" class="section level4">
 <h4 class="hasAnchor">
 <a href="#the-performance-of-an-actual-operation" class="anchor"></a>The performance of an actual operation</h4>
-<p>After getting a feeling for the general performance of the different functions in the <strong>over-across family</strong> we next have a look at an actual operation and how it performs compared to available workarounds.</p>
-<p>Below we come back to the second example from the vignette “Why dplyover?” (see <code><a href="../articles/why_dplyover.html">vignette("why_dplyover")</a></code>). We want to create several lagged variables for a set of columns.</p>
+<p>After getting a feeling for the general performance of the different functions in the <em>over-across family</em> we next have a look at an actual operation and how it performs compared to available workarounds.</p>
+<p>Below we come back to the second example from the vignette <a href="https://timteafan.github.io/dplyover/articles/why_dplyover.html#creating-several-lagged-variables-for-a-set-of-columns">“Why dplyover?”</a>. We want to create several lagged variables for a set of columns.</p>
 <p>We compare <code>crossover</code> with two alternative approaches:</p>
 <ol style="list-style-type: decimal">
 <li>A call to <code>purrr:map_dfc</code> nested inside <code><a href="https://dplyr.tidyverse.org/reference/across.html">dplyr::across</a></code> and</li>
 <li>A call to <code>reduce2</code> in combination with a custom function.</li>
 </ol>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># crossover</span>
 <span class="va">diamonds</span> <span class="op">%&gt;%</span> 
   <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span><span class="fu"><a href="../reference/crossover.html">crossover</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">x</span>,<span class="va">y</span>,<span class="va">z</span><span class="op">)</span>,
@@ -283,7 +290,7 @@ Benchmark of major dplyover functions
 <span class="co"># across and map_dfc</span>
 <span class="va">diamonds</span> <span class="op">%&gt;%</span> 
   <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/across.html">across</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">x</span>,<span class="va">y</span>,<span class="va">z</span><span class="op">)</span>,
-                <span class="op">~</span> <span class="fu">map_dfc</span><span class="op">(</span><span class="fu">set_names</span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"lag"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span><span class="op">)</span>,
+                <span class="op">~</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map_dfc</a></span><span class="op">(</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/set_names.html">set_names</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"lag"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span><span class="op">)</span>,
                           <span class="kw">function</span><span class="op">(</span><span class="va">y</span><span class="op">)</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/lead-lag.html">lag</a></span><span class="op">(</span><span class="va">.x</span>, <span class="va">y</span><span class="op">)</span><span class="op">)</span>
                 <span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> 
   <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span><span class="op">(</span><span class="va">data.frame</span>, <span class="va">.</span><span class="op">)</span>
@@ -294,7 +301,7 @@ Benchmark of major dplyover functions
 <span class="op">}</span>
 
 <span class="va">diamonds</span> <span class="op">%&gt;%</span> 
-  <span class="fu">reduce2</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span>, <span class="st">"z"</span><span class="op">)</span>, <span class="fl">5</span><span class="op">)</span>,
+  <span class="fu"><a href="https://purrr.tidyverse.org/reference/reduce.html">reduce2</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span>, <span class="st">"z"</span><span class="op">)</span>, <span class="fl">5</span><span class="op">)</span>,
           <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>,<span class="fl">3</span><span class="op">)</span>,
           <span class="va">create_lags2</span>,
           .init <span class="op">=</span> <span class="va">.</span><span class="op">)</span></code></pre></div>
@@ -302,9 +309,9 @@ Benchmark of major dplyover functions
 <pre><code>#&gt; # A tibble: 3 x 6
 #&gt;   expression          min   median `itr/sec` mem_alloc `gc/sec`
 #&gt;   &lt;bch:expr&gt;     &lt;bch:tm&gt; &lt;bch:tm&gt;     &lt;dbl&gt; &lt;bch:byt&gt;    &lt;dbl&gt;
-#&gt; 1 over             25.6ms   26.9ms      33.4    15.5MB     59.3
-#&gt; 2 across_map_dfc   18.5ms     20ms      49.4    15.5MB     62.8
-#&gt; 3 reduce_cst_fct   60.5ms     64ms      15.0    15.7MB     24.5</code></pre>
+#&gt; 1 over             24.2ms   25.7ms      39.1    15.5MB     69.6
+#&gt; 2 across_map_dfc   17.4ms     18ms      55.5    15.5MB     70.6
+#&gt; 3 reduce_cst_fct     59ms   61.9ms      15.8    15.7MB     25.7</code></pre>
 <p>This picture gets a little bit more complex when we compare each approach across different group sizes. In the lower range (up until about 15 groups) <code>map_dfc</code> nested in <code>across</code> is the fastest approach, with <code>crossover</code> being not much slower. With increasing group size <code>crossover</code> starts to outperform <code>map_dfc</code> up until around 60 groups where <code>reduce</code> finally takes over and delivers the fastest performance. This benchmark stopped at 100 groups, but extrapolating from the existing data, we see that <code>reduce</code> is the most scaleable approach (although having the highest setup costs). If speed is a pressing concern, then the use of repetitive code patterns in a regular <code><a href="https://dplyr.tidyverse.org/reference/across.html">dplyr::across</a></code> call is a valid option that is still faster than any of the approaches shown here.</p>
 <div class="figure">
 <img src="benchmark2.png" alt="Benchmark: lagging many variables" width="100%"><p class="caption">
