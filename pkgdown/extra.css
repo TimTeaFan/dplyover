@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Lato:wght@100;300&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@100;300;400&display=swap');
 
 .label-default {
   background-color: #6fcf18; /* #05cf2f */
@@ -6,9 +6,10 @@
 
 body {
   font-family: "Lato", sans-serif !important;
-  font-size: 16px !important;
-  line-height: 1.846 !important;
-  font-weight: 300 !important;
+  font-size: 18px !important;
+  line-height: 2 !important;
+  font-weight: 400 !important;
+  color: #000000 !important;
   -webkit-font-smoothing: antialiased !important;
   letter-spacing: .1px !important;
 }
@@ -22,11 +23,11 @@ body {
   text-decoration: none !important;
 }
 
-p>a, li>a {
+p>a, li>a, li>smaller>a, ul.dropdown-menu>li>a, {
   color: #83bb13 !important;
 }
 
-p>a:hover, p>a:focus, li>a:hover, li>a:focus {
+p>a:hover, p>a:focus, li>a:hover, li>a:focus, li>smaller>a:hover, li>smaller>a:focus, ul.dropdown-menu>li>a:hover, ul.dropdown-menu>li>a:focus {
   color: #5d8709 !important;
   text-decoration: none !important;
 }

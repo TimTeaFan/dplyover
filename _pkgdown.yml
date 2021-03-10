@@ -54,9 +54,11 @@ navbar:
     right: [home, reference, articles, news, twitter, github]
   components:
     reference:
+      icon: fas fa-tools
       text: Reference
       href: reference/index.html
     articles:
+     icon: fas fa-book-open
      text: Articles
      menu:
      - text: Why dplyover?
