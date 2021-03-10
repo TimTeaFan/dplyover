@@ -71,6 +71,7 @@
 #'   mutate(purrr::map_dfc(c("Sepal_sum" = "Sepal", "Petal_sum" = "Petal"),
 #'                         ~ .(.x) + .("{.x}.Width")))
 #' ```
+#' @name string_eval
 #' @export
 `.` <- function(x) {
   rlang::eval_tidy(rlang::sym(glue::glue(x,

@@ -1,27 +1,41 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@100;300&family=Source+Code+Pro:wght@300&display=swap');
+
 .label-default {
-background-color: #05cf2f;
+  background-color: #6fcf18; /* #05cf2f */
 }
 
 body {
-font-family: "Lato", sans-serif !important;
-font-size: 16px !important;
-line-height: 1.846 !important;
--webkit-font-smoothing: antialiased !important;
-letter-spacing: .1px !important;
+  font-family: "Lato", sans-serif !important;
+  font-size: 16px !important;
+  line-height: 1.846 !important;
+  font-weight: 100 !important;
+  -webkit-font-smoothing: antialiased !important;
+  letter-spacing: .1px !important;
 }
 
+a {
+  color: #83bb13 !important;
+}
+
+a:hover, a:focus {
+  color: #5d8709 !important;
+  text-decoration: none !important;
+}
+
+
 h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
-font-family: "Lato", sans-serif !important;
-color: #178acc !important;
-font-weight: 300 !important;
-line-height: 1.1 !important;
+  font-family: "Lato", sans-serif !important;
+  color: #178acc !important;
+  font-weight: 100 !important;
+  line-height: 1.1 !important;
 }
 
 pre {
-font-size: 14px !important;
-line-height: 1.846 !important;
+  font-size: 14px !important;
+  line-height: 1.846 !important;
 }
 
 code, kbd, pre, samp {
-font-family: "Source Code Pro", Menlo, Monaco, Consolas, "Courier New", monospace !important;
+  font-family: "Source Code Pro", Menlo, Monaco, Consolas, "Courier New", monospace !important;
+  font-weight: 300 !important;
 }

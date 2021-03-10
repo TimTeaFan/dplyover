@@ -63,7 +63,7 @@ between elements in `x` and `y` similar to a nested loop.</small>
 {dplyover} is not on CRAN. You can install the latest version from 
 [GitHub](https://github.com/) with:
 
-```{r}
+```{r, eval = FALSE}
 # install.packages("devtools")
 devtools::install_github("TimTeaFan/dplyover")
 ```

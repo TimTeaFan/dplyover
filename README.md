@@ -65,9 +65,6 @@ similar to a nested loop.</small>
 ``` r
 # install.packages("devtools")
 devtools::install_github("TimTeaFan/dplyover")
-#> Using github PAT from envvar GITHUB_PAT
-#> Skipping install of 'dplyover' from a github remote, the SHA1 (55754f43) has not changed since last install.
-#>   Use `force = TRUE` to force installation
 ```
 
 ## Getting started

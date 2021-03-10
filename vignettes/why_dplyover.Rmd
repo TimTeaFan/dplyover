@@ -63,7 +63,7 @@ In this section we will look at three different use cases of {dplyover}:
 1. Applying functions to a set of variable pairs
 
 
-### Create columns derived from a comma separated character vector
+#### Create columns derived from a comma separated character vector
 
 {dplyover} helps us to think in terms of columns that we want to create. A good
 example, when this kind of thinking is useful, is when dealing with a comma
@@ -201,7 +201,7 @@ over2_bench %>%
 ```
 
 
-### Creating several lagged variables for a set of columns
+#### Creating several lagged variables for a set of columns
 
 In exploratory data analysis creating a range of lagged variants of several
 variables is not an uncommon use case. Let's take the `diamonds` data set from
@@ -303,7 +303,7 @@ crossover_bench %>%
 
 ```
 
-### Applying functions to a set of variable pairs
+#### Applying functions to a set of variable pairs
 
 Some data sets contain many variable with similar patterns. A 'tiny' example is
 the `ìris` data set, containing columns with combinations of 'Sepal' and 'Petal'

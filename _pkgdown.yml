@@ -38,7 +38,7 @@ reference:
   - selection_helpers
   - dist_values
   - cut_names
-  - "`.()`"
+  - "."
 
 - title: data
   desc: >

@@ -54,8 +54,6 @@ effects in terms of performance and compability.
 
 In a nutshell this means:
 
-In a nutshell this means:
-
  - The *over-across function family* in {dplyover} is slower than the
  original `dplyr::across`. Up until {dplyr} 1.0.3 the overhead was not too big,
  but `dplyr::across` got much faster with {dplyr} 1.0.4 which why the gap has
@@ -71,7 +69,17 @@ at least when compared to the 1.0.3 <= version of `dplyr::across`.
 Regarding compability, I have spent quite some time testing the package and
 I was able to replicate most of the tests for `dplyr::across` successfully. 
 
-Below both issues, compability and performance, are addressed in more detail:
+Below both issues, compability and performance, are addressed in more detail.
+
+Before we begin, here is our setup:
+```{r, eval = FALSE}
+library(dplyr)
+library(tidyr)
+library(purrr)
+library(dplyover)
+library(ggplot2)
+library(bench)
+```
 
 ## Compability
 
@@ -240,11 +248,11 @@ knitr::include_graphics("benchmark1.png")
 #### The performance of an actual operation
 
 After getting a feeling for the general performance of the different functions in
-the **over-across family** we next have a look at an actual operation and how 
+the *over-across family* we next have a look at an actual operation and how 
 it performs compared to available workarounds.
 
-Below we come back to the second example from the vignette "Why dplyover?" 
-(see `vignette("why_dplyover")`). We want to create several lagged variables for
+Below we come back to the second example from the vignette <a href="https://timteafan.github.io/dplyover/articles/why_dplyover.html#creating-several-lagged-variables-for-a-set-of-columns">"Why dplyover?"</a>.
+We want to create several lagged variables for
 a set of columns.
 
 We compare `crossover` with two alternative approaches:
