@@ -8,7 +8,7 @@ body {
   font-family: "Lato", sans-serif !important;
   font-size: 18px !important;
   line-height: 2 !important;
-  font-weight: 400 !important;
+  font-weight: 300 !important;
   color: #000000 !important;
   -webkit-font-smoothing: antialiased !important;
   letter-spacing: .1px !important;
@@ -23,14 +23,16 @@ body {
   text-decoration: none !important;
 }
 
-p>a, li>a, li>smaller>a, ul.dropdown-menu>li>a, {
+p>a, li>a, li>smaller>a, ul.dropdown-menu>li>a {
   color: #83bb13 !important;
 }
 
-p>a:hover, p>a:focus, li>a:hover, li>a:focus, li>smaller>a:hover, li>smaller>a:focus, ul.dropdown-menu>li>a:hover, ul.dropdown-menu>li>a:focus {
+p>a:hover, p>a:focus, li>a:hover, li>a:focus, li>smaller>a:hover, li>smaller>a:focus {
   color: #5d8709 !important;
   text-decoration: none !important;
 }
+
+/* ul.dropdown-menu>li>a:hover, ul.dropdown-menu>li>a:focus */
 
 
 h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {

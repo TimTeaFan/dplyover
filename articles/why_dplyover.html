@@ -70,7 +70,11 @@
   </ul>
 </li>
 <li>
-  <a href="../news/index.html">News</a>
+  <a href="../news/index.html">
+    <span class="fas fa-clipboard-list"></span>
+     
+    News
+  </a>
 </li>
 <li>
   <a href="https://twitter.com/timteafan">
@@ -213,10 +217,10 @@
 <pre><code>#&gt; # A tibble: 4 x 3
 #&gt;   expression    median mem_alloc
 #&gt;   &lt;bch:expr&gt;  &lt;bch:tm&gt; &lt;bch:byt&gt;
-#&gt; 1 map_dfc       5.81ms   64.06KB
-#&gt; 2 pivot_wider  18.27ms    1.33MB
-#&gt; 3 across       11.12ms   80.12KB
-#&gt; 4 over          7.75ms   27.22KB</code></pre>
+#&gt; 1 map_dfc        5.7ms   64.06KB
+#&gt; 2 pivot_wider  16.43ms    1.33MB
+#&gt; 3 across        9.14ms   80.12KB
+#&gt; 4 over          6.48ms   27.22KB</code></pre>
 </div>
 <div id="creating-several-lagged-variables-for-a-set-of-columns" class="section level4">
 <h4 class="hasAnchor">
@@ -263,9 +267,9 @@
 <pre><code>#&gt; # A tibble: 3 x 3
 #&gt;   expression          median mem_alloc
 #&gt;   &lt;bch:expr&gt;        &lt;bch:tm&gt; &lt;bch:byt&gt;
-#&gt; 1 crossover           31.4ms    15.5MB
-#&gt; 2 across_map_dfc      21.7ms    15.5MB
-#&gt; 3 custom_fct_reduce   83.7ms    15.7MB</code></pre>
+#&gt; 1 crossover           27.3ms    15.5MB
+#&gt; 2 across_map_dfc      19.4ms    15.5MB
+#&gt; 3 custom_fct_reduce   71.6ms    15.7MB</code></pre>
 </div>
 <div id="applying-functions-to-a-set-of-variable-pairs" class="section level4">
 <h4 class="hasAnchor">
@@ -327,9 +331,9 @@
 <pre><code>#&gt; # A tibble: 3 x 3
 #&gt;   expression          median mem_alloc
 #&gt;   &lt;bch:expr&gt;        &lt;bch:tm&gt; &lt;bch:byt&gt;
-#&gt; 1 across2             27.2ms    26.9KB
-#&gt; 2 across               9.2ms    73.8KB
-#&gt; 3 custom_fct_reduce   14.1ms   124.2KB</code></pre>
+#&gt; 1 across2            21.77ms    26.9KB
+#&gt; 2 across              8.92ms    73.8KB
+#&gt; 3 custom_fct_reduce  11.33ms   124.2KB</code></pre>
 </div>
 </div>
 <div id="conclusion" class="section level2">
