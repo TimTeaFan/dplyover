@@ -27,7 +27,7 @@ body {
   text-decoration: none !important;
 }
 
-p>a, li>a, li>smaller>a, ul.dropdown-menu>li>a {
+p>a, li>a, li>small>a, ul.dropdown-menu>li>a {
   color: #83bb13 !important;
 }
 
@@ -37,7 +37,7 @@ p>a, li>a, li>smaller>a, ul.dropdown-menu>li>a {
   }
 }
 
-p>a:hover, p>a:focus, li>a:hover, li>a:focus, li>smaller>a:hover, li>smaller>a:focus {
+p>a:hover, p>a:focus, li>a:hover, li>a:focus, li>small>a:hover, li>small>a:focus {
   color: #5d8709 !important;
   text-decoration: none !important;
 }
@@ -51,6 +51,13 @@ h1, h2, h3, .h1, .h2, .h3 {
   font-family: "Source Sans Pro", Helvetica, Arial, sans-serif !important;
   color: #178acc !important;
   font-weight: 300 !important;
+  line-height: 1.1 !important;
+}
+
+h4, h5, h6, .h4, .h5, .h6 {
+  font-family: "Source Sans Pro", Helvetica, Arial, sans-serif !important;
+  color: #178acc !important;
+  font-weight: 400 !important;
   line-height: 1.1 !important;
 }
 
