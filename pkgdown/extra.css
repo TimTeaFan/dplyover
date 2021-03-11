@@ -1,13 +1,17 @@
-@import url('https://fonts.googleapis.com/css2?family=Lato:wght@100;300;400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400&display=swap');
+
+/* url('https://fonts.googleapis.com/css2?family=Lato:wght@100;300;400&display=swap'); */
+
 
 .label-default {
   background-color: #6fcf18; /* #05cf2f */
 }
 
 body {
-  font-family: "Lato", sans-serif !important;
-  font-size: 18px !important;
-  line-height: 2 !important;
+  font-family: "Source Sans Pro", Helvetica, Arial, sans-serif !important;
+  /*  "Lato", sans-serif */
+  font-size: 16px !important;
+  line-height: 1.846 !important;
   font-weight: 300 !important;
   color: #000000 !important;
   -webkit-font-smoothing: antialiased !important;
@@ -27,16 +31,24 @@ p>a, li>a, li>smaller>a, ul.dropdown-menu>li>a {
   color: #83bb13 !important;
 }
 
+@media (min-width: 768px) {
+  ul.dropdown-menu>li>a {
+      color: #ffffff !important;
+  }
+}
+
 p>a:hover, p>a:focus, li>a:hover, li>a:focus, li>smaller>a:hover, li>smaller>a:focus {
   color: #5d8709 !important;
   text-decoration: none !important;
 }
 
 /* ul.dropdown-menu>li>a:hover, ul.dropdown-menu>li>a:focus */
-
+.ref-index th {
+  font-weight: 300 !important;
+}
 
 h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
-  font-family: "Lato", sans-serif !important;
+  font-family: "Source Sans Pro", Helvetica, Arial, sans-serif !important;
   color: #178acc !important;
   font-weight: 300 !important;
   line-height: 1.1 !important;
