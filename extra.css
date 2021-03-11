@@ -12,8 +12,8 @@ body {
   /*  "Lato", sans-serif */
   font-size: 16px !important;
   line-height: 1.846 !important;
-  font-weight: 300 !important;
-  color: #000000 !important;
+  font-weight: 400 !important;
+  color: #444444 !important;
   -webkit-font-smoothing: antialiased !important;
   letter-spacing: .1px !important;
 }
@@ -31,7 +31,7 @@ p>a, li>a, li>smaller>a, ul.dropdown-menu>li>a {
   color: #83bb13 !important;
 }
 
-@media (min-width: 768px) {
+@media (max-width: 768px) {
   ul.dropdown-menu>li>a {
       color: #ffffff !important;
   }
@@ -44,7 +44,7 @@ p>a:hover, p>a:focus, li>a:hover, li>a:focus, li>smaller>a:hover, li>smaller>a:f
 
 /* ul.dropdown-menu>li>a:hover, ul.dropdown-menu>li>a:focus */
 .ref-index th {
-  font-weight: 300 !important;
+  font-weight: 400 !important;
 }
 
 h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
