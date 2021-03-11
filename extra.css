@@ -47,7 +47,7 @@ p>a:hover, p>a:focus, li>a:hover, li>a:focus, li>smaller>a:hover, li>smaller>a:f
   font-weight: 400 !important;
 }
 
-h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+h1, h2, h3, .h1, .h2, .h3 {
   font-family: "Source Sans Pro", Helvetica, Arial, sans-serif !important;
   color: #178acc !important;
   font-weight: 300 !important;
