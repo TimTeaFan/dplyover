@@ -23,6 +23,8 @@ point.
 
 ## Overview
 
+<a href="https://timteafan.github.io/dplyover/"><img src="man/figures/logo_240_277.png" alt="dplyover logo" align="right"></a>
+
 {dplyover} extends {dplyr}’s functionality by building a function family
 around `dplyr::across()`.
 
