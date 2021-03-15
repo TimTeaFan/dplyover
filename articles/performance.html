@@ -248,8 +248,8 @@
 <pre><code>#&gt; # A tibble: 2 x 6
 #&gt;   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #&gt;   &lt;bch:expr&gt; &lt;bch:tm&gt; &lt;bch:tm&gt;     &lt;dbl&gt; &lt;bch:byt&gt;    &lt;dbl&gt;
-#&gt; 1 across       5.07ms    5.3ms      186.  235.62KB     11.9
-#&gt; 2 over         3.46ms   3.54ms      280.    6.77KB     11.7</code></pre>
+#&gt; 1 across       5.36ms   5.69ms      173.  235.62KB     11.0
+#&gt; 2 over         3.54ms   3.67ms      268.    6.77KB     11.2</code></pre>
 <p>If we compare the performance of both operations, we can see that <code>over</code> is slightly faster than <code><a href="https://dplyr.tidyverse.org/reference/across.html">dplyr::across</a></code>. This changes, however, when we consider grouped data. To demonstrate this, we take the <code>diamonds</code> data set and create four versions: an ungrouped version, one with 10, 50 and one with 100 groups. Then we compare the same operations again. Now, we also add <code>crossover</code> and <code>across2</code> to the benchmark.</p>
 <p>Below is a code snippet for the 100 groups case:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
@@ -326,9 +326,9 @@ Benchmark of major dplyover functions
 <pre><code>#&gt; # A tibble: 3 x 6
 #&gt;   expression          min   median `itr/sec` mem_alloc `gc/sec`
 #&gt;   &lt;bch:expr&gt;     &lt;bch:tm&gt; &lt;bch:tm&gt;     &lt;dbl&gt; &lt;bch:byt&gt;    &lt;dbl&gt;
-#&gt; 1 over               24ms   25.6ms      39.2    15.5MB     69.6
-#&gt; 2 across_map_dfc   17.5ms   17.9ms      55.6    15.5MB     70.8
-#&gt; 3 reduce_cst_fct   58.2ms   59.8ms      16.6    15.7MB     27.1</code></pre>
+#&gt; 1 over             26.2ms     27ms      35.1    15.5MB     62.5
+#&gt; 2 across_map_dfc     18ms   18.6ms      38.8    15.5MB     49.4
+#&gt; 3 reduce_cst_fct   61.7ms   72.8ms      12.0    15.7MB     19.6</code></pre>
 <p>This picture gets a little bit more complex when we compare each approach across different group sizes. In the lower range (up until about 15 groups) <code>map_dfc</code> nested in <code>across</code> is the fastest approach, with <code>crossover</code> being not much slower. With increasing group size <code>crossover</code> starts to outperform <code>map_dfc</code> up until around 60 groups where <code>reduce</code> finally takes over and delivers the fastest performance. This benchmark stopped at 100 groups, but extrapolating from the existing data, we see that <code>reduce</code> is the most scaleable approach (although having the highest setup costs). If speed is a pressing concern, then the use of repetitive code patterns in a regular <code><a href="https://dplyr.tidyverse.org/reference/across.html">dplyr::across</a></code> call is a valid option that is still faster than any of the approaches shown here.</p>
 <div class="figure">
 <img src="benchmark2.png" alt="Benchmark: lagging many variables" width="100%"><p class="caption">
