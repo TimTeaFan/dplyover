@@ -15,4 +15,5 @@ tests/testthat/test-crossover_old.R
 
 inst/doc
 doc
+docs
 Meta
