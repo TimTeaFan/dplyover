@@ -9,6 +9,10 @@ deparse_call <- function(call) {
           control = NULL)
 }
 
+# environment where setup of dplyover calls is stored
+setup_env <- rlang::new_environment()
+
+
 # meta setup use by all major dplyover functions (tests passing)
 meta_setup <- function(grp_id, dep_call, par_frame, setup_fn, ...) { # data = NULL, xcols = NULL, ycols = NULL
 

@@ -177,8 +177,19 @@ across2 <- function(.xcols, .ycols, .fns, ..., .names = NULL, .names_fn = NULL){
 
 across2_setup <- function(xcols, ycols, fns, names, data, names_fn) {
 
+  # clean last_value in setup_env
+  if (exists("last_value", envir = setup_env)) {
+    rm(last_value, envir = setup_env)
+  }
+
   # setup: cols
   data <- dplyr::cur_data()[1, ]
+
+  # setup error_output
+  err_out <- list(data = data,
+                  xcols = xcols,
+                  ycols = ycols)
+
   xcols <- rlang::quo_set_env(xcols,
                               data_mask_top(rlang::quo_get_env(xcols),
                                             recursive = FALSE,
@@ -266,18 +277,24 @@ across2_setup <- function(xcols, ycols, fns, names, data, names_fn) {
 
       if (check_pre && check_pre1) {
 
+        setup_env[["last_value"]] <- err_out
+
         rlang::abort(c("Problem with `across2()` input `.names`.",
-                       i = "When `{pre}` is used inside `.names` each pair of input variables in `.xcols` and `.ycols` must share a common prefix of length > 0.",
-                       x = "For at least one pair of variables a shared prefix could not be extracted.",
-                       i = "Use `test_prefix()` to see the prefixes for each variable pair."))
+                        i = "When `{pre}` is used inside `.names` each pair of input variables in `.xcols` and `.ycols` must share a common prefix of length > 0.",
+                        x = "For at least one pair of variables a shared prefix could not be extracted.",
+                        i = "Run `test_prefix()` to see the prefixes for each variable pair."))
+
       }
       pre1 <- unlist(pre1)
 
       if (check_suf && check_suf1) {
+
+        setup_env[["last_value"]] <- err_out
+
         rlang::abort(c("Problem with `across2()` input `.names`.",
                        i = "When `{suf}` is used inside `.names` each pair of input variables in `.xcols` and `.ycols` must share a common suffix of length > 0.",
                        x = "For at least one pair of variables a shared suffix could not be extracted.",
-                       i = "Use `test_suffix()` to see the suffixes for each variable pair."))
+                       i = "Run `test_suffix()` to see the suffixes for each variable pair."))
       }
       suf1 <- unlist(suf1)
     }

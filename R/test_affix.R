@@ -1,7 +1,77 @@
-test_prefix <- function(.data, .xcols, .ycols) {
+#' Title
+#'
+#' @description
+#'
+#' These functions are .
+#' They are intended to be used ... .
+#'
+#' * [test_prefix()] ...
+#'
+#' * [test_suffix()] ...
+#'
+#' @param .data Pattern to look for.
+#' @inheritParams across2
+#'
+#' @return
+#' ...
+#'
+#' @section Examples:
+#'
+#' ```{r, child = "man/rmd/setup.Rmd"}
+#' ```
+#'
+#'
+#' ```{r, comment = "#>", collapse = TRUE}
+#' library(dplyr)
+#'
+#' # For better printing
+#' iris <- as_tibble(iris)
+#' ```
+#'
+#' functions can be used in two ways:
+#'
+#' (1)  call on a data.frame
+#'
+#'
+#' ```{r, comment = "#>", collapse = TRUE}
+#'  iris %>%
+#'    test_prefix(ends_with("Length"),
+#'                ends_with("Width"))
+#' ```
+#'
+#'
+#' (2) call after error is thrown
+#'
+#' ```{r, comment = "#>", collapse = TRUE, error = TRUE}
+#'  iris %>%
+#'    as_tibble %>%
+#'    rename("Pesal.Length" = Sepal.Length) %>%
+#'    mutate(across2(ends_with("Length"),
+#'                   ends_with("Width"),
+#'                   .fns = list(product = ~ .x * .y,
+#'                               sum = ~ .x + .y),
+#'                   .names = "{pre}_{fn}"))
+#' test_prefix()
+#' ```
+#'
+#' @name select_vars
+NULL
+#' @rdname test_affix
+#' @export
+test_prefix <- function(.data = NULL, .xcols = dplyr::everything(), .ycols = dplyr::everything()) {
 
-  .xcols <- rlang::enexpr(.xcols)
-  .ycols <- rlang::enexpr(.ycols)
+  if (is.null(.data) && !is.null(dplyover:::setup_env$last_value)) {
+
+    .data  <- setup_env$last_value$data
+    .xcols <- setup_env$last_value$xcols
+    .ycols <- setup_env$last_value$ycols
+
+    rm(last_value, envir = setup_env)
+
+  } else {
+    .xcols <- rlang::enexpr(.xcols)
+    .ycols <- rlang::enexpr(.ycols)
+  }
 
   test_affix(data = .data,
              xcols = .xcols,
@@ -9,16 +79,28 @@ test_prefix <- function(.data, .xcols, .ycols) {
              type = "prefix")
 }
 
-test_suffix <- function(.data, .xcols, .ycols) {
+#' @rdname test_affix
+#' @export
+test_suffix <- function(.data = NULL, .xcols = dplyr::everything(), .ycols = dplyr::everything()) {
 
-  .xcols <- rlang::enexpr(.xcols)
-  .ycols <- rlang::enexpr(.ycols)
+  if (is.null(.data) && !is.null(dplyover:::setup_env$last_value)) {
 
+    .data  <- setup_env$last_value$data
+    .xcols <- setup_env$last_value$xcols
+    .ycols <- setup_env$last_value$ycols
+
+    rm(last_value, envir = setup_env)
+
+  } else {
+    .xcols <- rlang::enexpr(.xcols)
+    .ycols <- rlang::enexpr(.ycols)
+  }
   test_affix(data = .data,
              xcols = .xcols,
              ycols = .ycols,
              type = "suffix")
 }
+
 
 test_affix <- function(data, xcols, ycols, type = c("prefix", "suffix")) {
 
@@ -73,6 +155,7 @@ get_affix <- function(x, type = c("prefix", "suffix")) {
   x_ls <- purrr::transpose(strsplit(x, ""))
   x_ls_length <- purrr::map_dbl(purrr::map(x_ls, unique), length)
   x_rle <- rle(x_ls_length)
+
   if (side == "right" && x_rle$values[1] == 1) {
     res <- stringr::str_sub(x[[1]],
                             start = 1L,
