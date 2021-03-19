@@ -12,6 +12,8 @@ status](https://img.shields.io/badge/status-not%20released-orange)](https://img.
 [![Codecov test
 coverage](https://codecov.io/gh/TimTeaFan/dplyover/branch/main/graph/badge.svg)](https://codecov.io/gh/TimTeaFan/dplyover?branch=main)
 [![CodeFactor](https://www.codefactor.io/repository/github/timteafan/dplyover/badge)](https://www.codefactor.io/repository/github/timteafan/dplyover)
+[![CRAN
+status](https://www.r-pkg.org/badges/version/dplyover)](https://cran.r-project.org/package=dplyover)
 <!-- badges: end -->
 
 ## A note of caution
@@ -74,7 +76,7 @@ devtools::install_github("TimTeaFan/dplyover")
 Below are a few examples of the {dplyover}’s *over-across function
 family*. More function and workarounds of how to tackle the problems
 below without {dplyover} can be found in the vignette
-<a href="https://timteafan.github.io/dplyover/articles/why_dplyover.html)">“Why
+<a href="https://timteafan.github.io/dplyover/articles/why_dplyover.html">“Why
 dplyover?”</a>.
 
 ``` r
