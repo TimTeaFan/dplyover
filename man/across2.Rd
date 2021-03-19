@@ -46,7 +46,8 @@ The default (\code{NULL}) is equivalent to \code{"{xcol}_{ycol}"} for the single
 case and \code{"{xcol}_{ycol}_{fn}"} for the case where a list is used for \code{.fns}.
 
 \code{across2()} supports two additional glue specifications: \code{{pre}} and \code{{suf}}.
-They extract the common prefix or suffix of each pair of variables.
+They extract the common alphanumeric prefix or suffix of each pair of
+variables.
 
 Alternatively to a glue specification, a character vector of length equal
 to the number of columns to be created can be supplied to \code{.names}.
@@ -131,11 +132,11 @@ by setting the \code{.comb} argument to \code{"minimal"}.\if{html}{\out{<div cla
                                      gsub("Petal", "P", .),
                      .comb = "minimal"))
 #> # A tibble: 3 x 7
-#>   Species  S.Length_S.Width S.Length_P.Leng~ S.Length_P.Width S.Width_P.Length S.Width_P.Width
-#>   <fct>               <dbl>            <dbl>            <dbl>            <dbl>           <dbl>
-#> 1 setosa               0.74             0.27             0.28             0.18            0.23
-#> 2 versico~             0.53             0.75             0.55             0.56            0.66
-#> 3 virgini~             0.46             0.86             0.28             0.4             0.54
+#>   Species    S.Length_S.Width S.Length_P.Length S.Length_P.Width S.Width_P.Length S.Width_P.Width
+#>   <fct>                 <dbl>             <dbl>            <dbl>            <dbl>           <dbl>
+#> 1 setosa                 0.74              0.27             0.28             0.18            0.23
+#> 2 versicolor             0.53              0.75             0.55             0.56            0.66
+#> 3 virginica              0.46              0.86             0.28             0.4             0.54
 #> # ... with 1 more variable: P.Length_P.Width <dbl>
 }\if{html}{\out{</div>}}
 }

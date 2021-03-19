@@ -1,25 +1,31 @@
-#' Title
+#' Show affixes for variable pairs of two sets of columns
 #'
 #' @description
 #'
-#' These functions are .
-#' They are intended to be used ... .
+#' These functions show the prefixes or suffixes for each pair of variables of
+#' two sets of columns. They are intended to be used either (1) in case `across2`
+#' throws an error when `{pre}` or `{suf}` are specified in `across2`'s `.names`
+#' argument or (2) before using `{pre}` or `{suf}` in `across2` to understand
+#' how the pre- or suffixes will look like.
 #'
-#' * [test_prefix()] ...
+#' * [show_prefix()] lists each variable pair and the corresponding alphanumeric prefix
 #'
-#' * [test_suffix()] ...
+#' * [show_suffix()] lists each variable pair and the corresponding alphanumeric suffix
 #'
-#' @param .data Pattern to look for.
-#' @inheritParams across2
+#' @param .data A data frame.
+#' @param .xcols,.ycols <[`tidy-select`][dplyr::dplyr_tidy_select]> Sets of
+#'   columns for which the common pre- or suffix will be shown for each pair.
+#'   Note that you can not select.
 #'
 #' @return
-#' ...
+#' A tibble with three columns: .xcols, .ycols and prefix or suffix.
 #'
 #' @section Examples:
 #'
 #' ```{r, child = "man/rmd/setup.Rmd"}
 #' ```
-#'
+#' Below two use cases of `show_prefix/suffix` are briefly explained.
+#' Let's first attach dplyr and get ready:
 #'
 #' ```{r, comment = "#>", collapse = TRUE}
 #' library(dplyr)
@@ -28,19 +34,14 @@
 #' iris <- as_tibble(iris)
 #' ```
 #'
-#' functions can be used in two ways:
+#' ## (1) When called after an error is thrown by `across2`
 #'
-#' (1)  call on a data.frame
-#'
-#'
-#' ```{r, comment = "#>", collapse = TRUE}
-#'  iris %>%
-#'    test_prefix(ends_with("Length"),
-#'                ends_with("Width"))
-#' ```
-#'
-#'
-#' (2) call after error is thrown
+#' Let's assume we use `across2` with the `{pre}` glue specification on some
+#' data where not all variable pairs share a common prefix. In the example below
+#' we use `dplyr::rename` to create such a case. Then `across2` will throw an
+#' error. The error message already suggests that we can run `show_prefix()`
+#' to see what went wrong. In this case we can call `show_prefix()` without
+#' any arguments:
 #'
 #' ```{r, comment = "#>", collapse = TRUE, error = TRUE}
 #'  iris %>%
@@ -51,58 +52,70 @@
 #'                   .fns = list(product = ~ .x * .y,
 #'                               sum = ~ .x + .y),
 #'                   .names = "{pre}_{fn}"))
-#' test_prefix()
+#' show_prefix()
 #' ```
 #'
-#' @name select_vars
+#' ## (2) When called on a data.frame
+#'
+#' When called on a data.frame we just need to specify two sets of columns:
+#' `.xcols` and `.ycols` (just like in `across2`).
+#'
+#' ```{r, comment = "#>", collapse = TRUE}
+#'  iris %>%
+#'    show_suffix(starts_with("Sepal"),
+#'                starts_with("Petal"))
+#' ```
+#'
+#'
+#' @name show_affix
 NULL
-#' @rdname test_affix
+#' @rdname show_affix
 #' @export
-test_prefix <- function(.data = NULL, .xcols = dplyr::everything(), .ycols = dplyr::everything()) {
+show_prefix <- function(.data = NULL, .xcols = NULL, .ycols = NULL) {
 
-  if (is.null(.data) && !is.null(dplyover:::setup_env$last_value)) {
+  if (is.null(.data) && !is.null(dplyover:::.last$value)) {
 
-    .data  <- setup_env$last_value$data
-    .xcols <- setup_env$last_value$xcols
-    .ycols <- setup_env$last_value$ycols
+    .data  <- .last$value$data
+    .xcols <- .last$value$xcols
+    .ycols <- .last$value$ycols
 
-    rm(last_value, envir = setup_env)
+    rm(value, envir = .last)
 
   } else {
     .xcols <- rlang::enexpr(.xcols)
     .ycols <- rlang::enexpr(.ycols)
   }
 
-  test_affix(data = .data,
+  show_affix(data = .data,
              xcols = .xcols,
              ycols = .ycols,
              type = "prefix")
 }
 
-#' @rdname test_affix
+#' @rdname show_affix
 #' @export
-test_suffix <- function(.data = NULL, .xcols = dplyr::everything(), .ycols = dplyr::everything()) {
+show_suffix <- function(.data = NULL, .xcols = NULL, .ycols = NULL) {
 
-  if (is.null(.data) && !is.null(dplyover:::setup_env$last_value)) {
+  if (is.null(.data) && !is.null(dplyover:::.last$value)) {
 
-    .data  <- setup_env$last_value$data
-    .xcols <- setup_env$last_value$xcols
-    .ycols <- setup_env$last_value$ycols
+    .data  <- .last$value$data
+    .xcols <- .last$value$xcols
+    .ycols <- .last$value$ycols
 
-    rm(last_value, envir = setup_env)
+    rm(value, envir = .last)
 
   } else {
     .xcols <- rlang::enexpr(.xcols)
     .ycols <- rlang::enexpr(.ycols)
   }
-  test_affix(data = .data,
+  show_affix(data = .data,
              xcols = .xcols,
              ycols = .ycols,
              type = "suffix")
 }
 
 
-test_affix <- function(data, xcols, ycols, type = c("prefix", "suffix")) {
+show_affix <- function(data, xcols, ycols, type = c("prefix", "suffix")) {
 
   group_vars <- group_vars(data)
 
@@ -118,10 +131,10 @@ test_affix <- function(data, xcols, ycols, type = c("prefix", "suffix")) {
   yvars <- names(yvars)
 
   if (length(xvars) != length(yvars)) {
-    rlang::abort(c(paste0("Problem with `test_", type,"()` input `.xcols` and `.ycols`."),
-                   i = "Input `.xcols` and `.ycols` must use the same number of columns.",
+    rlang::abort(c(paste0("Problem with `show_", type,"()` input `.xcols` and `.ycols`."),
+                   i = "Input `.xcols` and `.ycols` must have the same number of columns.",
                    x = paste0(length(xvars), " columns are selected in `.xcols`, ",
-                              "while ", length(yvars), " columns are selected in `.colsy`.")))
+                              "while ", length(yvars), " columns are selected in `.ycols`.")))
   }
 
   var_nms <- purrr::flatten(purrr::map2(xvars, yvars, ~ list(c(.x, .y))))
@@ -137,11 +150,13 @@ test_affix <- function(data, xcols, ycols, type = c("prefix", "suffix")) {
                             .ycols = yvars,
                             !! type := res)
 
-  print(inp_tbl, n = 10)
-  if (nrow(inp_tbl) > 10) {
+  print_min <- getOption("tibble.print_min") %||% 10
+  print_max <- getOption("tibble.print_max") %||% 20
+
+  if (nrow(inp_tbl) > print_max) {
     cat("Use `.Last.value %>% View()` to see to full list of variables.")
-    invisible(inp_tbl)
   }
+  inp_tbl
 }
 
 # helper function for across2_setup

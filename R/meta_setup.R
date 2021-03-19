@@ -9,8 +9,8 @@ deparse_call <- function(call) {
           control = NULL)
 }
 
-# environment where setup of dplyover calls is stored
-setup_env <- rlang::new_environment()
+# environment where last value of across2 pre/suf error is stored
+.last <- rlang::new_environment()
 
 
 # meta setup use by all major dplyover functions (tests passing)

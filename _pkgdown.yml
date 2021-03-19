@@ -17,15 +17,14 @@ reference:
     `across2x()` two sets of columns (nested)
     `crossover()` a set of columns and a vector (nested)
   contents:
-  - over_across_family
   - over
   - over2
   - across2
   - crossover
 
-- title: selection helpers
+- title: helper functions
   desc: >
-    dplyover provides three selection helpers which are intended for use
+    {dplyover} provides three selection helpers which are intended for use
     in all functions that accept a vector as argument (that is `over()` and
     `crossover()` as well as their variants). 1. Helpers which select string
     parts of the column names (of the underyling data): `cut_names()` removes a
@@ -34,15 +33,18 @@ reference:
     distinct values; `seq_range()` returns the sequence between the range of a
     variable. 3. A helper function `.()` that takes a glue specifcation as input,
     and evaluates the final argument string as name in the caller environment.
+    Apart from those selection heplers, `show_prefix()` and `show_suffix()`
+    show the common pre- or suffix for each pair of variables of two sets of
+    colums.
   contents:
-  - selection_helpers
   - dist_values
   - cut_names
   - "."
+  - show_affix
 
 - title: data
   desc: >
-    dplyyover comes with a randomly generated data from a customer satisfaction
+    {dplyyover} comes with a randomly generated data from a customer satisfaction
     survey using CSAT (Customer Satisfaction Score) for a contract-based
     product. The data set comes in two versions: recoded and raw.
   contents:
