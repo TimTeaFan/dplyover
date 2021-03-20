@@ -14,7 +14,7 @@ deparse_call <- function(call) {
 
 
 # meta setup use by all major dplyover functions (tests passing)
-meta_setup <- function(grp_id, dep_call, par_frame, setup_fn, ...) { # data = NULL, xcols = NULL, ycols = NULL
+meta_setup <- function(grp_id, dep_call, par_frame, setup_fn, ...) {
 
   call_nm <- sub("([a-z0-9]+).*", "\\1()", dep_call)
 

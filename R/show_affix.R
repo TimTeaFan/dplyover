@@ -34,7 +34,7 @@
 #' iris <- as_tibble(iris)
 #' ```
 #'
-#' ## (1) When called after an error is thrown by `across2`
+#' ## (1) When called after an error is thrown by across2()
 #'
 #' Let's assume we use `across2` with the `{pre}` glue specification on some
 #' data where not all variable pairs share a common prefix. In the example below
