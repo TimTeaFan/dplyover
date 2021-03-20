@@ -22,15 +22,7 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-```
-
-```{r setup, include = FALSE, warning = FALSE, message = FALSE}
-library(dplyr)
-library(tidyr)
-library(purrr)
-library(dplyover)
-library(ggplot2)
-library(bench)
+timings <- readRDS("why_bench.rds")
 ```
 
 ## Introduction
@@ -61,6 +53,16 @@ In this section we will look at three different use cases of {dplyover}:
 1. Create columns derived from a comma separated character vector
 1. Creating several lagged variables for a set of columns
 1. Applying functions to a set of variable pairs
+
+Before we begin, here is our setup:
+```{r setup, warning = FALSE, message = FALSE}
+library(dplyr)
+library(tidyr)
+library(purrr)
+library(dplyover)
+library(ggplot2)
+library(bench)
+```
 
 
 #### Create columns derived from a comma separated character vector
@@ -159,43 +161,44 @@ in between.
 
 ```{r, echo = FALSE, eval = TRUE, warning = FALSE, message = FALSE}
 csat2 <- csat
-over2_bench <- bench::mark(iterations = 50L, check = FALSE, 
-  map_dfc = {
-    local({var_nms <- strsplit(csat$csat_open, ", ") %>% unlist %>% unique %>%
-      set_names(., paste0("rsp_", gsub(" ", "_", .)))
-
-    csat %>%
-      transmute(map_dfc(var_nms,
-                  ~ as.integer(grepl(.x, csat_open))))
-  })},
-  pivot_wider = {
-    csat %>%
-      separate_rows(csat_open, sep = ", ") %>% 
-      pivot_wider(names_from = csat_open,
-                  names_prefix = "rsp_",
-                  names_repair = "universal",
-                  values_from = csat_open,
-                  values_fn = function(x) 1,
-                  values_fill = 0)
-  },
-  across = {
-   local({var_nms2 <- strsplit(csat$csat_open, ", ") %>% unlist %>% unique;
-   csat2[, var_nms2] <- 0
-    csat2 %>%
-      mutate(across(all_of(var_nms2),
-                       ~ grepl(cur_column(), csat_open) %>% as.integer,
-                       .names = "rsp_{col}")) %>%
-      select(!all_of(var_nms2))
-  })},
-  over = {
-    csat %>%
-      transmute(over(dist_values(csat_open, .sep = ", "),
-                  ~ as.integer(grepl(.x, csat_open)),
-                  .names = "rsp_{x}",
-                  .names_fn = ~ gsub(" ", "_", .x)))
-  }
-)
-over2_bench %>% 
+# over2_bench <- bench::mark(iterations = 50L, check = FALSE,
+#    over = {
+#     csat %>%
+#       transmute(over(dist_values(csat_open, .sep = ", "),
+#                   ~ as.integer(grepl(.x, csat_open)),
+#                   .names = "rsp_{x}",
+#                   .names_fn = ~ gsub(" ", "_", .x)))
+#   },
+#   map_dfc = {
+#     local({var_nms <- strsplit(csat$csat_open, ", ") %>% unlist %>% unique %>%
+#       set_names(., paste0("rsp_", gsub(" ", "_", .)))
+# 
+#     csat %>%
+#       transmute(map_dfc(var_nms,
+#                   ~ as.integer(grepl(.x, csat_open))))
+#   })},
+#   pivot_wider = {
+#     csat %>%
+#       separate_rows(csat_open, sep = ", ") %>%
+#       pivot_wider(names_from = csat_open,
+#                   names_prefix = "rsp_",
+#                   names_repair = "universal",
+#                   values_from = csat_open,
+#                   values_fn = function(x) 1,
+#                   values_fill = 0)
+#   },
+#   across = {
+#    local({var_nms2 <- strsplit(csat$csat_open, ", ") %>% unlist %>% unique;
+#    csat2[, var_nms2] <- 0
+#     csat2 %>%
+#       mutate(across(all_of(var_nms2),
+#                        ~ grepl(cur_column(), csat_open) %>% as.integer,
+#                        .names = "rsp_{col}")) %>%
+#       select(!all_of(var_nms2))
+#   })}
+# )
+# over2_bench %>% 
+timings$over %>% 
   select(expression, median, mem_alloc) 
 
 ```
@@ -270,35 +273,36 @@ off in terms of speed compared to the `map_dfc` approach. The big gain of using
 advanced tidyverse workarounds (like `reduce` or a `map` call nested in `across`).
 
 ```{r, echo = FALSE, eval = TRUE, warning = FALSE, message = FALSE}
-create_lags <- function(df, .x, .y) {
-    mutate(df, "{.x}_lag{.y}" := lag(!! sym(.x), .y))
-}
-
-crossover_bench <- bench::mark(iterations = 50L, check = FALSE, 
-    crossover = {
-    diamonds %>% 
-      mutate(crossover(c(x,y,z),
-                       1:5,
-                       list(lag = ~ lag(.x, .y)),
-                       .names = "{xcol}_{fn}{y}"))
-  },
-  across_map_dfc = {
-    diamonds %>% 
-      mutate(across(c(x,y,z),
-                    ~ map_dfc(set_names(1:5, paste0("lag", 1:5)),
-                              function(y) lag(.x, y)))) %>% 
-    do.call(data.frame, .)
-  },
-  
-  custom_fct_reduce = {
-    diamonds %>% 
-  reduce2(rep(c("x", "y", "z"), 5),
-          rep(1:5, 3),
-          create_lags,
-          .init = .)
-  }
-)
-crossover_bench %>% 
+# create_lags <- function(df, .x, .y) {
+#     mutate(df, "{.x}_lag{.y}" := lag(!! sym(.x), .y))
+# }
+# 
+# crossover_bench <- bench::mark(iterations = 50L, check = FALSE, 
+#     crossover = {
+#     diamonds %>% 
+#       mutate(crossover(c(x,y,z),
+#                        1:5,
+#                        list(lag = ~ lag(.x, .y)),
+#                        .names = "{xcol}_{fn}{y}"))
+#   },
+#   across_map_dfc = {
+#     diamonds %>% 
+#       mutate(across(c(x,y,z),
+#                     ~ map_dfc(set_names(1:5, paste0("lag", 1:5)),
+#                               function(y) lag(.x, y)))) %>% 
+#     do.call(data.frame, .)
+#   },
+#   
+#   custom_fct_reduce = {
+#     diamonds %>% 
+#   reduce2(rep(c("x", "y", "z"), 5),
+#           rep(1:5, 3),
+#           create_lags,
+#           .init = .)
+#   }
+# )
+# crossover_bench %>% 
+timings$crossover %>% 
   select(expression, median, mem_alloc) 
 
 ```
@@ -385,43 +389,46 @@ has several advantages:
 
 
 ```{r, echo = FALSE, eval = TRUE, warning = FALSE, message = FALSE}
-create_vars <- function(df, .x, .y) {
-  mutate(df, "{.x}_{.y}" := switch(.y,
-                                   sum = !! sym(paste0(.x, ".Width")) + !! sym(paste0(.x, ".Length")),
-                                   product = !! sym(paste0(.x, ".Width")) * !! sym(paste0(.x, ".Length")))
-  )
-}
+# create_vars <- function(df, .x, .y) {
+#   mutate(df, "{.x}_{.y}" := switch(.y,
+#                                    sum = !! sym(paste0(.x, ".Width")) + !! sym(paste0(.x, ".Length")),
+#                                    product = !! sym(paste0(.x, ".Width")) * !! sym(paste0(.x, ".Length")))
+#   )
+# }
+# 
+# across2_bench <- bench::mark(iterations = 50L, check = FALSE, 
+#     across2 = {
+#     iris %>%
+#       mutate(across2(ends_with("Length"),
+#                         ends_with("Width"),
+#                         .fns = list(product = ~ .x * .y,
+#                                     sum = ~ .x + .y),
+#                        .names = "{pre}_{fn}"))
+#   },
+#   across = {
+#     iris %>%
+#       rename_with(.fn = ~ gsub(".Length", "", .x),
+#                   .cols = ends_with("Length")) %>% 
+#       mutate(across(c(Sepal, Petal), 
+#                     list(product = ~ .x * get(paste0(cur_column(), ".Width")),
+#                          sum = ~ .x + get(paste0(cur_column(), ".Width"))))) %>% 
+#       rename(Sepal.Length = Sepal,
+#              Petal.Length = Petal)
+#   },
+#   custom_fct_reduce = {
+#     iris %>% 
+#       reduce2(rep(c("Sepal", "Petal"), each = 2),
+#               rep(c("product", "sum"), 2),
+#               create_vars,
+#               .init = .) 
+#   }
+# )
+# across2_bench %>% 
 
-across2_bench <- bench::mark(iterations = 50L, check = FALSE, 
-    across2 = {
-    iris %>%
-      mutate(across2(ends_with("Length"),
-                        ends_with("Width"),
-                        .fns = list(product = ~ .x * .y,
-                                    sum = ~ .x + .y),
-                       .names = "{pre}_{fn}"))
-  },
-  across = {
-    iris %>%
-      rename_with(.fn = ~ gsub(".Length", "", .x),
-                  .cols = ends_with("Length")) %>% 
-      mutate(across(c(Sepal, Petal), 
-                    list(product = ~ .x * get(paste0(cur_column(), ".Width")),
-                         sum = ~ .x + get(paste0(cur_column(), ".Width"))))) %>% 
-      rename(Sepal.Length = Sepal,
-             Petal.Length = Petal)
-  },
-  custom_fct_reduce = {
-    iris %>% 
-      reduce2(rep(c("Sepal", "Petal"), each = 2),
-              rep(c("product", "sum"), 2),
-              create_vars,
-              .init = .) 
-  }
-)
-across2_bench %>% 
+# saveRDS(list(over2_bench, crossover_bench, across2_bench), "vignettes/why_bench.rds")
+
+timings$across2 %>% 
   select(expression, median, mem_alloc)
-
 ```
 
 

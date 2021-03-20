@@ -180,11 +180,14 @@ This is an experimental package which I started developing with my own
 use cases in mind. I tried to keep the effort low, which is why this
 package *does not* internalize (read: copy) internal {dplyr} functions
 (especially the ‘context internals’). This made it relatively easy to
-develop the package without (i) copying tons of {dplyr} code, (ii)
-having to figure out which dplyr-functions use the copied internals and
-(iii) finally overwritting these functions (like `mutate` and other
-one-table verbs), which would eventually lead to conflicts with other
-add-on packages, like for example {tidylog}.
+develop the package without:
+
+1.  copying tons of {dplyr} code,
+2.  having to figure out which dplyr-functions use the copied internals
+    and
+3.  finally overwritting these functions (like `mutate` and other
+    one-table verbs), which would eventually lead to conflicts with
+    other add-on packages, like for example {tidylog}.
 
 However, the downside is that not relying on {dplyr} internals has some
 negative effects in terms of performance and compability.

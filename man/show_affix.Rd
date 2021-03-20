@@ -40,7 +40,7 @@ Let's first attach dplyr and get ready:\if{html}{\out{<div class="r">}}\preforma
 # For better printing
 iris <- as_tibble(iris)
 }\if{html}{\out{</div>}}
-\subsection{(1) When called after an error is thrown by \code{across2}}{
+\subsection{(1) When called after an error is thrown by across2()}{
 
 Let's assume we use \code{across2} with the \code{{pre}} glue specification on some
 data where not all variable pairs share a common prefix. In the example below

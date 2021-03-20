@@ -38,6 +38,7 @@ diamonds_50grp <- diamonds %>%
 diamonds_100grp <- diamonds %>% 
   group_by(grp_id = row_number() %% 100)
 
+timings <- readRDS("performance.rds")
 ```
 
 ## Introduction
@@ -85,7 +86,7 @@ library(bench)
 
 At the moment three unintended compability issues are worth mentioning:
 
-#### Only partial support of `mutate()`'s .keep argument
+#### Only partial support of mutate()'s .keep argument
 Since {dplyr} 1.0 `mutate` has gained a `.keep` argument, which allows us to 
 control which columns are retained in the output. This works well with genuine
 {dplyr} functions like `across`:
@@ -141,7 +142,7 @@ documentation of each function to learn more about which special glue
 specifications are supported.
 
 
-#### Context dependent expressions: `cur_column()`<br>
+#### Context dependent expressions: cur_column()<br>
 When *over-across functions* are called inside `dplyr::mutate` or 
 `dplyr::summarise` {dplyr}'s context dependent expressions (see `?dplyr::context`)
 can be used inside the function call. An exception is `dplyr::cur_column()`
@@ -184,18 +185,20 @@ diamonds %>%
 ```
 
 ```{r, echo = FALSE, eval = TRUE}
-bench::mark(iterations = 50L, check = FALSE,
-  "across" = {
-    diamonds %>%
-      summarise(across(c(x,y,z),
-                       ~ 1,
-                       .names = "{col}_new"))}, 
-  "over" = {
-    diamonds %>% 
-      summarise(over(c("q","v","w"),
-                 ~ 1,
-                 .names = "{x}_new"))}
-)
+# over_across <- bench::mark(iterations = 50L, check = FALSE,
+#     "over" = {
+#     diamonds %>%
+#       summarise(over(c("q","v","w"),
+#                  ~ 1,
+#                  .names = "{x}_new"))},
+#     "across" = {
+#     diamonds %>%
+#       summarise(across(c(x,y,z),
+#                        ~ 1,
+#                        .names = "{col}_new"))}
+# )
+timings$over_across %>% 
+  select(expression, median, mem_alloc) 
 ```
 
 If we compare the performance of both operations, we can see that `over` is 
@@ -235,11 +238,10 @@ diamonds_100grp %>%
 ```
 
 The plot below shows the median time in miliseconds that each operation takes
-by increasing group size. Obviously, `dplyr::across` is by far the fastest  
-(especially after dplyr v.1.0.4). `over` is somewhat slower and the least
-performant operations are `crossover` and `across2`. The latter two need to 
-access the underlying data and without using {dplyr}'s data mask there seems
-to be no good option to do that.
+by increasing group size. Obviously, `dplyr::across` is by far the fastest (especially
+after dplyr v.1.0.4). `over` is somewhat slower and the least performant operations
+are `crossover` and `across2`. The latter two need to access the underlying data
+and without using {dplyr}'s data mask there seems to be no good option to do that.
 
 ```{r, echo=FALSE, out.width="100%", fig.cap = "Benchmark of major dplyover functions" }
 knitr::include_graphics("benchmark1.png")
@@ -294,34 +296,40 @@ performant. `crossover` is not too far off in terms of speed compared to the
 `map_dfc` approach.
 
 ```{r, echo = FALSE, eval = TRUE}
-create_lags <- function(df, .x, .y) {
-    mutate(df, "{.x}_lag{.y}" := lag(!! sym(.x), .y))
-}
+# create_lags <- function(df, .x, .y) {
+#     mutate(df, "{.x}_lag{.y}" := lag(!! sym(.x), .y))
+# }
+# 
+# lagged_vars <- bench::mark(iterations = 50L, check = FALSE,
+#   crossover = {
+#     diamonds %>%
+#       mutate(crossover(c(x,y,z),
+#                        1:5,
+#                        list(lag = ~ lag(.x, .y)),
+#                        .names = "{xcol}_{fn}{y}"))
+#   },
+#   across_map_dfc = {
+#     diamonds %>%
+#       mutate(across(c(x,y,z),
+#                     ~ map_dfc(set_names(1:5, paste0("lag", 1:5)),
+#                               function(y) lag(.x, y)))) %>%
+#     do.call(data.frame, .)
+#   },
+# 
+#   reduce_cst_fct = {
+#     diamonds %>%
+#   reduce2(rep(c("x", "y", "z"), 5),
+#           rep(1:5, 3),
+#           create_lags,
+#           .init = .)
+#   }
+# )
 
-bench::mark(iterations = 50L, check = FALSE, 
-  over = {
-    diamonds %>% 
-      mutate(crossover(c(x,y,z),
-                       1:5,
-                       list(lag = ~ lag(.x, .y)),
-                       .names = "{xcol}_{fn}{y}"))
-  },
-  across_map_dfc = {
-    diamonds %>% 
-      mutate(across(c(x,y,z),
-                    ~ map_dfc(set_names(1:5, paste0("lag", 1:5)),
-                              function(y) lag(.x, y)))) %>% 
-    do.call(data.frame, .)
-  },
-  
-  reduce_cst_fct = {
-    diamonds %>% 
-  reduce2(rep(c("x", "y", "z"), 5),
-          rep(1:5, 3),
-          create_lags,
-          .init = .)
-  }
-)
+# saveRDS(list(over_across = over_across, lagged_vars = lagged_vars), "vignettes/performance.rds")
+
+timings$lagged_vars %>% 
+  select(expression, median, mem_alloc) 
+
 ```
 
 This picture gets a little bit more complex when we compare each approach across

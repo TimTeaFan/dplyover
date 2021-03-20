@@ -68,14 +68,14 @@ between elements in `x` and `y` similar to a nested loop.</small>
 [GitHub](https://github.com/) with:
 
 ```{r, eval = FALSE}
-# install.packages("devtools")
-devtools::install_github("TimTeaFan/dplyover")
+# install.packages("remotes")
+remotes::install_github("TimTeaFan/dplyover")
 ```
 
 ## Getting started
 
 Below are a few examples of the {dplyover}'s *over-across function family*. More
-function and workarounds of how to tackle the problems below without {dplyover}
+functions and workarounds of how to tackle the problems below without {dplyover}
 can be found in the vignette <a href="https://timteafan.github.io/dplyover/articles/why_dplyover.html">"Why dplyover?"</a>.
 
 ```{r, setup, warning = FALSE, message = FALSE}
@@ -92,9 +92,9 @@ iris <- as_tibble(iris)
 `over()` applies one or several functions to a vector. We can use it inside
 `dplyr::mutate()` to create several similar variables that we derive from an
 existing column. This is helpful in cases where we want to create a batch of
-similar variables with only slightly changes in the arguments of the calling
-function. A good example are `lag` and `lead` variables. Below we use column
-'a' to create lag and lead variables by `1`, `2` and `3` positions.
+similar variables with only slightly changes in the argument values of the
+calling function. A good example are `lag` and `lead` variables. Below we use
+column 'a' to create lag and lead variables by `1`, `2` and `3` positions.
 `over()`'s `.names` argument lets us put nice names on the output columns.
 
 ```{r} 
@@ -149,11 +149,13 @@ iris %>%
 This is an experimental package which I started developing with my own use cases
 in mind. I tried to keep the effort low, which is why this package *does not* 
 internalize (read: copy) internal {dplyr} functions (especially the 'context
-internals'). This made it relatively easy to develop the package without (i)
-copying tons of {dplyr} code, (ii) having to figure out which dplyr-functions use
-the copied internals and (iii) finally overwritting these functions (like `mutate`
-and other one-table verbs), which would eventually lead to conflicts with other
-add-on packages, like for example {tidylog}.
+internals'). This made it relatively easy to develop the package without:
+
+1. copying tons of {dplyr} code,
+1. having to figure out which dplyr-functions use the copied internals and
+1. finally overwritting these functions (like `mutate` and other one-table verbs),
+  which would eventually lead to conflicts with other add-on packages, like for
+  example {tidylog}.
 
 However, the downside is that not relying on {dplyr} internals has some negative
 effects in terms of performance and compability.
