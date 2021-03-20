@@ -89,7 +89,7 @@
 #' ```
 #'
 #'
-#' ## (1) The General Use Case
+#' #### (1) The General Use Case
 #' Here the values in `.x` are used as inputs to one or more functions in `.fns`.
 #' This is useful, when we want to create several new variables based on the same
 #' function with varying arguments. A good example is creating a bunch of lagged
@@ -208,7 +208,7 @@
 #' ```
 #'
 #'
-#' ## (2) A Very Specific Use Case
+#' #### (2) A Very Specific Use Case
 #' Here strings are supplied to `.x` to construct column names (sharing the
 #' same stem). This allows us to dynamically use more than one column in the
 #' function calls in `.fns`. To work properly, the strings need to be
