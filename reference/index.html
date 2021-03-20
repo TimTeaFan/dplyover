@@ -178,12 +178,6 @@
       <tr>
         
         <td>
-          <p><code><a href="over_across_family.html">over_across_family</a></code> </p>
-        </td>
-        <td><p>The over-across function family</p></td>
-      </tr><tr>
-        
-        <td>
           <p><code><a href="over.html">over()</a></code> </p>
         </td>
         <td><p>Apply functions to a list or vector in 'dplyr'</p></td>
@@ -209,8 +203,8 @@
     </tbody><tbody>
       <tr>
         <th colspan="2">
-          <h2 id="section-selection-helpers" class="hasAnchor"><a href="#section-selection-helpers" class="anchor"></a>selection helpers</h2>
-          <p class="section-desc"><p>dplyover provides three selection helpers which are intended for use in all functions that accept a vector as argument (that is <code><a href="../reference/over.html">over()</a></code> and <code><a href="../reference/crossover.html">crossover()</a></code> as well as their variants). 1. Helpers which select string parts of the column names (of the underyling data): <code><a href="../reference/select_vars.html">cut_names()</a></code> removes a specified pattern; <code><a href="../reference/select_vars.html">extract_names()</a></code> extracts a specified pattern. 2. Helpers which select values of a variable: <code><a href="../reference/select_values.html">dist_values()</a></code> returns all distinct values; <code><a href="../reference/select_values.html">seq_range()</a></code> returns the sequence between the range of a variable. 3. A helper function <code><a href="../reference/string_eval.html">.()</a></code> that takes a glue specifcation as input, and evaluates the final argument string as name in the caller environment.</p></p>
+          <h2 id="section-helper-functions" class="hasAnchor"><a href="#section-helper-functions" class="anchor"></a>helper functions</h2>
+          <p class="section-desc"><p>{dplyover} provides three selection helpers which are intended for use in all functions that accept a vector as argument (that is <code><a href="../reference/over.html">over()</a></code> and <code><a href="../reference/crossover.html">crossover()</a></code> as well as their variants). 1. Helpers which select string parts of the column names (of the underyling data): <code><a href="../reference/select_vars.html">cut_names()</a></code> removes a specified pattern; <code><a href="../reference/select_vars.html">extract_names()</a></code> extracts a specified pattern. 2. Helpers which select values of a variable: <code><a href="../reference/select_values.html">dist_values()</a></code> returns all distinct values; <code><a href="../reference/select_values.html">seq_range()</a></code> returns the sequence between the range of a variable. 3. A helper function <code><a href="../reference/string_eval.html">.()</a></code> that takes a glue specifcation as input, and evaluates the final argument string as name in the caller environment. Apart from those selection heplers, <code><a href="../reference/show_affix.html">show_prefix()</a></code> and <code><a href="../reference/show_affix.html">show_suffix()</a></code> show the common pre- or suffix for each pair of variables of two sets of colums.</p></p>
         </th>
       </tr>
       
@@ -219,12 +213,6 @@
       
       
       <tr>
-        
-        <td>
-          <p><code><a href="selection_helpers.html">selection_helpers</a></code> </p>
-        </td>
-        <td><p>Selection helpers</p></td>
-      </tr><tr>
         
         <td>
           <p><code><a href="select_values.html">dist_values()</a></code> <code><a href="select_values.html">seq_range()</a></code> </p>
@@ -242,12 +230,18 @@
           <p><code><a href="string_eval.html">.()</a></code> </p>
         </td>
         <td><p>Evaluate an interpolated string as symbol</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="show_affix.html">show_prefix()</a></code> <code><a href="show_affix.html">show_suffix()</a></code> </p>
+        </td>
+        <td><p>Show affixes for variable pairs of two sets of columns</p></td>
       </tr>
     </tbody><tbody>
       <tr>
         <th colspan="2">
           <h2 id="section-data" class="hasAnchor"><a href="#section-data" class="anchor"></a>data</h2>
-          <p class="section-desc"><p>dplyyover comes with a randomly generated data from a customer satisfaction survey using CSAT (Customer Satisfaction Score) for a contract-based product. The data set comes in two versions: recoded and raw.</p></p>
+          <p class="section-desc"><p>{dplyyover} comes with a randomly generated data from a customer satisfaction survey using CSAT (Customer Satisfaction Score) for a contract-based product. The data set comes in two versions: recoded and raw.</p></p>
         </th>
       </tr>
       
