@@ -156,13 +156,13 @@
 <a href="#installation" class="anchor"></a>Installation</h2>
 <p>{dplyover} is not on CRAN. You can install the latest version from <a href="https://github.com/">GitHub</a> with:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># install.packages("devtools")</span>
-<span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"TimTeaFan/dplyover"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="co"># install.packages("remotes")</span>
+<span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html">install_github</a></span><span class="op">(</span><span class="st">"TimTeaFan/dplyover"</span><span class="op">)</span></code></pre></div>
 </div>
 <div id="getting-started" class="section level2">
 <h2 class="hasAnchor">
 <a href="#getting-started" class="anchor"></a>Getting started</h2>
-<p>Below are a few examples of the {dplyover}’s <em>over-across function family</em>. More function and workarounds of how to tackle the problems below without {dplyover} can be found in the vignette <a href="https://timteafan.github.io/dplyover/articles/why_dplyover.html">“Why dplyover?”</a>.</p>
+<p>Below are a few examples of the {dplyover}’s <em>over-across function family</em>. More functions and workarounds of how to tackle the problems below without {dplyover} can be found in the vignette <a href="https://timteafan.github.io/dplyover/articles/why_dplyover.html">“Why dplyover?”</a>.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># dplyover is an extention of dplyr on won't work without it</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span>
@@ -173,7 +173,7 @@
 <div id="apply-functions-to-a-vector" class="section level4">
 <h4 class="hasAnchor">
 <a href="#apply-functions-to-a-vector" class="anchor"></a>Apply functions to a vector</h4>
-<p><code><a href="reference/over.html">over()</a></code> applies one or several functions to a vector. We can use it inside <code><a href="https://dplyr.tidyverse.org/reference/mutate.html">dplyr::mutate()</a></code> to create several similar variables that we derive from an existing column. This is helpful in cases where we want to create a batch of similar variables with only slightly changes in the arguments of the calling function. A good example are <code>lag</code> and <code>lead</code> variables. Below we use column ‘a’ to create lag and lead variables by <code>1</code>, <code>2</code> and <code>3</code> positions. <code><a href="reference/over.html">over()</a></code>’s <code>.names</code> argument lets us put nice names on the output columns.</p>
+<p><code><a href="reference/over.html">over()</a></code> applies one or several functions to a vector. We can use it inside <code><a href="https://dplyr.tidyverse.org/reference/mutate.html">dplyr::mutate()</a></code> to create several similar variables that we derive from an existing column. This is helpful in cases where we want to create a batch of similar variables with only slightly changes in the argument values of the calling function. A good example are <code>lag</code> and <code>lead</code> variables. Below we use column ‘a’ to create lag and lead variables by <code>1</code>, <code>2</code> and <code>3</code> positions. <code><a href="reference/over.html">over()</a></code>’s <code>.names</code> argument lets us put nice names on the output columns.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span>a <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">25</span><span class="op">)</span> <span class="op">%&gt;%</span>
   <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span><span class="fu"><a href="reference/over.html">over</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span>,
@@ -239,8 +239,12 @@
 <div id="performance-and-compability" class="section level2">
 <h2 class="hasAnchor">
 <a href="#performance-and-compability" class="anchor"></a>Performance and Compability</h2>
-<p>This is an experimental package which I started developing with my own use cases in mind. I tried to keep the effort low, which is why this package <em>does not</em> internalize (read: copy) internal {dplyr} functions (especially the ‘context internals’). This made it relatively easy to develop the package without (i) copying tons of {dplyr} code, (ii) having to figure out which dplyr-functions use the copied internals and</p>
-<p>(iii) finally overwritting these functions (like <code>mutate</code> and other one-table verbs), which would eventually lead to conflicts with other add-on packages, like for example {tidylog}.</p>
+<p>This is an experimental package which I started developing with my own use cases in mind. I tried to keep the effort low, which is why this package <em>does not</em> internalize (read: copy) internal {dplyr} functions (especially the ‘context internals’). This made it relatively easy to develop the package without:</p>
+<ol>
+<li>copying tons of {dplyr} code,</li>
+<li>having to figure out which dplyr-functions use the copied internals and</li>
+<li>finally overwritting these functions (like <code>mutate</code> and other one-table verbs), which would eventually lead to conflicts with other add-on packages, like for example {tidylog}.</li>
+</ol>
 <p>However, the downside is that not relying on {dplyr} internals has some negative effects in terms of performance and compability.</p>
 <p>In a nutshell this means:</p>
 <ul>
@@ -297,7 +301,6 @@
   <div class="dev-status">
 <h2>Dev status</h2>
 <ul class="list-unstyled">
-<li><a href="https://img.shields.io/badge/status-not%20released-important"><img src="https://img.shields.io/badge/status-not%20released-orange" alt="Release status"></a></li>
 <li><a href="man/figures/lifecycle-experimental.svg"><img src="reference/figures/lifecycle-experimental.svg" alt="Lifecycle"></a></li>
 <li><a href="https://github.com/TimTeaFan/dplyover/actions"><img src="https://github.com/TimTeaFan/dplyover/workflows/R-CMD-check/badge.svg" alt="R-CMD-check"></a></li>
 <li><a href="https://codecov.io/gh/TimTeaFan/dplyover?branch=main"><img src="https://codecov.io/gh/TimTeaFan/dplyover/branch/main/graph/badge.svg" alt="Codecov test coverage"></a></li>

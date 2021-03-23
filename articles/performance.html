@@ -146,7 +146,7 @@
 <p>At the moment three unintended compability issues are worth mentioning:</p>
 <div id="only-partial-support-of-mutates--keep-argument" class="section level4">
 <h4 class="hasAnchor">
-<a href="#only-partial-support-of-mutates--keep-argument" class="anchor"></a>Only partial support of <code>mutate()</code>’s .keep argument</h4>
+<a href="#only-partial-support-of-mutates--keep-argument" class="anchor"></a>Only partial support of mutate()’s .keep argument</h4>
 <p>Since {dplyr} 1.0 <code>mutate</code> has gained a <code>.keep</code> argument, which allows us to control which columns are retained in the output. This works well with genuine {dplyr} functions like <code>across</code>:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">diamonds</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/across.html">across</a></span><span class="op">(</span><span class="va">z</span>, <span class="op">~</span> <span class="va">.x</span> <span class="op">+</span> <span class="va">y</span><span class="op">)</span>,
@@ -222,7 +222,7 @@
 </div>
 <div id="context-dependent-expressions-cur_column" class="section level4">
 <h4 class="hasAnchor">
-<a href="#context-dependent-expressions-cur_column" class="anchor"></a>Context dependent expressions: <code>cur_column()</code><br>
+<a href="#context-dependent-expressions-cur_column" class="anchor"></a>Context dependent expressions: cur_column()<br>
 </h4>
 <p>When <em>over-across functions</em> are called inside <code><a href="https://dplyr.tidyverse.org/reference/mutate.html">dplyr::mutate</a></code> or <code><a href="https://dplyr.tidyverse.org/reference/summarise.html">dplyr::summarise</a></code> {dplyr}’s context dependent expressions (see <code><a href="https://dplyr.tidyverse.org/reference/context.html">?dplyr::context</a></code>) can be used inside the function call. An exception is <code><a href="https://dplyr.tidyverse.org/reference/context.html">dplyr::cur_column()</a></code> which works only inside <code><a href="https://dplyr.tidyverse.org/reference/across.html">dplyr::across</a></code> and is neither supported in <code>across2</code> nor <code>crossover</code>.</p>
 <p>It is likely that there are more edge cases in which {dplyover}’s <em>over-across functions</em> are behaving differently (in an unintended way) from its relative <code><a href="https://dplyr.tidyverse.org/reference/across.html">dplyr::across</a></code>. Feel free to contact me or just <a href="https://github.com/TimTeaFan/dplyover/issues">open an issue on GitHub</a>.</p>
@@ -245,11 +245,11 @@
   <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarise</a></span><span class="op">(</span><span class="fu"><a href="../reference/over.html">over</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"q"</span>,<span class="st">"v"</span>,<span class="st">"w"</span><span class="op">)</span>,
                  <span class="op">~</span> <span class="fl">1</span>,
                  .names <span class="op">=</span> <span class="st">"{x}_new"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<pre><code>#&gt; # A tibble: 2 x 6
-#&gt;   expression      min   median `itr/sec` mem_alloc `gc/sec`
-#&gt;   &lt;bch:expr&gt; &lt;bch:tm&gt; &lt;bch:tm&gt;     &lt;dbl&gt; &lt;bch:byt&gt;    &lt;dbl&gt;
-#&gt; 1 across       5.19ms   5.62ms      176.  235.62KB     11.2
-#&gt; 2 over         3.43ms   3.54ms      281.    6.77KB     11.7</code></pre>
+<pre><code>#&gt; # A tibble: 2 x 3
+#&gt;   expression   median mem_alloc
+#&gt;   &lt;bch:expr&gt; &lt;bch:tm&gt; &lt;bch:byt&gt;
+#&gt; 1 over         2.69ms     428KB
+#&gt; 2 across       4.44ms     734KB</code></pre>
 <p>If we compare the performance of both operations, we can see that <code>over</code> is slightly faster than <code><a href="https://dplyr.tidyverse.org/reference/across.html">dplyr::across</a></code>. This changes, however, when we consider grouped data. To demonstrate this, we take the <code>diamonds</code> data set and create four versions: an ungrouped version, one with 10, 50 and one with 100 groups. Then we compare the same operations again. Now, we also add <code>crossover</code> and <code>across2</code> to the benchmark.</p>
 <p>Below is a code snippet for the 100 groups case:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
@@ -278,8 +278,7 @@
                     <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, <span class="va">z</span><span class="op">)</span>,
                     <span class="op">~</span> <span class="fl">1</span>,
                     .names <span class="op">=</span> <span class="st">"{xcol}_{ycol}"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<p>The plot below shows the median time in miliseconds that each operation takes by increasing group size. Obviously, <code><a href="https://dplyr.tidyverse.org/reference/across.html">dplyr::across</a></code> is by far the fastest<br>
-(especially after dplyr v.1.0.4). <code>over</code> is somewhat slower and the least performant operations are <code>crossover</code> and <code>across2</code>. The latter two need to access the underlying data and without using {dplyr}’s data mask there seems to be no good option to do that.</p>
+<p>The plot below shows the median time in miliseconds that each operation takes by increasing group size. Obviously, <code><a href="https://dplyr.tidyverse.org/reference/across.html">dplyr::across</a></code> is by far the fastest (especially after dplyr v.1.0.4). <code>over</code> is somewhat slower and the least performant operations are <code>crossover</code> and <code>across2</code>. The latter two need to access the underlying data and without using {dplyr}’s data mask there seems to be no good option to do that.</p>
 <div class="figure">
 <img src="benchmark1.png" alt="Benchmark of major dplyover functions" width="100%"><p class="caption">
 Benchmark of major dplyover functions
@@ -323,12 +322,12 @@ Benchmark of major dplyover functions
           <span class="va">create_lags2</span>,
           .init <span class="op">=</span> <span class="va">.</span><span class="op">)</span></code></pre></div>
 <p>When used on ungrouped data <code>map_dfc</code> nested in <code>across</code> is the most performant approach, while using a custom function with <code>reduce</code> is the least performant. <code>crossover</code> is not too far off in terms of speed compared to the <code>map_dfc</code> approach.</p>
-<pre><code>#&gt; # A tibble: 3 x 6
-#&gt;   expression          min   median `itr/sec` mem_alloc `gc/sec`
-#&gt;   &lt;bch:expr&gt;     &lt;bch:tm&gt; &lt;bch:tm&gt;     &lt;dbl&gt; &lt;bch:byt&gt;    &lt;dbl&gt;
-#&gt; 1 over             24.8ms   28.2ms      35.6    15.5MB     63.3
-#&gt; 2 across_map_dfc   17.3ms   18.8ms      52.3    15.5MB     66.6
-#&gt; 3 reduce_cst_fct     58ms     61ms      16.2    15.7MB     34.4</code></pre>
+<pre><code>#&gt; # A tibble: 3 x 3
+#&gt;   expression       median mem_alloc
+#&gt;   &lt;bch:expr&gt;     &lt;bch:tm&gt; &lt;bch:byt&gt;
+#&gt; 1 crossover        18.6ms      16MB
+#&gt; 2 across_map_dfc   15.2ms    15.5MB
+#&gt; 3 reduce_cst_fct   51.3ms    15.6MB</code></pre>
 <p>This picture gets a little bit more complex when we compare each approach across different group sizes. In the lower range (up until about 15 groups) <code>map_dfc</code> nested in <code>across</code> is the fastest approach, with <code>crossover</code> being not much slower. With increasing group size <code>crossover</code> starts to outperform <code>map_dfc</code> up until around 60 groups where <code>reduce</code> finally takes over and delivers the fastest performance. This benchmark stopped at 100 groups, but extrapolating from the existing data, we see that <code>reduce</code> is the most scaleable approach (although having the highest setup costs). If speed is a pressing concern, then the use of repetitive code patterns in a regular <code><a href="https://dplyr.tidyverse.org/reference/across.html">dplyr::across</a></code> call is a valid option that is still faster than any of the approaches shown here.</p>
 <div class="figure">
 <img src="benchmark2.png" alt="Benchmark: lagging many variables" width="100%"><p class="caption">
@@ -336,6 +335,21 @@ Benchmark: lagging many variables
 </p>
 </div>
 </div>
+</div>
+<div id="conclusion" class="section level2">
+<h2 class="hasAnchor">
+<a href="#conclusion" class="anchor"></a>Conclusion</h2>
+<p>Above we shed some light on {dplyover} performance when used on grouped data as well as its compability with {dplyr}. Regarding the latter, we only saw minor issues:</p>
+<ol style="list-style-type: decimal">
+<li>
+<code><a href="https://dplyr.tidyverse.org/reference/mutate.html">dplyr::mutate</a></code>’s <code>.keep</code> argument can be easily replaced wih a call to <code><a href="https://dplyr.tidyverse.org/reference/select.html">dplyr::select</a></code>
+</li>
+<li>
+<code><a href="https://dplyr.tidyverse.org/reference/context.html">cur_column()</a></code> might not make as much sense in <code>crossover</code> and <code>across2</code> as it does in <code><a href="https://dplyr.tidyverse.org/reference/across.html">dplyr::across</a></code> and</li>
+<li>as an alternative to the use of local variables within the <code>.names</code> argument, all functions of the <em>over-across family</em> accept a character vector which can be used to construct the variables names.</li>
+</ol>
+<p>Regarding the performance of the <em>over-across functions</em> when applied to grouped data we saw that they were far less performant than <code><a href="https://dplyr.tidyverse.org/reference/across.html">dplyr::across</a></code>. However, when looking at an actual use case, we saw that the timings were quite reasonable compared to other programmatic alternatives.</p>
+<p>Nevertheless, both issues, performance and compability, will be improved in future versions of {dplyover}.</p>
 </div>
   </div>
 
