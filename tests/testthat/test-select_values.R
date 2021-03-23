@@ -74,6 +74,44 @@ test_that("seq_rang() on dates", {
 })
 
 
+test_that("dist_values() works with comma separated vectors and lists", {
+
+  expect_equal(
+    c("1, 2, 3",
+      "2, 4, 5, 6",
+      "4, 1, 7") %>%
+      dist_values(., .sep = ", "),
+    as.character(1:7)
+  )
+
+  expect_equal(
+    list(a = c(1:4), b = (4:6), c(5:10)) %>%
+      dist_values(),
+    c(1:10))
+
+})
+
+
+test_that("dist_values() example with factors", {
+
+  fctrs <- factor(letters[1:3], levels = c("b", "a", "c"))
+
+  expect_equal(dist_values(fctrs), c("b", "a", "c"))
+
+  expect_equal(dist_values(fctrs, .sort = "asc"), letters[1:3])
+
+  expect_equal(dist_values(fctrs, .sort = "desc"), letters[3:1])
+
+  expect_equal(dist_values(fctrs, .sort = "none"), letters[1:3])
+
+})
+
 # more tests
+
+test_that("seq_range() error check", {
+
+  expect_error(seq_range(letters[1:3], 1))
+
+})
 
 

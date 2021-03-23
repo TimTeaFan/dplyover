@@ -15,8 +15,8 @@
 #' @param .sep  A character vector containing regular expression(s) which are used
 #'   for splitting the values (works only if x is a character vector).
 #' @param .sort A character string indicating which sorting scheme is to be applied
-#'   to distinct values: ascending ("asc"), descending ("desc") or "none". The
-#'   default is ascending, only if x is a factor the default is "none",
+#'   to distinct values: ascending ("asc"), descending ("desc"), "none" or "levels". The
+#'   default is ascending, only if x is a factor the default is "levels".
 #' @param .by A number (or date expression) representing the increment of the sequence.
 #'
 #' @return
@@ -62,33 +62,43 @@
 #' ```
 #'
 #' (2) Applied on factors, `dist_values()` returns all distinct `levels` as
-#' character. Compare:
+#' character. Compare the following:
 #'
 #' ```{r, comment = "#>", collapse = TRUE}
-#' factor(c(1:3, NA)) %>%
-#'   unique() %>%
-#'   class()
+#' fctrs <- factor(c(1:3, NA), levels = c(3:1))
 #'
-#' factor(c(1:3, NA)) %>%
-#'   dist_values() %>%
-#'   class()
+#' fctrs %>% unique() %>% class()
+#'
+#' fctrs %>% dist_values() %>% class()
 #' ```
 #'
-#' (3) As default, the output is sorted in ascending order. This can be
-#' controlled by setting the `.sort` argument. Compare:
+#' (3) As default, the output is sorted in ascending order for non-factors, and
+#' is sorted as the underyling "levels" for factors. This can be controlled by
+#' setting the `.sort` argument. Compare:
 #'
 #' ```{r, comment = "#>", collapse = TRUE}
+#' # non-factors
 #' unique(c(3,1,2))
 #'
 #' dist_values(c(3,1,2))
 #' dist_values(c(3,1,2), .sort = "desc")
 #' dist_values(c(3,1,2), .sort = "none")
+#'
+#' # factors
+#' fctrs <- factor(c(2,1,3, NA), levels = c(3:1))
+#'
+#' dist_values(fctrs)
+#' dist_values(fctrs, .sort = "levels")
+#' dist_values(fctrs, .sort = "asc")
+#' dist_values(fctrs, .sort = "desc")
+#' dist_values(fctrs, .sort = "none")
+#'
 #' ```
 #'
 #' (4) When used on a character vector `dist_values` can take a separator
 #' `.sep` to split the elements accordingly:
 #'
-#' #' ```{r, comment = "#>", collapse = TRUE}
+#' ```{r, comment = "#>", collapse = TRUE}
 #' c("1, 2, 3",
 #'   "2, 4, 5",
 #'   "4, 1, 7") %>%
@@ -98,7 +108,7 @@
 #' (5) When used on lists `dist_values` automatically simplifiies its input
 #' into a vector using `unlist`:
 #'
-#' #' ```{r, comment = "#>", collapse = TRUE}
+#' ```{r, comment = "#>", collapse = TRUE}
 #' list(a = c(1:4), b = (4:6), c(5:10)) %>%
 #'   dist_values()
 #' ```
@@ -148,9 +158,9 @@ NULL
 
 #' @rdname select_values
 #' @export
-dist_values <- function(x, .sep = NULL, .sort = c("asc", "desc", "none")) {
+dist_values <- function(x, .sep = NULL, .sort = c("asc", "desc", "none", "levels")) {
 
-  is_null <- identical(.sort, c("asc", "desc", "none"))
+  is_null <- identical(.sort, c("asc", "desc", "none", "levels"))
   sort <- match.arg(.sort)
 
   if (is.list(x)) {
@@ -160,8 +170,8 @@ dist_values <- function(x, .sep = NULL, .sort = c("asc", "desc", "none")) {
     x <- unlist(strsplit(x, .sep))
   }
 
+  res <- as.vector(na.omit(unique(x)))
   if (!is.factor(x)) {
-    res <- as.vector(na.omit(unique(x)))
     if (sort == "asc") {
       return(sort(res))
     } else if (sort == "desc") {
@@ -171,12 +181,14 @@ dist_values <- function(x, .sep = NULL, .sort = c("asc", "desc", "none")) {
     }
   } else {
     x <- levels(x)
-    if (is_null || .sort == "none") {
+    if (is_null || .sort == "levels") {
       return(x)
     } else if (sort == "asc") {
       return(sort(x))
     } else if (sort == "desc") {
-      return(sort(x, descreasing = TRUE))
+      return(sort(x, decreasing = TRUE))
+    } else {
+    res
   }
   }
 }

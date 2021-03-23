@@ -6,7 +6,7 @@
 \alias{seq_range}
 \title{Select values from variables}
 \usage{
-dist_values(x, .sep = NULL, .sort = c("asc", "desc", "none"))
+dist_values(x, .sep = NULL, .sort = c("asc", "desc", "none", "levels"))
 
 seq_range(x, .by)
 }
@@ -17,8 +17,8 @@ seq_range(x, .by)
 for splitting the values (works only if x is a character vector).}
 
 \item{.sort}{A character string indicating which sorting scheme is to be applied
-to distinct values: ascending ("asc"), descending ("desc") or "none". The
-default is ascending, only if x is a factor the default is "none",}
+to distinct values: ascending ("asc"), descending ("desc"), "none" or "levels". The
+default is ascending, only if x is a factor the default is "levels".}
 
 \item{.by}{A number (or date expression) representing the increment of the sequence.}
 }
@@ -74,19 +74,19 @@ dist_values(c(1:3, NA))
 }\if{html}{\out{</div>}}
 
 (2) Applied on factors, \code{dist_values()} returns all distinct \code{levels} as
-character. Compare:\if{html}{\out{<div class="r">}}\preformatted{factor(c(1:3, NA)) \%>\%
-  unique() \%>\%
-  class()
+character. Compare the following:\if{html}{\out{<div class="r">}}\preformatted{fctrs <- factor(c(1:3, NA), levels = c(3:1))
+
+fctrs \%>\% unique() \%>\% class()
 #> [1] "factor"
 
-factor(c(1:3, NA)) \%>\%
-  dist_values() \%>\%
-  class()
+fctrs \%>\% dist_values() \%>\% class()
 #> [1] "character"
 }\if{html}{\out{</div>}}
 
-(3) As default, the output is sorted in ascending order. This can be
-controlled by setting the \code{.sort} argument. Compare:\if{html}{\out{<div class="r">}}\preformatted{unique(c(3,1,2))
+(3) As default, the output is sorted in ascending order for non-factors, and
+is sorted as the underyling "levels" for factors. This can be controlled by
+setting the \code{.sort} argument. Compare:\if{html}{\out{<div class="r">}}\preformatted{# non-factors
+unique(c(3,1,2))
 #> [1] 3 1 2
 
 dist_values(c(3,1,2))
@@ -95,23 +95,35 @@ dist_values(c(3,1,2), .sort = "desc")
 #> [1] 3 2 1
 dist_values(c(3,1,2), .sort = "none")
 #> [1] 3 1 2
+
+# factors
+fctrs <- factor(c(2,1,3, NA), levels = c(3:1))
+
+dist_values(fctrs)
+#> [1] "3" "2" "1"
+dist_values(fctrs, .sort = "levels")
+#> [1] "3" "2" "1"
+dist_values(fctrs, .sort = "asc")
+#> [1] "1" "2" "3"
+dist_values(fctrs, .sort = "desc")
+#> [1] "3" "2" "1"
+dist_values(fctrs, .sort = "none")
+#> [1] "2" "1" "3"
 }\if{html}{\out{</div>}}
 
 (4) When used on a character vector \code{dist_values} can take a separator
-\code{.sep} to split the elements accordingly:
+\code{.sep} to split the elements accordingly:\if{html}{\out{<div class="r">}}\preformatted{c("1, 2, 3",
+  "2, 4, 5",
+  "4, 1, 7") \%>\%
+  dist_values(., .sep = ", ")
+#> [1] "1" "2" "3" "4" "5" "7"
+}\if{html}{\out{</div>}}
 
-#' ```{r, comment = "#>", collapse = TRUE}
-c("1, 2, 3",
-"2, 4, 5",
-"4, 1, 7") \%>\%
-dist_values(., .sep = ", ")\preformatted{
-(5) When used on lists `dist_values` automatically simplifiies its input
-into a vector using `unlist`:
-
-#' ```\{r, comment = "#>", collapse = TRUE\}
-list(a = c(1:4), b = (4:6), c(5:10)) \%>\%
+(5) When used on lists \code{dist_values} automatically simplifiies its input
+into a vector using \code{unlist}:\if{html}{\out{<div class="r">}}\preformatted{list(a = c(1:4), b = (4:6), c(5:10)) \%>\%
   dist_values()
-}
+#>  [1]  1  2  3  4  5  6  7  8  9 10
+}\if{html}{\out{</div>}}
 
 \code{seq_range()} generates a numeric sequence between the \code{min} and \code{max}
 values of its input variable. This is helpful when creating many dummy
