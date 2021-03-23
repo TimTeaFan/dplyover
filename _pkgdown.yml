@@ -44,9 +44,9 @@ reference:
 
 - title: data
   desc: >
-    {dplyyover} comes with a randomly generated data from a customer satisfaction
-    survey using CSAT (Customer Satisfaction Score) for a contract-based
-    product. The data set comes in two versions: recoded and raw.
+    {dplyyover} contains a randomly generated data set from a customer
+    satisfaction survey using CSAT (Customer Satisfaction Score) for a
+    contract-based product. The data set comes in two versions: recoded and raw.
   contents:
   - csat
   - csatraw

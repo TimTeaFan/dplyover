@@ -12,8 +12,10 @@ deparse_call <- function(call) {
 # environment where last value of across2 pre/suf error is stored
 .last <- rlang::new_environment()
 
-
-# meta setup use by all major dplyover functions (tests passing)
+## meta setup use by all major dplyover functions (tests passing)
+#> this setup is rather dodgy and currently being overhauled
+#> see new_meta_setup branch!
+#> and yes, we shouldn't write something in par_frame since dplyover does not create this environment
 meta_setup <- function(grp_id, dep_call, par_frame, setup_fn, ...) {
 
   call_nm <- sub("([a-z0-9]+).*", "\\1()", dep_call)

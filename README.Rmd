@@ -10,7 +10,7 @@ output: github_document
 # dplyover
 
 <!-- badges: start -->
-[![Release status](https://img.shields.io/badge/status-not%20released-orange)](https://img.shields.io/badge/status-not%20released-important)
+![Release status](https://img.shields.io/badge/status-first%20release-yellow)
 [![Lifecycle](man/figures/lifecycle-experimental.svg)](man/figures/lifecycle-experimental.svg)
 [![R-CMD-check](https://github.com/TimTeaFan/dplyover/workflows/R-CMD-check/badge.svg)](https://github.com/TimTeaFan/dplyover/actions)
 [![Codecov test coverage](https://codecov.io/gh/TimTeaFan/dplyover/branch/main/graph/badge.svg)](https://codecov.io/gh/TimTeaFan/dplyover?branch=main)
@@ -18,12 +18,11 @@ output: github_document
 [![CRAN status](https://www.r-pkg.org/badges/version/dplyover)](https://cran.r-project.org/package=dplyover)
 <!-- badges: end -->
 
-## A note of caution
+<!-- ## A note of caution -->
 
-I have not yet officially released (read: announced) this package, which is still
-under active development. I am happy for feedback of any kind, but please consider
-any of the functions as "experimental" at this point.
-
+<!-- I have not yet officially released (read: announced) this package, which is still -->
+<!-- under active development. I am happy for feedback of any kind, but please consider -->
+<!-- any of the functions as "experimental" at this point. -->
 
 ## Overview
 

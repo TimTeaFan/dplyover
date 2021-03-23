@@ -5,8 +5,8 @@
 
 <!-- badges: start -->
 
-[![Release
-status](https://img.shields.io/badge/status-not%20released-orange)](https://img.shields.io/badge/status-not%20released-important)
+![Release
+status](https://img.shields.io/badge/status-first%20release-yellow)
 [![Lifecycle](man/figures/lifecycle-experimental.svg)](man/figures/lifecycle-experimental.svg)
 [![R-CMD-check](https://github.com/TimTeaFan/dplyover/workflows/R-CMD-check/badge.svg)](https://github.com/TimTeaFan/dplyover/actions)
 [![Codecov test
@@ -67,14 +67,14 @@ similar to a nested loop.</small>
 [GitHub](https://github.com/) with:
 
 ``` r
-# install.packages("devtools")
-devtools::install_github("TimTeaFan/dplyover")
+# install.packages("remotes")
+remotes::install_github("TimTeaFan/dplyover")
 ```
 
 ## Getting started
 
 Below are a few examples of the {dplyover}’s *over-across function
-family*. More function and workarounds of how to tackle the problems
+family*. More functions and workarounds of how to tackle the problems
 below without {dplyover} can be found in the vignette
 <a href="https://timteafan.github.io/dplyover/articles/why_dplyover.html">“Why
 dplyover?”</a>.
@@ -94,10 +94,10 @@ iris <- as_tibble(iris)
 inside `dplyr::mutate()` to create several similar variables that we
 derive from an existing column. This is helpful in cases where we want
 to create a batch of similar variables with only slightly changes in the
-arguments of the calling function. A good example are `lag` and `lead`
-variables. Below we use column ‘a’ to create lag and lead variables by
-`1`, `2` and `3` positions. `over()`’s `.names` argument lets us put
-nice names on the output columns.
+argument values of the calling function. A good example are `lag` and
+`lead` variables. Below we use column ‘a’ to create lag and lead
+variables by `1`, `2` and `3` positions. `over()`’s `.names` argument
+lets us put nice names on the output columns.
 
 ``` r
 tibble(a = 1:25) %>%
