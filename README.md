@@ -16,12 +16,13 @@ coverage](https://codecov.io/gh/TimTeaFan/dplyover/branch/main/graph/badge.svg)]
 status](https://www.r-pkg.org/badges/version/dplyover)](https://cran.r-project.org/package=dplyover)
 <!-- badges: end -->
 
-## A note of caution
+<!-- ## A note of caution -->
 
-I have not yet officially released (read: announced) this package, which
-is still under active development. I am happy for feedback of any kind,
-but please consider any of the functions as “experimental” at this
-point.
+<!-- I have not yet officially released (read: announced) this package, which is still -->
+
+<!-- under active development. I am happy for feedback of any kind, but please consider -->
+
+<!-- any of the functions as "experimental" at this point. -->
 
 ## Overview
 
