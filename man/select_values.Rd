@@ -127,28 +127,40 @@ into a vector using \code{unlist}:\if{html}{\out{<div class="r">}}\preformatted{
 
 \code{seq_range()} generates a numeric sequence between the \code{min} and \code{max}
 values of its input variable. This is helpful when creating many dummy
-variables with varying thresholds.
+variables with varying thresholds.\if{html}{\out{<div class="r">}}\preformatted{iris \%>\%
+  mutate(over(seq_range(Sepal.Length, 1),
+              ~ if_else(Sepal.Length > .x, 1, 0),
+              .names = "Sepal.Length.\{x\}"),
+         .keep = "none")
+#> # A tibble: 150 x 3
+#>   Sepal.Length.5 Sepal.Length.6 Sepal.Length.7
+#>            <dbl>          <dbl>          <dbl>
+#> 1              1              0              0
+#> 2              0              0              0
+#> 3              0              0              0
+#> 4              0              0              0
+#> # ... with 146 more rows
+}\if{html}{\out{</div>}}
 
-#' ```{r, comment = "#>", collapse = TRUE}
-iris \%>\%
-mutate(over(seq_range(Sepal.Length, 1),
-~ if_else(Sepal.Length > .x, 1, 0),
-.names = "Sepal.Length.{x}"),
-.keep = "none")\preformatted{
-Note that if the input variable does not have decimal places, `min` and `max` are
-wrapped in `ceiling` and `floor` accordingly. This will prevent the creation of
-variables that contain only `0` or `1`. Compare the output below with the
-example above:
-
-```\{r, comment = "#>", collapse = TRUE\}
-iris \%>\%
+Note that if the input variable does not have decimal places, \code{min} and \code{max} are
+wrapped in \code{ceiling} and \code{floor} accordingly. This will prevent the creation of
+variables that contain only \code{0} or \code{1}. Compare the output below with the
+example above:\if{html}{\out{<div class="r">}}\preformatted{iris \%>\%
   mutate(over(seq(round(min(Sepal.Length), 0),
                   round(max(Sepal.Length), 0),
                   1),
               ~ if_else(Sepal.Length > .x, 1, 0),
               .names = "Sepal.Length.\{x\}"),
          .keep = "none")
-}
+#> # A tibble: 150 x 5
+#>   Sepal.Length.4 Sepal.Length.5 Sepal.Length.6 Sepal.Length.7 Sepal.Length.8
+#>            <dbl>          <dbl>          <dbl>          <dbl>          <dbl>
+#> 1              1              1              0              0              0
+#> 2              1              0              0              0              0
+#> 3              1              0              0              0              0
+#> 4              1              0              0              0              0
+#> # ... with 146 more rows
+}\if{html}{\out{</div>}}
 
 \code{seq_range()} also works on dates:\if{html}{\out{<div class="r">}}\preformatted{some_dates <- c(as.Date("2020-01-02"),
                 as.Date("2020-05-02"),

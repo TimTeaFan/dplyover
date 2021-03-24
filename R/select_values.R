@@ -118,7 +118,7 @@
 #' values of its input variable. This is helpful when creating many dummy
 #' variables with varying thresholds.
 #'
-#' #' ```{r, comment = "#>", collapse = TRUE}
+#' ```{r, comment = "#>", collapse = TRUE}
 #' iris %>%
 #'   mutate(over(seq_range(Sepal.Length, 1),
 #'               ~ if_else(Sepal.Length > .x, 1, 0),
