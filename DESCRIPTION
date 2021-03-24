@@ -1,6 +1,6 @@
 Package: dplyover
 Title: Create columns by applying functions to vectors and/or columns in 'dplyr'
-Version: 0.0.7.9000
+Version: 0.0.8.9000
 Authors@R: 
     person(given = "Tim",
            family = "Tiefenbach",
