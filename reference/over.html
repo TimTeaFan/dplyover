@@ -327,21 +327,21 @@ names:<div class="r"></p><pre><span class='co'># some dates</span>
               .names_fn <span class='op'>=</span> <span class='op'>~</span> <span class='fu'><a href='https://rdrr.io/r/base/grep.html'>gsub</a></span><span class='op'>(</span><span class='st'>"-"</span>, <span class='st'>""</span>, <span class='va'>.x</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
 <span class='co'>#&gt; # A tibble: 15 x 5</span>
 <span class='co'>#&gt;    start      end        day_20200101 day_20200108 day_20200115</span>
-<span class='co'>#&gt;    &lt;date&gt;     &lt;date&gt;     &lt;lgl&gt;        &lt;lgl&gt;        &lt;lgl&gt;</span>
-<span class='co'>#&gt;  1 2020-01-01 2020-01-11 TRUE         TRUE         FALSE</span>
-<span class='co'>#&gt;  2 2020-01-02 2020-01-12 FALSE        TRUE         FALSE</span>
-<span class='co'>#&gt;  3 2020-01-03 2020-01-13 FALSE        TRUE         FALSE</span>
-<span class='co'>#&gt;  4 2020-01-04 2020-01-14 FALSE        TRUE         FALSE</span>
-<span class='co'>#&gt;  5 2020-01-05 2020-01-15 FALSE        TRUE         TRUE</span>
-<span class='co'>#&gt;  6 2020-01-06 2020-01-16 FALSE        TRUE         TRUE</span>
-<span class='co'>#&gt;  7 2020-01-07 2020-01-17 FALSE        TRUE         TRUE</span>
-<span class='co'>#&gt;  8 2020-01-08 2020-01-18 FALSE        TRUE         TRUE</span>
-<span class='co'>#&gt;  9 2020-01-09 2020-01-19 FALSE        FALSE        TRUE</span>
-<span class='co'>#&gt; 10 2020-01-10 2020-01-20 FALSE        FALSE        TRUE</span>
-<span class='co'>#&gt; 11 2020-01-11 2020-01-21 FALSE        FALSE        TRUE</span>
-<span class='co'>#&gt; 12 2020-01-12 2020-01-22 FALSE        FALSE        TRUE</span>
-<span class='co'>#&gt; 13 2020-01-13 2020-01-23 FALSE        FALSE        TRUE</span>
-<span class='co'>#&gt; 14 2020-01-14 2020-01-24 FALSE        FALSE        TRUE</span>
+<span class='co'>#&gt;    &lt;date&gt;     &lt;date&gt;     &lt;lgl&gt;        &lt;lgl&gt;        &lt;lgl&gt;       </span>
+<span class='co'>#&gt;  1 2020-01-01 2020-01-11 TRUE         TRUE         FALSE       </span>
+<span class='co'>#&gt;  2 2020-01-02 2020-01-12 FALSE        TRUE         FALSE       </span>
+<span class='co'>#&gt;  3 2020-01-03 2020-01-13 FALSE        TRUE         FALSE       </span>
+<span class='co'>#&gt;  4 2020-01-04 2020-01-14 FALSE        TRUE         FALSE       </span>
+<span class='co'>#&gt;  5 2020-01-05 2020-01-15 FALSE        TRUE         TRUE        </span>
+<span class='co'>#&gt;  6 2020-01-06 2020-01-16 FALSE        TRUE         TRUE        </span>
+<span class='co'>#&gt;  7 2020-01-07 2020-01-17 FALSE        TRUE         TRUE        </span>
+<span class='co'>#&gt;  8 2020-01-08 2020-01-18 FALSE        TRUE         TRUE        </span>
+<span class='co'>#&gt;  9 2020-01-09 2020-01-19 FALSE        FALSE        TRUE        </span>
+<span class='co'>#&gt; 10 2020-01-10 2020-01-20 FALSE        FALSE        TRUE        </span>
+<span class='co'>#&gt; 11 2020-01-11 2020-01-21 FALSE        FALSE        TRUE        </span>
+<span class='co'>#&gt; 12 2020-01-12 2020-01-22 FALSE        FALSE        TRUE        </span>
+<span class='co'>#&gt; 13 2020-01-13 2020-01-23 FALSE        FALSE        TRUE        </span>
+<span class='co'>#&gt; 14 2020-01-14 2020-01-24 FALSE        FALSE        TRUE        </span>
 <span class='co'>#&gt; 15 2020-01-15 2020-01-25 FALSE        FALSE        TRUE</span>
 </pre><p></div></p>
 <p><code>over()</code> can summarise data in wide format. In the example below, we want to
@@ -357,7 +357,7 @@ in the wide format, and in this case <code>over()</code> comes in handy:<div cla
 <span class='co'>#&gt; # A tibble: 3 x 6</span>
 <span class='co'>#&gt;   type          `1`   `2`   `3`   `4`    `5`</span>
 <span class='co'>#&gt;   &lt;chr&gt;       &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;</span>
-<span class='co'>#&gt; 1 existing   0.156  0.234 0.234 0.266 0.109</span>
+<span class='co'>#&gt; 1 existing   0.156  0.234 0.234 0.266 0.109 </span>
 <span class='co'>#&gt; 2 new        0.0714 0.268 0.357 0.214 0.0893</span>
 <span class='co'>#&gt; 3 reactivate 0.0667 0.267 0.133 0.4   0.133</span>
 </pre><p></div></p>
@@ -414,12 +414,12 @@ using a separator:<div class="r"></p><pre><span class='va'>csat</span> <span cla
               .keep <span class='op'>=</span> <span class='st'>"none"</span><span class='op'>)</span> <span class='op'>%&gt;%</span> <span class='va'>glimpse</span>
 <span class='co'>#&gt; Rows: 150</span>
 <span class='co'>#&gt; Columns: 6</span>
-<span class='co'>#&gt; $ rsp_friendly_staff &lt;int&gt; 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, ~</span>
-<span class='co'>#&gt; $ rsp_good_service   &lt;int&gt; 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 1, ~</span>
-<span class='co'>#&gt; $ rsp_great_product  &lt;int&gt; 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, ~</span>
-<span class='co'>#&gt; $ rsp_no_response    &lt;int&gt; 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, ~</span>
-<span class='co'>#&gt; $ rsp_too_expensive  &lt;int&gt; 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, ~</span>
-<span class='co'>#&gt; $ rsp_unfriendly     &lt;int&gt; 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, ~</span>
+<span class='co'>#&gt; $ rsp_friendly_staff &lt;int&gt; 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1,~</span>
+<span class='co'>#&gt; $ rsp_good_service   &lt;int&gt; 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 1,~</span>
+<span class='co'>#&gt; $ rsp_great_product  &lt;int&gt; 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1,~</span>
+<span class='co'>#&gt; $ rsp_no_response    &lt;int&gt; 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0,~</span>
+<span class='co'>#&gt; $ rsp_too_expensive  &lt;int&gt; 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0,~</span>
+<span class='co'>#&gt; $ rsp_unfriendly     &lt;int&gt; 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0,~</span>
 </pre><p></div></p>
 
 <h3 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a>(2) A Very Specific Use Case</h3>
@@ -445,8 +445,8 @@ useful for cases with more than two columns.</p>
 <span class='co'>#&gt;          &lt;dbl&gt;       &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt; &lt;fct&gt;   &lt;dbl&gt; &lt;dbl&gt;</span>
 <span class='co'>#&gt; 1          5.1         3.5          1.4         0.2 setosa    8.6  1.60</span>
 <span class='co'>#&gt; 2          4.9         3            1.4         0.2 setosa    7.9  1.60</span>
-<span class='co'>#&gt; 3          4.7         3.2          1.3         0.2 setosa    7.9  1.5</span>
-<span class='co'>#&gt; 4          4.6         3.1          1.5         0.2 setosa    7.7  1.7</span>
+<span class='co'>#&gt; 3          4.7         3.2          1.3         0.2 setosa    7.9  1.5 </span>
+<span class='co'>#&gt; 4          4.6         3.1          1.5         0.2 setosa    7.7  1.7 </span>
 <span class='co'>#&gt; # ... with 146 more rows</span>
 </pre><p></div></p>
 <p>The above syntax is equal to the more verbose:<div class="r"></p><pre><span class='va'>iris</span> <span class='op'>%&gt;%</span>
@@ -459,8 +459,8 @@ useful for cases with more than two columns.</p>
 <span class='co'>#&gt;          &lt;dbl&gt;       &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt; &lt;fct&gt;   &lt;dbl&gt; &lt;dbl&gt;</span>
 <span class='co'>#&gt; 1          5.1         3.5          1.4         0.2 setosa    8.6  1.60</span>
 <span class='co'>#&gt; 2          4.9         3            1.4         0.2 setosa    7.9  1.60</span>
-<span class='co'>#&gt; 3          4.7         3.2          1.3         0.2 setosa    7.9  1.5</span>
-<span class='co'>#&gt; 4          4.6         3.1          1.5         0.2 setosa    7.7  1.7</span>
+<span class='co'>#&gt; 3          4.7         3.2          1.3         0.2 setosa    7.9  1.5 </span>
+<span class='co'>#&gt; 4          4.6         3.1          1.5         0.2 setosa    7.7  1.7 </span>
 <span class='co'>#&gt; # ... with 146 more rows</span>
 </pre><p></div></p>
 <p><code><a href='string_eval.html'>.()</a></code> also works with anonymous functions:<div class="r"></p><pre><span class='va'>iris</span> <span class='op'>%&gt;%</span>
@@ -483,8 +483,8 @@ useful for cases with more than two columns.</p>
 <span class='co'>#&gt;           &lt;dbl&gt;     &lt;dbl&gt;         &lt;dbl&gt;     &lt;dbl&gt;</span>
 <span class='co'>#&gt; 1          17.8       8.6         0.280      1.60</span>
 <span class='co'>#&gt; 2          14.7       7.9         0.280      1.60</span>
-<span class='co'>#&gt; 3          15.0       7.9         0.26       1.5</span>
-<span class='co'>#&gt; 4          14.3       7.7         0.3        1.7</span>
+<span class='co'>#&gt; 3          15.0       7.9         0.26       1.5 </span>
+<span class='co'>#&gt; 4          14.3       7.7         0.3        1.7 </span>
 <span class='co'>#&gt; # ... with 146 more rows</span>
 </pre><p></div></p>
 <p>Again, use the <code>.names</code> argument to control the output names:<div class="r"></p><pre><span class='va'>iris</span> <span class='op'>%&gt;%</span>
@@ -498,8 +498,8 @@ useful for cases with more than two columns.</p>
 <span class='co'>#&gt;           &lt;dbl&gt;     &lt;dbl&gt;         &lt;dbl&gt;     &lt;dbl&gt;</span>
 <span class='co'>#&gt; 1          17.8       8.6         0.280      1.60</span>
 <span class='co'>#&gt; 2          14.7       7.9         0.280      1.60</span>
-<span class='co'>#&gt; 3          15.0       7.9         0.26       1.5</span>
-<span class='co'>#&gt; 4          14.3       7.7         0.3        1.7</span>
+<span class='co'>#&gt; 3          15.0       7.9         0.26       1.5 </span>
+<span class='co'>#&gt; 4          14.3       7.7         0.3        1.7 </span>
 <span class='co'>#&gt; # ... with 146 more rows</span>
 </pre><p></div></p>
 
