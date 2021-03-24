@@ -292,28 +292,39 @@ into a vector using <code>unlist</code>:<div class="r"></p><pre><span class='fu'
 </pre><p></div></p>
 <p><code>seq_range()</code> generates a numeric sequence between the <code>min</code> and <code>max</code>
 values of its input variable. This is helpful when creating many dummy
-variables with varying thresholds.</p>
-<p>#' ```r, comment = "#&gt;", collapse = TRUE
-iris %&gt;%
-mutate(over(seq_range(Sepal.Length, 1),
-~ if_else(Sepal.Length &gt; .x, 1, 0),
-.names = "Sepal.Length.x"),
-.keep = "none")</p><pre>
-Note that if the input variable does not have decimal places, `min` and `max` are
-wrapped in `ceiling` and `floor` accordingly. This will prevent the creation of
-variables that contain only `0` or `1`. Compare the output below with the
-example above:
-
-```{r, comment = "#&gt;", collapse = TRUE}
-iris %&gt;%
-  mutate(over(seq(round(min(Sepal.Length), 0),
-                  round(max(Sepal.Length), 0),
-                  1),
-              ~ if_else(Sepal.Length &gt; .x, 1, 0),
-              .names = "Sepal.Length.{x}"),
-         .keep = "none")
-</pre>
-
+variables with varying thresholds.<div class="r"></p><pre><span class='va'>iris</span> <span class='op'>%&gt;%</span>
+  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span><span class='fu'><a href='over.html'>over</a></span><span class='op'>(</span><span class='fu'>seq_range</span><span class='op'>(</span><span class='va'>Sepal.Length</span>, <span class='fl'>1</span><span class='op'>)</span>,
+              <span class='op'>~</span> <span class='fu'><a href='https://dplyr.tidyverse.org/reference/if_else.html'>if_else</a></span><span class='op'>(</span><span class='va'>Sepal.Length</span> <span class='op'>&gt;</span> <span class='va'>.x</span>, <span class='fl'>1</span>, <span class='fl'>0</span><span class='op'>)</span>,
+              .names <span class='op'>=</span> <span class='st'>"Sepal.Length.{x}"</span><span class='op'>)</span>,
+         .keep <span class='op'>=</span> <span class='st'>"none"</span><span class='op'>)</span>
+<span class='co'>#&gt; # A tibble: 150 x 3</span>
+<span class='co'>#&gt;   Sepal.Length.5 Sepal.Length.6 Sepal.Length.7</span>
+<span class='co'>#&gt;            &lt;dbl&gt;          &lt;dbl&gt;          &lt;dbl&gt;</span>
+<span class='co'>#&gt; 1              1              0              0</span>
+<span class='co'>#&gt; 2              0              0              0</span>
+<span class='co'>#&gt; 3              0              0              0</span>
+<span class='co'>#&gt; 4              0              0              0</span>
+<span class='co'>#&gt; # ... with 146 more rows</span>
+</pre><p></div></p>
+<p>Note that if the input variable does not have decimal places, <code>min</code> and <code>max</code> are
+wrapped in <code>ceiling</code> and <code>floor</code> accordingly. This will prevent the creation of
+variables that contain only <code>0</code> or <code>1</code>. Compare the output below with the
+example above:<div class="r"></p><pre><span class='va'>iris</span> <span class='op'>%&gt;%</span>
+  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span><span class='fu'><a href='over.html'>over</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Round.html'>round</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Extremes.html'>min</a></span><span class='op'>(</span><span class='va'>Sepal.Length</span><span class='op'>)</span>, <span class='fl'>0</span><span class='op'>)</span>,
+                  <span class='fu'><a href='https://rdrr.io/r/base/Round.html'>round</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Extremes.html'>max</a></span><span class='op'>(</span><span class='va'>Sepal.Length</span><span class='op'>)</span>, <span class='fl'>0</span><span class='op'>)</span>,
+                  <span class='fl'>1</span><span class='op'>)</span>,
+              <span class='op'>~</span> <span class='fu'><a href='https://dplyr.tidyverse.org/reference/if_else.html'>if_else</a></span><span class='op'>(</span><span class='va'>Sepal.Length</span> <span class='op'>&gt;</span> <span class='va'>.x</span>, <span class='fl'>1</span>, <span class='fl'>0</span><span class='op'>)</span>,
+              .names <span class='op'>=</span> <span class='st'>"Sepal.Length.{x}"</span><span class='op'>)</span>,
+         .keep <span class='op'>=</span> <span class='st'>"none"</span><span class='op'>)</span>
+<span class='co'>#&gt; # A tibble: 150 x 5</span>
+<span class='co'>#&gt;   Sepal.Length.4 Sepal.Length.5 Sepal.Length.6 Sepal.Length.7 Sepal.Length.8</span>
+<span class='co'>#&gt;            &lt;dbl&gt;          &lt;dbl&gt;          &lt;dbl&gt;          &lt;dbl&gt;          &lt;dbl&gt;</span>
+<span class='co'>#&gt; 1              1              1              0              0              0</span>
+<span class='co'>#&gt; 2              1              0              0              0              0</span>
+<span class='co'>#&gt; 3              1              0              0              0              0</span>
+<span class='co'>#&gt; 4              1              0              0              0              0</span>
+<span class='co'>#&gt; # ... with 146 more rows</span>
+</pre><p></div></p>
 <p><code>seq_range()</code> also works on dates:<div class="r"></p><pre><span class='va'>some_dates</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/as.Date.html'>as.Date</a></span><span class='op'>(</span><span class='st'>"2020-01-02"</span><span class='op'>)</span>,
                 <span class='fu'><a href='https://rdrr.io/r/base/as.Date.html'>as.Date</a></span><span class='op'>(</span><span class='st'>"2020-05-02"</span><span class='op'>)</span>,
                 <span class='fu'><a href='https://rdrr.io/r/base/as.Date.html'>as.Date</a></span><span class='op'>(</span><span class='st'>"2020-03-02"</span><span class='op'>)</span><span class='op'>)</span>
