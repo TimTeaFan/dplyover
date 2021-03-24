@@ -16,17 +16,9 @@ coverage](https://codecov.io/gh/TimTeaFan/dplyover/branch/main/graph/badge.svg)]
 status](https://www.r-pkg.org/badges/version/dplyover)](https://cran.r-project.org/package=dplyover)
 <!-- badges: end -->
 
-<!-- ## A note of caution -->
-
-<!-- I have not yet officially released (read: announced) this package, which is still -->
-
-<!-- under active development. I am happy for feedback of any kind, but please consider -->
-
-<!-- any of the functions as "experimental" at this point. -->
-
 ## Overview
 
-<a href="https://timteafan.github.io/dplyover/"><img src="https://raw.githubusercontent.com/TimTeaFan/dplyover/main/man/figures/logo_240_277.png" alt="dplyover logo" align="right"></a>
+<a href="https://raw.githubusercontent.com/TimTeaFan/dplyover/main/man/figures/logo_big.png"><img src="https://raw.githubusercontent.com/TimTeaFan/dplyover/main/man/figures/logo.png" alt="dplyover logo" align="right"></a>
 
 {dplyover} extends {dplyr}’s functionality by building a function family
 around `dplyr::across()`.

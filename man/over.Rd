@@ -156,21 +156,21 @@ dat_tbl \%>\%
               .names_fn = ~ gsub("-", "", .x)))
 #> # A tibble: 15 x 5
 #>    start      end        day_20200101 day_20200108 day_20200115
-#>    <date>     <date>     <lgl>        <lgl>        <lgl>
-#>  1 2020-01-01 2020-01-11 TRUE         TRUE         FALSE
-#>  2 2020-01-02 2020-01-12 FALSE        TRUE         FALSE
-#>  3 2020-01-03 2020-01-13 FALSE        TRUE         FALSE
-#>  4 2020-01-04 2020-01-14 FALSE        TRUE         FALSE
-#>  5 2020-01-05 2020-01-15 FALSE        TRUE         TRUE
-#>  6 2020-01-06 2020-01-16 FALSE        TRUE         TRUE
-#>  7 2020-01-07 2020-01-17 FALSE        TRUE         TRUE
-#>  8 2020-01-08 2020-01-18 FALSE        TRUE         TRUE
-#>  9 2020-01-09 2020-01-19 FALSE        FALSE        TRUE
-#> 10 2020-01-10 2020-01-20 FALSE        FALSE        TRUE
-#> 11 2020-01-11 2020-01-21 FALSE        FALSE        TRUE
-#> 12 2020-01-12 2020-01-22 FALSE        FALSE        TRUE
-#> 13 2020-01-13 2020-01-23 FALSE        FALSE        TRUE
-#> 14 2020-01-14 2020-01-24 FALSE        FALSE        TRUE
+#>    <date>     <date>     <lgl>        <lgl>        <lgl>       
+#>  1 2020-01-01 2020-01-11 TRUE         TRUE         FALSE       
+#>  2 2020-01-02 2020-01-12 FALSE        TRUE         FALSE       
+#>  3 2020-01-03 2020-01-13 FALSE        TRUE         FALSE       
+#>  4 2020-01-04 2020-01-14 FALSE        TRUE         FALSE       
+#>  5 2020-01-05 2020-01-15 FALSE        TRUE         TRUE        
+#>  6 2020-01-06 2020-01-16 FALSE        TRUE         TRUE        
+#>  7 2020-01-07 2020-01-17 FALSE        TRUE         TRUE        
+#>  8 2020-01-08 2020-01-18 FALSE        TRUE         TRUE        
+#>  9 2020-01-09 2020-01-19 FALSE        FALSE        TRUE        
+#> 10 2020-01-10 2020-01-20 FALSE        FALSE        TRUE        
+#> 11 2020-01-11 2020-01-21 FALSE        FALSE        TRUE        
+#> 12 2020-01-12 2020-01-22 FALSE        FALSE        TRUE        
+#> 13 2020-01-13 2020-01-23 FALSE        FALSE        TRUE        
+#> 14 2020-01-14 2020-01-24 FALSE        FALSE        TRUE        
 #> 15 2020-01-15 2020-01-25 FALSE        FALSE        TRUE
 }\if{html}{\out{</div>}}
 
@@ -187,7 +187,7 @@ in the wide format, and in this case \code{over()} comes in handy:\if{html}{\out
 #> # A tibble: 3 x 6
 #>   type          `1`   `2`   `3`   `4`    `5`
 #>   <chr>       <dbl> <dbl> <dbl> <dbl>  <dbl>
-#> 1 existing   0.156  0.234 0.234 0.266 0.109
+#> 1 existing   0.156  0.234 0.234 0.266 0.109 
 #> 2 new        0.0714 0.268 0.357 0.214 0.0893
 #> 3 reactivate 0.0667 0.267 0.133 0.4   0.133
 }\if{html}{\out{</div>}}
@@ -247,12 +247,12 @@ using a separator:\if{html}{\out{<div class="r">}}\preformatted{csat \%>\%
               .keep = "none") \%>\% glimpse
 #> Rows: 150
 #> Columns: 6
-#> $ rsp_friendly_staff <int> 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, ~
-#> $ rsp_good_service   <int> 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 1, ~
-#> $ rsp_great_product  <int> 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, ~
-#> $ rsp_no_response    <int> 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, ~
-#> $ rsp_too_expensive  <int> 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, ~
-#> $ rsp_unfriendly     <int> 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, ~
+#> $ rsp_friendly_staff <int> 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1,~
+#> $ rsp_good_service   <int> 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 1,~
+#> $ rsp_great_product  <int> 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1,~
+#> $ rsp_no_response    <int> 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0,~
+#> $ rsp_too_expensive  <int> 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0,~
+#> $ rsp_unfriendly     <int> 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0,~
 }\if{html}{\out{</div>}}
 }
 
@@ -280,8 +280,8 @@ Consider the following example of a purrr-style formula in \code{.fns} using \co
 #>          <dbl>       <dbl>        <dbl>       <dbl> <fct>   <dbl> <dbl>
 #> 1          5.1         3.5          1.4         0.2 setosa    8.6  1.60
 #> 2          4.9         3            1.4         0.2 setosa    7.9  1.60
-#> 3          4.7         3.2          1.3         0.2 setosa    7.9  1.5
-#> 4          4.6         3.1          1.5         0.2 setosa    7.7  1.7
+#> 3          4.7         3.2          1.3         0.2 setosa    7.9  1.5 
+#> 4          4.6         3.1          1.5         0.2 setosa    7.7  1.7 
 #> # ... with 146 more rows
 }\if{html}{\out{</div>}}
 
@@ -295,8 +295,8 @@ The above syntax is equal to the more verbose:\if{html}{\out{<div class="r">}}\p
 #>          <dbl>       <dbl>        <dbl>       <dbl> <fct>   <dbl> <dbl>
 #> 1          5.1         3.5          1.4         0.2 setosa    8.6  1.60
 #> 2          4.9         3            1.4         0.2 setosa    7.9  1.60
-#> 3          4.7         3.2          1.3         0.2 setosa    7.9  1.5
-#> 4          4.6         3.1          1.5         0.2 setosa    7.7  1.7
+#> 3          4.7         3.2          1.3         0.2 setosa    7.9  1.5 
+#> 4          4.6         3.1          1.5         0.2 setosa    7.7  1.7 
 #> # ... with 146 more rows
 }\if{html}{\out{</div>}}
 
@@ -321,8 +321,8 @@ A named list of functions:\if{html}{\out{<div class="r">}}\preformatted{iris \%>
 #>           <dbl>     <dbl>         <dbl>     <dbl>
 #> 1          17.8       8.6         0.280      1.60
 #> 2          14.7       7.9         0.280      1.60
-#> 3          15.0       7.9         0.26       1.5
-#> 4          14.3       7.7         0.3        1.7
+#> 3          15.0       7.9         0.26       1.5 
+#> 4          14.3       7.7         0.3        1.7 
 #> # ... with 146 more rows
 }\if{html}{\out{</div>}}
 
@@ -337,8 +337,8 @@ Again, use the \code{.names} argument to control the output names:\if{html}{\out
 #>           <dbl>     <dbl>         <dbl>     <dbl>
 #> 1          17.8       8.6         0.280      1.60
 #> 2          14.7       7.9         0.280      1.60
-#> 3          15.0       7.9         0.26       1.5
-#> 4          14.3       7.7         0.3        1.7
+#> 3          15.0       7.9         0.26       1.5 
+#> 4          14.3       7.7         0.3        1.7 
 #> # ... with 146 more rows
 }\if{html}{\out{</div>}}
 }
