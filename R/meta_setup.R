@@ -53,7 +53,7 @@ meta_setup <- function(grp_id, dep_call, par_frame, setup_fn, ...) {
         rlang::warn(glue::glue("`{call_nm}` does not support the `.keep` argument in `dplyr::mutate()` when set to 'used' or 'unused'."))
         }
       }
-
+      par_frame$`.__dplyover_setup__.` <- list()
       par_frame[[".__dplyover_setup__."]][["call_his"]] <- grp_id
       par_frame[[".__dplyover_setup__."]][["call_lang"]] <- dep_call
       call_id <- paste0("call", grp_id)
