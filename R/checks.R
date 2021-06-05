@@ -3,38 +3,17 @@ is.date <- function(x) {
   inherits(x, c("Date", "POSIXt"))
 }
 
-inspect_call <- function(warn = TRUE, last_verb = FALSE) {
+last_verb <- function() {
 
-  out <- list(warn = FALSE,
-              last_verb = NULL)
+  # get trace_back info
   trace_bck <- rlang::trace_back()
+
+  # get call names
   call_fns <- lapply(trace_bck$calls, function(x) { `[[`(x, 1) })
 
-  limit <- min(which(grepl("^dplyover::", call_fns)))
-  mut_id <- which(grepl("^dplyr:::mutate", call_fns[1:limit - 1]))
+  # get last dplyr verb
+  out <- max(which(grepl("^dplyr:::[mutate|summarise|summarize|filter|select|arrange|transmute]", call_fns)))
 
-  # last dplyr verb
-  if (last_verb) {
-  last_dplyr_verb <- max(which(grepl("^dplyr:::[mutate|summarise|summarize|filter|select|arrange|transmute]", call_fns)))
-  out$last_verb <- last_dplyr_verb
-  }
-  # check keep
-  if (warn) {
-      if (length(mut_id) > 0) {
-
-      last_mut <- as.list(trace_bck$calls[[max(mut_id) - 2]])
-
-      keep_arg <- grepl("^\\.keep$", names(last_mut), perl = TRUE)
-
-      if (any(keep_arg)) {
-        keep_val <- last_mut[keep_arg]
-
-        if (keep_val %in% c("used", "unused")) {
-          out$warn <- TRUE
-        }
-      }
-    }
-  }
   out
 }
 
@@ -50,5 +29,3 @@ data_mask_top <- function(env, recursive = FALSE, inherit = FALSE) {
 
   env
 }
-
-filter
