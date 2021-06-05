@@ -276,9 +276,8 @@ over <- function(.x, .fns, ..., .names = NULL, .names_fn = NULL){
     rlang::abort("`over()` must only be used inside dplyr verbs.")
   })
 
-    setup <- meta_setup(dep_call = deparse_call(sys.call()),
-                        grp_id = grp_id,
-                        par_frame = parent.frame(),
+    setup <- meta_setup(grp_id = grp_id,
+                        dep_call = deparse_call(sys.call()),
                         setup_fn = "over_setup",
                         x1 = .x,
                         fns = .fns,
