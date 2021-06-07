@@ -270,19 +270,12 @@
 #' @export
 over <- function(.x, .fns, ..., .names = NULL, .names_fn = NULL){
 
-  grp_id <- tryCatch({
-    dplyr::cur_group_id()
-  }, error = function(e) {
-    rlang::abort("`over()` must only be used inside dplyr verbs.")
-  })
-
-    setup <- meta_setup(grp_id = grp_id,
-                        dep_call = deparse_call(sys.call()),
-                        setup_fn = "over_setup",
-                        x1 = .x,
-                        fns = .fns,
-                        names = .names,
-                        names_fn = .names_fn)
+  setup <- meta_setup(dep_call = deparse_call(sys.call()),
+                      setup_fn = "over_setup",
+                      x1 = .x,
+                      fns = .fns,
+                      names = .names,
+                      names_fn = .names_fn)
 
   x <- setup$x
   fns <- setup$fns
