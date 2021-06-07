@@ -594,13 +594,14 @@ test_that("over(<empty set>, foo) returns a data frame with 1 row", {
   })
 })
 
+
 test_that("monitoring cache - over() usage can depend on the group id", {
 
   df <- tibble(g = 1:2, a = 1:2, b = 3:4)
   df <- group_by(df, g)
 
   switcher <- function() {
-    if_else(cur_group_id() == 1L,
+    ifelse(cur_group_id() == 1L,
             over(cur_data()$a, mean, .names = "c")$c,
             over(cur_data()$b, mean, .names = "c")$c)
   }
