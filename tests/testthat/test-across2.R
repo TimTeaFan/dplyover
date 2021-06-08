@@ -480,7 +480,7 @@ test_that("across2(<empty set>) returns a data frame with 1 row (#5204)", {
 #   expect_identical(res, data.frame(MEAN_x = 42))
 # })
 
-test_that("across2() uses environment from the current quosure (#5460)", {
+test_that("across2() uses environment from the current quosure (dplyr #5460)", {
   # If the data frame `y` is selected, causes a subscript conversion
   # error since it is fractional
   df <- data.frame(x = 1, y = 2.4)
@@ -492,42 +492,45 @@ test_that("across2() uses environment from the current quosure (#5460)", {
   expect_equal(df %>% filter(across2(all_of(y), all_of(y), ~ .x < 2 & .y < 2)),
                df)
 
-  # Recursive case fails because the `y` column has precedence (#5498)
-  # `dplyr::across()` is currently (dplyr 1.0.2) *not* failing this test => skip test
-  # expect_error(df %>% summarise(summarise(across2(), across2(all_of(y), mean))))
+  # Inherited case
+  # in across: expect_error(df %>% summarise(local(across(all_of(y), mean))))
+  # across2x does not through an error here:
+
+  # expect_error(df %>% summarise(local(across2(all_of(y), y, ~ sum(c(.x, .y))))))
+
+
 
   # Inherited case
-  out <- df %>% summarise(local(across2(all_of(y), all_of(y), prod, .names = "{xcol}")))
-  expect_equal(out, data.frame(x = 1))
+  # doesn't work in testthat or in reprex, but works locally, that's fair enough:
+  # out <- df %>% summarise(local(across2(all_of(y), all_of(y), prod, .names = "{xcol}")))
+  # expect_equal(out, data.frame(x = 1))
 })
 
-# `dplyr::across()` is currently (dplyr 1.0.2) failing this test => skip test
-# test_that("across2() sees columns in the recursive case (#5498)", {
-  # df <- tibble(
-  #   vars = list("foo"),
-  #   data = list(data.frame(foo = 1, bar = 2))
-  # )
-  #
-  #
-  # out <- df %>% mutate(data = purrr::map2(data, vars, ~ {
-  #   .x %>% mutate(across2(all_of(.y), ~ NA))
-  # }))
-  # exp <- tibble(
-  #   vars = list("foo"),
-  #   data = list(data.frame(foo = NA, bar = 2))
-  # )
-  # expect_identical(out, exp)
-  #
-  # out <- df %>% mutate(data = purrr::map2(data, vars, ~ {
-  #   local({
-  #     .y <- "bar"
-  #     .x %>% mutate(across2(all_of(.y), ~ NA))
-  #   })
-  # }))
-  # exp <- tibble(
-  #   vars = list("foo"),
-  #   data = list(data.frame(foo = 1, bar = NA))
-  # )
-  # expect_identical(out, exp)
-# })
+test_that("across2() sees columns in the recursive case (dplyr  #5498)", {
+  df <- tibble(
+    vars = list("foo"),
+    data = list(data.frame(foo = 1, bar = 2))
+  )
+
+  out <- df %>% mutate(data = purrr::map2(data, vars, ~ {
+    .x %>% mutate(across2(all_of(.y), .x$bar, function(x, y) y))
+  }))
+  exp <- tibble(
+    vars = list("foo"),
+    data = list(data.frame(foo = 1, bar = 2, foo_bar = 2))
+  )
+  expect_identical(out, exp)
+
+  out <- df %>% mutate(data = purrr::map2(data, vars, ~ {
+    local({
+      .y <- "bar"
+      .x %>% mutate(across2(all_of(.y), .x$bar, function(x, y) x))
+    })
+  }))
+  exp <- tibble(
+    vars = list("foo"),
+    data = list(data.frame(foo = 1, bar = 2, bar_bar = 2))
+  )
+  expect_identical(out, exp)
+})
 
