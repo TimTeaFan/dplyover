@@ -118,21 +118,7 @@
 #' @export
 across2 <- function(.xcols, .ycols, .fns, ..., .names = NULL, .names_fn = NULL){
 
-  .data <- tryCatch({
-    dplyr::cur_data()
-  }, error = function(e) {
-    rlang::abort("`across2()` must only be used inside dplyr verbs.")
-  })
-
-  deparse_call <- deparse(sys.call(),
-                          width.cutoff = 500L,
-                          backtick = TRUE,
-                          nlines = 1L,
-                          control = NULL)
-
-  setup <- meta_setup(grp_id = dplyr::cur_group_id(),
-                      dep_call = deparse_call,
-                      par_frame = parent.frame(),
+  setup <- meta_setup(dep_call = deparse_call(sys.call()),
                       setup_fn = "across2_setup",
                       xcols = rlang::enquo(.xcols),
                       ycols = rlang::enquo(.ycols),
@@ -149,6 +135,8 @@ across2 <- function(.xcols, .ycols, .fns, ..., .names = NULL, .names_fn = NULL){
 
   fns <- setup$fns
   names <- setup$names
+
+  .data <- dplyr::cur_data()
 
   xdata <- .data[xvars]
   ydata <- .data[yvars]
@@ -345,21 +333,7 @@ across2x <- function(.xcols, .ycols, .fns, ..., .names = NULL, .names_fn = NULL,
 
   comb <- match.arg(.comb, c("all", "unique", "minimal"), several.ok = FALSE)
 
-  .data <- tryCatch({
-    dplyr::cur_data()
-  }, error = function(e) {
-    rlang::abort("`across2x()` must only be used inside dplyr verbs.")
-  })
-
-  deparse_call <- deparse(sys.call(),
-                          width.cutoff = 500L,
-                          backtick = TRUE,
-                          nlines = 1L,
-                          control = NULL)
-
-  setup <- meta_setup(grp_id = dplyr::cur_group_id(),
-                      dep_call = deparse_call,
-                      par_frame = parent.frame(),
+  setup <- meta_setup(dep_call = deparse_call(sys.call()),
                       setup_fn = "across2x_setup",
                       xcols = rlang::enquo(.xcols),
                       ycols = rlang::enquo(.ycols),
@@ -374,6 +348,8 @@ across2x <- function(.xcols, .ycols, .fns, ..., .names = NULL, .names_fn = NULL,
   if (length(xvars) == 0L && length(yvars)) {
     return(tibble::new_tibble(list(), nrow = 1L))
   }
+
+  .data <- dplyr::cur_data()
 
   fns <- setup$fns
   names <- setup$names
