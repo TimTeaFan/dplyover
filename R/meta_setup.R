@@ -71,8 +71,12 @@ meta_setup <- function(dep_call, setup_fn, ...) {
     last_verb_env <- last_verb()
 
     # get number of groups in original data
-    n_grp <- dplyr::n_groups(get(".data", envir = sys.frame(last_verb_env)))
-    # n_grp <- dplyr::n_groups(dynGet(".data"))
+    # FIXME: don't create copy of data, use reference instead
+    dat <- get(".data", envir = sys.frame(last_verb_env))
+    if (inherits(dat, "rlang_fake_data_pronoun")) {
+      dat <- dynGet(".data")
+    }
+    n_grp <- dplyr::n_groups(dat)
 
     # check keep for all functions except over
     if (!grepl("^over", dep_call, perl = TRUE)) {
@@ -90,16 +94,9 @@ meta_setup <- function(dep_call, setup_fn, ...) {
     # simple setup up unique new call (only runs once per new call)
     if (!setup_exists) {
 
-      # wipe complete setup_env on.exit of overarching call:
+      # wipe complete setup_env on.exit of overarching dplyr call:
       do.call("on.exit",
               list(quote(rm(list  = ls(dplyover:::setup_env),
-                            envir = dplyover:::setup_env)),
-                   add = TRUE),
-                   envir = sys.frame(1L))
-
-      # to be save: delete call on.exit of last dplyr call
-      do.call("on.exit",
-              list(bquote(rm(list = .(dep_call),
                             envir = dplyover:::setup_env)),
                    add = TRUE),
               envir = sys.frame(last_verb_env))
