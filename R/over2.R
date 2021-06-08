@@ -106,21 +106,7 @@
 #' @export
 over2 <- function(.x, .y, .fns, ..., .names = NULL, .names_fn = NULL){
 
-  grp_id <- tryCatch({
-    dplyr::cur_group_id()
-  }, error = function(e) {
-    rlang::abort("`over2()` must only be used inside dplyr verbs.")
-  })
-
-  deparse_call <- deparse(sys.call(),
-                          width.cutoff = 500L,
-                          backtick = TRUE,
-                          nlines = 1L,
-                          control = NULL)
-
-  setup <- meta_setup(grp_id = grp_id,
-                      dep_call = deparse_call,
-                      par_frame = parent.frame(),
+  setup <- meta_setup(dep_call = deparse_call(sys.call()),
                       setup_fn = "over2_setup",
                       x1 = .x,
                       y1 = .y,
@@ -308,21 +294,7 @@ over2_setup <- function(x1, y1, fns, names, names_fn) {
 #' @export
 over2x <- function(.x, .y, .fns, ..., .names = NULL, .names_fn = NULL){
 
-  grp_id <- tryCatch({
-    dplyr::cur_group_id()
-  }, error = function(e) {
-    rlang::abort("`over2x()` must only be used inside dplyr verbs.")
-  })
-
-  deparse_call <- deparse(sys.call(),
-                          width.cutoff = 500L,
-                          backtick = TRUE,
-                          nlines = 1L,
-                          control = NULL)
-
-  setup <- meta_setup(grp_id = grp_id,
-                      dep_call = deparse_call,
-                      par_frame = parent.frame(),
+  setup <- meta_setup(dep_call = deparse_call(sys.call()),
                       setup_fn = "over2x_setup",
                       x1 = .x,
                       y1 = .y,
