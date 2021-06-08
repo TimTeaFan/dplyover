@@ -51,7 +51,7 @@ meta_setup <- function(dep_call, setup_fn, ...) {
     } else {
       # get active call number
       act_call_no <- which.min(init_setup$grp_no)
-      # update group number
+      # update group number to Inf if last group
       if (init_setup$n_grp[act_call_no] == grp_id) {
         setup_env[[dep_call]]$grp_no[act_call_no] <- Inf
       } else {
@@ -67,8 +67,12 @@ meta_setup <- function(dep_call, setup_fn, ...) {
     # prepare dots to pass to do.call
     dots <- rlang::list2(...)
 
+    # get last dplyr call
+    last_verb_env <- last_verb()
+
     # get number of groups in original data
-    n_grp <- dplyr::n_groups(dynGet(".data"))
+    n_grp <- dplyr::n_groups(get(".data", envir = sys.frame(last_verb_env)))
+    # n_grp <- dplyr::n_groups(dynGet(".data"))
 
     # check keep for all functions except over
     if (!grepl("^over", dep_call, perl = TRUE)) {
@@ -76,7 +80,7 @@ meta_setup <- function(dep_call, setup_fn, ...) {
       #> get keep arg
       keep_arg <- dynGet("keep", ifnotfound = NULL)
 
-      #> throw error
+      #> display warning
       if (!is.null(keep_arg) && keep_arg %in% c("used", "unused")){
         call_nm <- sub("([A-z0-9_.]+).*", "\\1()", dep_call)
         rlang::warn(glue::glue("`{call_nm}` does not support the `.keep` argument in `dplyr::mutate()` when set to 'used' or 'unused'."))
@@ -86,39 +90,47 @@ meta_setup <- function(dep_call, setup_fn, ...) {
     # simple setup up unique new call (only runs once per new call)
     if (!setup_exists) {
 
-    #> wipe complete setup_env on.exit of overarching call:
-    do.call("on.exit",
-            list(quote(rm(list  = ls(setup_env),
-                          envir = setup_env)),
-                 add = TRUE),
-                 envir = sys.frame(1L))
+      # wipe complete setup_env on.exit of overarching call:
+      do.call("on.exit",
+              list(quote(rm(list  = ls(setup_env),
+                            envir = setup_env)),
+                   add = TRUE),
+                   envir = sys.frame(1L))
 
-    setup_env[[dep_call]] <- init_setup <- list(simple = TRUE,
-                                                n_grp = n_grp,
-                                                grp_no = grp_id,
-                                                setup = list(do.call(setup_fn, dots)))
+      # to be save: delete call on.exit of last dplyr call
+      do.call("on.exit",
+              list(bquote(rm(list = .(dep_call),
+                            envir = setup_env)),
+                   add = TRUE),
+              envir = sys.frame(last_verb_env))
 
-    return(init_setup$setup[[1]])
+      # TODO: when refactoring data access add last_verb_env to setup list?
+      setup_env[[dep_call]] <- init_setup <- list(simple = TRUE,
+                                                  n_grp = n_grp,
+                                                  grp_no = grp_id,
+                                                  setup = list(do.call(setup_fn, dots)))
+
+      return(init_setup$setup[[1]])
 
   # complex setup of new duplicate call (only runs once per new call)
-  } else {
+    } else {
 
-    # get existing call
-    init_setup_old <- get(dep_call, envir = setup_env)
+      # get existing call
+      init_setup_old <- get(dep_call, envir = setup_env)
 
-    # if existing call was simple and if call completed: set grp_id to Inf
-    if(init_setup_old$simple && init_setup_old$n_grp == init_setup_old$grp_no) {
-      init_setup_old$grp_no <- Inf
-    }
+      # if existing call was simple and if call is completed: set grp_id to Inf
+      if (init_setup_old$simple && init_setup_old$n_grp == init_setup_old$grp_no) {
+        init_setup_old$grp_no <- Inf
+      }
 
-    setup_env[[dep_call]] <- init_setup <-
-      list(simple = FALSE,
-           n_grp = c(init_setup_old$n_grp, n_grp),
-           grp_no = c(init_setup_old$grp_no, grp_id),
-           setup = append(init_setup_old$setup, list(do.call(setup_fn, dots))))
+      setup_env[[dep_call]] <- init_setup <-
+        list(simple = FALSE,
+             n_grp = c(init_setup_old$n_grp, n_grp),
+             grp_no = c(init_setup_old$grp_no, grp_id),
+             setup = append(init_setup_old$setup, list(do.call(setup_fn, dots))))
 
-    return(init_setup$setup[[length(init_setup$grp_no)]])
+      return(init_setup$setup[[length(init_setup$grp_no)]])
 
-  } # close complex setup else
+    } # close complex setup else
   } # close setup else
 }
