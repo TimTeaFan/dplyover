@@ -157,21 +157,7 @@
 #' @export
 crossover <- function(.xcols = dplyr::everything(), .y, .fns, ..., .names = NULL, .names_fn = NULL){
 
-  data <- tryCatch({
-    dplyr::cur_data()
-  }, error = function(e) {
-    rlang::abort("`crossover()` must only be used inside dplyr verbs.")
-  })
-
-  deparse_call <- deparse(sys.call(),
-                          width.cutoff = 500L,
-                          backtick = TRUE,
-                          nlines = 1L,
-                          control = NULL)
-
-  setup <- meta_setup(grp_id = dplyr::cur_group_id(),
-                      dep_call = deparse_call,
-                      par_frame = parent.frame(),
+  setup <- meta_setup(dep_call = deparse_call(sys.call()),
                       setup_fn = "crossover_setup",
                       cols = rlang::enquo(.xcols),
                       y1 = .y,
@@ -188,6 +174,8 @@ crossover <- function(.xcols = dplyr::everything(), .y, .fns, ..., .names = NULL
 
   fns <- setup$fns
   names <- setup$names
+
+  data <- dplyr::cur_data()
 
   if (setup$each) {
     data <- data[unique(vars)]
