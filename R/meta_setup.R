@@ -92,15 +92,15 @@ meta_setup <- function(dep_call, setup_fn, ...) {
 
       # wipe complete setup_env on.exit of overarching call:
       do.call("on.exit",
-              list(quote(rm(list  = ls(setup_env),
-                            envir = setup_env)),
+              list(quote(rm(list  = ls(dplyover:::setup_env),
+                            envir = dplyover:::setup_env)),
                    add = TRUE),
                    envir = sys.frame(1L))
 
       # to be save: delete call on.exit of last dplyr call
       do.call("on.exit",
               list(bquote(rm(list = .(dep_call),
-                            envir = setup_env)),
+                            envir = dplyover:::setup_env)),
                    add = TRUE),
               envir = sys.frame(last_verb_env))
 
