@@ -29,15 +29,15 @@ reference:
     `crossover()` as well as their variants). 1. Helpers which select string
     parts of the column names (of the underyling data): `cut_names()` removes a
     specified pattern; `extract_names()` extracts a specified pattern.
-    2. Helpers which select values of a variable: `dist_values()` returns all
-    distinct values; `seq_range()` returns the sequence between the range of a
+    2. Helpers which select values of a variable: `unique_tidy()` returns all
+    unique values; `seq_range()` returns the sequence between the range of a
     variable. 3. A helper function `.()` that takes a glue specifcation as input,
     and evaluates the final argument string as name in the caller environment.
     Apart from those selection heplers, `show_prefix()` and `show_suffix()`
     show the common pre- or suffix for each pair of variables of two sets of
     colums.
   contents:
-  - dist_values
+  - unique_tidy
   - cut_names
   - "."
   - show_affix
