@@ -1,3 +1,15 @@
+# Internal metasetup for over-across family
+
+
+# environment where setup of dplyover calls is stored
+setup_env <- rlang::new_environment()
+
+
+# environment where last value of across2 pre/suf error is stored
+# FIXME: move to different script
+.last <- rlang::new_environment()
+
+
 # deparse call (similar to dplyr:::key_deparse)
 # this function is copied from dplyr
 # see README section Acknowledgements as well as dplyr's license and copyright
@@ -9,11 +21,6 @@ deparse_call <- function(call) {
           control = NULL)
 }
 
-# environment where setup of dplyover calls is stored
-setup_env <- rlang::new_environment()
-
-# environment where last value of across2 pre/suf error is stored
-.last <- rlang::new_environment()
 
 # meta setup used by all major dplyover functions
 meta_setup <- function(dep_call, setup_fn, ...) {
@@ -64,18 +71,15 @@ meta_setup <- function(dep_call, setup_fn, ...) {
   # setup
   } else {
 
+    # get last dplyr call
+    last_dplyr_frame <- last_verb()
+
     # prepare dots to pass to do.call
     dots <- rlang::list2(...)
 
-    # get last dplyr call
-    last_verb_env <- last_verb()
-
     # get number of groups in original data
     # FIXME: don't create copy of data, use reference instead
-    dat <- get(".data", envir = sys.frame(last_verb_env))
-    if (inherits(dat, "rlang_fake_data_pronoun")) {
-      dat <- dynGet(".data")
-    }
+    dat <- get_init_data(last_dplyr_frame)
     n_grp <- dplyr::n_groups(dat)
 
     # check keep for all functions except over
@@ -99,13 +103,13 @@ meta_setup <- function(dep_call, setup_fn, ...) {
               list(quote(rm(list  = ls(dplyover:::setup_env),
                             envir = dplyover:::setup_env)),
                    add = TRUE),
-              envir = sys.frame(last_verb_env))
+              envir = sys.frame(last_dplyr_frame))
 
-      # TODO: when refactoring data access add last_verb_env to setup list?
       setup_env[[dep_call]] <- init_setup <- list(simple = TRUE,
                                                   n_grp = n_grp,
                                                   grp_no = grp_id,
-                                                  setup = list(do.call(setup_fn, dots)))
+                                                  setup = list(append(do.call(setup_fn, dots),
+                                                               list(frame = last_dplyr_frame))))
 
       return(init_setup$setup[[1]])
 
@@ -124,7 +128,11 @@ meta_setup <- function(dep_call, setup_fn, ...) {
         list(simple = FALSE,
              n_grp = c(init_setup_old$n_grp, n_grp),
              grp_no = c(init_setup_old$grp_no, grp_id),
-             setup = append(init_setup_old$setup, list(do.call(setup_fn, dots))))
+             setup = append(init_setup_old$setup,
+                            list(append(do.call(setup_fn, dots),
+                                        list(frame = last_dplyr_frame)))
+                            )
+             )
 
       return(init_setup$setup[[length(init_setup$grp_no)]])
 
