@@ -12,9 +12,9 @@
 #' * [seq_range()] returns the sequence between the `range()` of a variable `x`.
 #'
 #' @param x An atomic vector or list. For [seq_range()] x must be numeric or date.
-#' @param .sep  A character vector containing regular expression(s) which are used
+#' @param sep  A character vector containing regular expression(s) which are used
 #'   for splitting the values (works only if x is a character vector).
-#' @param .sort A character string indicating which sorting scheme is to be applied
+#' @param sort A character string indicating which sorting scheme is to be applied
 #'   to distinct values: ascending ("asc"), descending ("desc"), "none" or "levels". The
 #'   default is ascending, only if x is a factor the default is "levels".
 #' @param .by A number (or date expression) representing the increment of the sequence.
@@ -74,35 +74,35 @@
 #'
 #' (3) As default, the output is sorted in ascending order for non-factors, and
 #' is sorted as the underyling "levels" for factors. This can be controlled by
-#' setting the `.sort` argument. Compare:
+#' setting the `sort` argument. Compare:
 #'
 #' ```{r, comment = "#>", collapse = TRUE}
 #' # non-factors
 #' unique(c(3,1,2))
 #'
 #' dist_values(c(3,1,2))
-#' dist_values(c(3,1,2), .sort = "desc")
-#' dist_values(c(3,1,2), .sort = "none")
+#' dist_values(c(3,1,2), sort = "desc")
+#' dist_values(c(3,1,2), sort = "none")
 #'
 #' # factors
 #' fctrs <- factor(c(2,1,3, NA), levels = c(3:1))
 #'
 #' dist_values(fctrs)
-#' dist_values(fctrs, .sort = "levels")
-#' dist_values(fctrs, .sort = "asc")
-#' dist_values(fctrs, .sort = "desc")
-#' dist_values(fctrs, .sort = "none")
+#' dist_values(fctrs, sort = "levels")
+#' dist_values(fctrs, sort = "asc")
+#' dist_values(fctrs, sort = "desc")
+#' dist_values(fctrs, sort = "none")
 #'
 #' ```
 #'
 #' (4) When used on a character vector `dist_values` can take a separator
-#' `.sep` to split the elements accordingly:
+#' `sep` to split the elements accordingly:
 #'
 #' ```{r, comment = "#>", collapse = TRUE}
 #' c("1, 2, 3",
 #'   "2, 4, 5",
 #'   "4, 1, 7") %>%
-#'   dist_values(., .sep = ", ")
+#'   dist_values(., sep = ", ")
 #' ```
 #'
 #' (5) When used on lists `dist_values` automatically simplifiies its input
@@ -144,13 +144,13 @@
 #' `seq_range()` also works on dates:
 #'
 #' ```{r, comment = "#>", collapse = TRUE}
-#' some_dates <- c(as.Date("2020-01-02"),
-#'                 as.Date("2020-05-02"),
-#'                 as.Date("2020-03-02"))
-#'
-#'
-#' some_dates %>%
-#'   seq_range(., "1 month")
+# some_dates <- c(as.Date("2020-01-02"),
+#                 as.Date("2020-05-02"),
+#                 as.Date("2020-03-02"))
+#
+#
+# some_dates %>%
+#   seq_range(., "1 month")
 #' ```
 #'
 #' @name select_values
@@ -158,38 +158,90 @@ NULL
 
 #' @rdname select_values
 #' @export
-dist_values <- function(x, .sep = NULL, .sort = c("asc", "desc", "none", "levels")) {
+unique_tidy <- function(x, sort = c("none", "asc", "desc"),
+                        sep = NULL, na.rm = TRUE, grp_data = c("warn", "ungroup", "silent")) {
 
-  is_null <- identical(.sort, c("asc", "desc", "none", "levels"))
-  sort <- match.arg(.sort)
+  # setup
+  x <- rlang::enquo(x)
+  # input_cols <- !rlang::quo_is_null(cols)
+  grp_data <- match.arg(grp_data)
+  sort <- match.arg(sort)
+
+  # check if in dplyr
+  dplyr_call <- dynGet("last_dplyr_frame", ifnotfound = NULL)
+
+  if (!is.null(dplyr_call)) {
+    in_dplyr <- TRUE
+    is_grouped <- get_n_groups(dplyr_call) > 1
+    # check if grouped data
+      # get data
+      if (is_grouped && grp_data == "ungroup") {
+        dat <- get_full_data(dplyr_call)
+      } else {
+        if (is_grouped && grp_data == "warn") {
+          rlang::warn(c("`unique_tidy()` was used on grouped data.",
+                        i = "Only values unique to this group are returned.",
+                        i = "Set the `grp_data` argument to `ungroup` to access the ungrouped data or to `silent` to silence this warning."))
+        }
+        dat <- dplyr::cur_data_all()
+      }
+
+  # if not in dplyover
+  } else {
+
+    dat <- try(dplyr::cur_data_all(), silent = TRUE)
+
+    if (inherits(dat, "try-error")) {
+      in_dplyr <- FALSE
+      x <- rlang::eval_tidy(x)
+    } else {
+      in_dplyr <- TRUE
+    }
+  }
+
+  # if in dplyover or dplyr use tidyselect
+  if (in_dplyr) {
+    x <- tidyselect::eval_select(x, data = dat)
+    vars <- names(x)
+    x <- dat[, vars]
+  }
 
   if (is.list(x)) {
     x <- unlist(x)
   }
-  if (!is.null(.sep)) {
-    x <- unlist(strsplit(x, .sep))
+
+  if (!is.null(sep)) {
+    x <- unlist(strsplit(x, sep))
   }
 
-  res <- as.vector(na.omit(unique(x)))
-  if (!is.factor(x)) {
-    if (sort == "asc") {
-      return(sort(res))
-    } else if (sort == "desc") {
-      return(sort(res, decreasing = TRUE))
+  # FIXME: NA's is factors not warned! move warning to the beginning and also warn factors
+  # if na.rm = FALSE and NA's are present:
+  if (!na.rm && any(is.na(x))) {
+    if (is.factor(x)) {
+      res <- c(levels(x), NA)
     } else {
-      return(res)
+      res <- unique(x)
     }
+
+    switch(sort,
+           "asc"    = return(c(sort(res), NA)),
+           "desc"   = return(c(sort(res, decreasing = TRUE), NA)),
+                      return(c(res))
+    )
+
   } else {
-    x <- levels(x)
-    if (is_null || .sort == "levels") {
-      return(x)
-    } else if (sort == "asc") {
-      return(sort(x))
-    } else if (sort == "desc") {
-      return(sort(x, decreasing = TRUE))
+
+    if (is.factor(x)) {
+      res <- levels(x)
     } else {
-    res
-  }
+      res <- as.vector(na.omit(unique(x)))
+    }
+
+    switch(sort,
+           "asc"    = return(sort(res)),
+           "desc"   = return(sort(res, decreasing = TRUE)),
+                      return(res))
+
   }
 }
 
