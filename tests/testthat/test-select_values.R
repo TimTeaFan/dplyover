@@ -129,7 +129,7 @@ test_that("unique_tidy() `grp_data` argument works as expected", {
 test_that("unique_tidy() supports tidy select in dplyr without dplyover", {
   expect_equal({
     mtcars %>%
-      mutate(values = list(unique_tidy(am:gear))) %>%
+      mutate(values = list(unique_tidy(am:gear, "asc"))) %>%
       slice(1) %>%
       pull(values) %>%
       unlist},
@@ -144,7 +144,7 @@ test_that("unique_tidy() `na.rm and `grp_data` arguments work as expected", {
     csat %>%
       transmute(over(unique_tidy(email_rating,
                                  na.rm = FALSE),
-                     ~ if_else(same_value(email_rating, .x), 1, 0))) %>%
+                     ~ if_else(email_rating %in% .x, 1, 0))) %>%
       ncol()
   }, 6L)
 
@@ -153,7 +153,7 @@ test_that("unique_tidy() `na.rm and `grp_data` arguments work as expected", {
       mutate(email_rating = as.character(email_rating)) %>%
       transmute(over(unique_tidy(email_rating,
                                  na.rm = FALSE),
-                     ~ if_else(same_value(email_rating, .x), 1, 0))) %>%
+                     ~ if_else(email_rating %in% .x, 1, 0))) %>%
       ncol()
   }, 6L)
 
@@ -163,7 +163,7 @@ test_that("unique_tidy() `na.rm and `grp_data` arguments work as expected", {
       transmute(over(unique_tidy(email_rating,
                                  grp_data = "ungroup",
                                  na.rm = FALSE),
-                     ~ if_else(same_value(email_rating, .x), 1, 0))) %>%
+                     ~ if_else(email_rating %in% .x, 1, 0))) %>%
       ncol()
     }, 7L)
 
