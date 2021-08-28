@@ -408,7 +408,7 @@ test_that("monitoring cache - across2() usage can depend on the group id", {
   df <- group_by(df, g)
 
   switcher <- function() {
-    if_else(cur_group_id() == 1L,
+    ifelse(cur_group_id() == 1L,
             across2(a, a, ~ .x + .y)$a_a,
             across2(a, b, ~ .x + .y)$a_b)
   }
@@ -470,6 +470,10 @@ test_that("across2(<empty set>) returns a data frame with 1 row (#5204)", {
   })
 })
 
+## ADD: Test that ast_err is wiped after new across2
+## ADD: Test of show_prefix() show_suffix()
+
+
 # not supported yet:
 # test_that("across2(.names=) can use local variables in addition to {col} and {fn}", {
 #   res <- local({
@@ -495,15 +499,12 @@ test_that("across2() uses environment from the current quosure (dplyr #5460)", {
   # Inherited case
   # in across: expect_error(df %>% summarise(local(across(all_of(y), mean))))
   # across2x does not through an error here:
-
   # expect_error(df %>% summarise(local(across2(all_of(y), y, ~ sum(c(.x, .y))))))
-
-
 
   # Inherited case
   # doesn't work in testthat or in reprex, but works locally, that's fair enough:
-  # out <- df %>% summarise(local(across2(all_of(y), all_of(y), prod, .names = "{xcol}")))
-  # expect_equal(out, data.frame(x = 1))
+  out <- df %>% summarise(local(across2(all_of(y), all_of(y), prod, .names = "{xcol}")))
+  expect_equal(out, data.frame(x = 1))
 })
 
 test_that("across2() sees columns in the recursive case (dplyr  #5498)", {

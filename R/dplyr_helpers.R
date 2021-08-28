@@ -2,6 +2,20 @@
 # ... without relying on dplyr's internal context functions and data mask
 #
 
+cur_x_column <- function() {
+  if (length(setup_env$xcol) == 0) {
+    stop("`cur_x_column()` not available in this context.")
+  }
+  setup_env$xcol
+}
+
+cur_y_column <- function() {
+  if (length(setup_env$ycol) == 0) {
+    stop("`cur_y_column()` not available in this context.")
+  }
+  setup_env$ycol
+}
+
 last_verb <- function() {
 
   # get trace_back info
@@ -38,6 +52,24 @@ get_init_data <- function(dplyr_frame_no) {
   # if (is.null(dat) || inherits(dat, "rlang_fake_data_pronoun")) {
   #   dat <- dynGet(".data", ifnotfound = NULL)
   # }
+
+  if (is.null(dat) || inherits(dat, "rlang_fake_data_pronoun")) {
+    rlang::abort(c("Problem with `get_init_data()`.",
+                   x = "Could not access underlying dplyr data.",
+                   i = "Please report your call and session info under:\nhttps://github.com/TimTeaFan/dplyover/issues/14"))
+  }
+
+  dat
+
+}
+
+fget_init_data <- function() {
+
+  dat <- dynGet(".data")
+
+  if (is.null(dat) || inherits(dat, "rlang_fake_data_pronoun")) {
+    dat <- dynGet(".data", minframe = 3L, ifnotfound = NULL)
+  }
 
   if (is.null(dat) || inherits(dat, "rlang_fake_data_pronoun")) {
     rlang::abort(c("Problem with `get_init_data()`.",
@@ -101,6 +133,17 @@ access_groups <- function(dplyr_frame_no) {
   n_grps
 }
 
+faccess_groups <- function() {
+
+  n_grps <- length(dynGet("rows", ifnotfound = NULL))
+
+  if(is.null(n_grps) || length(n_grps) == 0) {
+    n_grps <- dplyr::n_groups(fget_init_data())
+  }
+
+  n_grps
+}
+
 get_n_groups <- function(dplyr_frame_no) {
 
   switch(names(dplyr_frame_no),
@@ -108,6 +151,21 @@ get_n_groups <- function(dplyr_frame_no) {
          "mutate" = access_groups(dplyr_frame_no),
          dplyr::n_groups(get_init_data(dplyr_frame_no))
   )
+}
+
+get_fns_env <- function(cl, fns) {
+
+  if (rlang::is_formula(fns) || is.function(fns)) {
+    env <- environment(fns)
+    if(!is.null(env)) return(rlang::env_parent(env))
+
+  } else if (is.list(fns)) {
+    env <- environment(fns[[1]])
+    if(!is.null(env)) return(rlang::env_parent(env))
+
+  } else {
+    return(NULL)
+  }
 }
 
 # get_col <- function {

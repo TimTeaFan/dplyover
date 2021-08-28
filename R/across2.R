@@ -128,7 +128,7 @@ across2 <- function(.xcols, .ycols, .fns, ..., .names = NULL, .names_fn = NULL){
 
   xvars <- setup$xvars
   yvars <- setup$yvars
-
+  xyvars <- union(xvars, yvars)
   if (length(xvars) == 0L && length(yvars) == 0L) {
     return(tibble::new_tibble(list(), nrow = 1L))
   }
@@ -136,12 +136,14 @@ across2 <- function(.xcols, .ycols, .fns, ..., .names = NULL, .names_fn = NULL){
   fns <- setup$fns
   names <- setup$names
 
-  .data <- dplyr::cur_data()
+  if (setup$dplyr_env > 0) {
+    data_env <- rlang::env_parent(parent.frame(setup$dplyr_env), n = 1)
+  } else {
+    data_env <- rlang::as_data_mask(dplyr::cur_data())
+  }
 
-  xdata <- .data[xvars]
-  ydata <- .data[yvars]
 
-  n_xcols <- length(xdata)
+  n_xcols <- length(xvars)
   n_fns <- length(fns)
   seq_n_xcols <- seq_len(n_xcols)
   seq_fns <- seq_len(n_fns)
@@ -149,11 +151,13 @@ across2 <- function(.xcols, .ycols, .fns, ..., .names = NULL, .names_fn = NULL){
   out <- vector("list", n_xcols * n_fns)
 
   for (i in seq_n_xcols) {
-    xcol <- xdata[[i]]
-    ycol <- ydata[[i]]
+    setup_env$xcol <- xcol <- xvars[i]
+    setup_env$ycol <- ycol <- yvars[i]
+
     for (j in seq_fns) {
       fn <- fns[[j]]
-      out[[k]] <- fn(xcol, ycol, ...)
+      out[[k]] <- fn(get(xcol, envir = data_env),
+                     get(ycol, envir = data_env), ...)
       k <- k + 1L
     }
   }
@@ -164,31 +168,32 @@ across2 <- function(.xcols, .ycols, .fns, ..., .names = NULL, .names_fn = NULL){
 }
 
 
-across2_setup <- function(xcols, ycols, fns, names, data, names_fn) {
+across2_setup <- function(xcols, ycols, fns, names, names_fn) {
 
   # clean last_value in setup_env
-  if (exists("value", envir = .last)) {
-    rm(value, envir = .last)
+  if (exists("col_info", envir = last_err)) {
+  suppressWarnings(rm(col_info, envir = last_err))
   }
 
   # setup: cols
   data <- dplyr::cur_data()[1, ]
 
-  # setup error_output
-  err_out <- list(data = data,
-                  xcols = xcols,
-                  ycols = ycols)
-
-  xcols <- rlang::quo_set_env(xcols,
+  xcols1 <- rlang::quo_set_env(xcols,
                               data_mask_top(rlang::quo_get_env(xcols),
                                             recursive = FALSE,
                                             inherit = TRUE))
-  ycols <- rlang::quo_set_env(ycols,
+  ycols1 <- rlang::quo_set_env(ycols,
                               data_mask_top(rlang::quo_get_env(ycols),
                                             recursive = FALSE,
                                             inherit = TRUE))
-  xvars <- tidyselect::eval_select(xcols, data)
-  yvars <- tidyselect::eval_select(ycols, data)
+
+  # setup error_output
+  err_out <- list(data = data,
+                  xcols = xcols1,
+                  ycols = ycols1)
+
+  xvars <- tidyselect::eval_select(xcols1, data)
+  yvars <- tidyselect::eval_select(ycols1, data)
   xvars <- names(xvars)
   yvars <- names(yvars)
 
@@ -266,7 +271,7 @@ across2_setup <- function(xcols, ycols, fns, names, data, names_fn) {
 
       if (check_pre && check_pre1) {
 
-        .last[["value"]] <- err_out
+        last_err$col_info <- err_out
 
         rlang::abort(c("Problem with `across2()` input `.names`.",
                         i = "When `{pre}` is used inside `.names` each pair of input variables in `.xcols` and `.ycols` must share a common prefix of length > 0.",
@@ -278,7 +283,7 @@ across2_setup <- function(xcols, ycols, fns, names, data, names_fn) {
 
       if (check_suf && check_suf1) {
 
-        .last[["value"]] <- err_out
+        last_err$col_info <- err_out
 
         rlang::abort(c("Problem with `across2()` input `.names`.",
                        i = "When `{suf}` is used inside `.names` each pair of input variables in `.xcols` and `.ycols` must share a common suffix of length > 0.",
@@ -327,8 +332,7 @@ across2_setup <- function(xcols, ycols, fns, names, data, names_fn) {
   value
 }
 
-#' @rdname across2
-#' @export
+
 across2x <- function(.xcols, .ycols, .fns, ..., .names = NULL, .names_fn = NULL, .comb = "all"){
 
   comb <- match.arg(.comb, c("all", "unique", "minimal"), several.ok = FALSE)
@@ -349,16 +353,18 @@ across2x <- function(.xcols, .ycols, .fns, ..., .names = NULL, .names_fn = NULL,
     return(tibble::new_tibble(list(), nrow = 1L))
   }
 
-  .data <- dplyr::cur_data()
-
   fns <- setup$fns
   names <- setup$names
 
-  xdata <- .data[xvars]
-  ydata <- .data[yvars]
+  if (setup$dplyr_env > 0) {
+    data <- mget(union(xvars, yvars),
+                 envir = rlang::env_parent(parent.frame(setup$dplyr_env), n = 1))
+  } else {
+    data <- mget(union(xvars, yvars), envir = as.environment(dplyr::cur_data()))
+  }
 
-  n_xcols <- length(xdata)
-  n_ycols <- length(ydata)
+  n_xcols <- length(xvars)
+  n_ycols <- length(yvars)
   n_fns <- length(fns)
   seq_n_xcols <- seq_len(n_xcols)
   seq_n_ycols <- seq_len(n_ycols)
@@ -368,25 +374,26 @@ across2x <- function(.xcols, .ycols, .fns, ..., .names = NULL, .names_fn = NULL,
   out_check <- vector("character", n_xcols * n_ycols * n_fns)
 
   for (i in seq_n_xcols) {
-    x_nm <- names(xdata[i])
-    xcol <- xdata[[i]]
+    xcol <- xvars[i]
     for(l in seq_n_ycols) {
-      y_nm <- names(ydata[l])
-      ycol <- ydata[[l]]
-      new_nm <- paste(sort(c(x_nm, y_nm)), collapse = "_")
+      ycol <- yvars[l]
+      new_nm <- paste(sort(c(xcol, ycol)), collapse = "_")
       if ((comb == "unique" || comb == "minimal") && new_nm %in% out_check) {
         k <- k + 1L
         out_check[k] <- new_nm
         next
       }
       out_check[k] <- new_nm
-      if (comb == "minimal" && x_nm == y_nm) {
+      if (comb == "minimal" && xcol == ycol) {
         k <- k + 1L
         next
       }
       for (j in seq_fns) {
         fn <- fns[[j]]
-        out[[k]] <- fn(xcol, ycol, ...)
+        out[[k]] <- fn(data[[xcol]],
+                       data[[ycol]],
+                       ...)
+
         k <- k + 1L
       }
     }
@@ -399,21 +406,22 @@ across2x <- function(.xcols, .ycols, .fns, ..., .names = NULL, .names_fn = NULL,
     out <- purrr::compact(out)
 
     if (length(out) != length(names)) {
-    rlang::abort(c("Problem with `across2x()` input `.names`.",
-                   i = "The number of elements in `.names` must equal the number of new columns.",
-                   x = paste0(length(.names), " elements provided to `.names`, but the number of new columns is ", length(out), ".")
-    ))
+      rlang::abort(c("Problem with `across2x()` input `.names`.",
+                     i = "The number of elements in `.names` must equal the number of new columns.",
+                     x = paste0(length(.names), " elements provided to `.names`, but the number of new columns is ", length(out), ".")
+      ))
     }
     names(out) <- names
   } else {
-  names(out) <- names
-  out <- purrr::compact(out)
+    names(out) <- names
+    out <- purrr::compact(out)
   }
   tibble::new_tibble(out, nrow = size)
 }
 
 
-across2x_setup <- function(xcols, ycols, fns, names, cnames, data, names_fn, comb) {
+
+across2x_setup <- function(xcols, ycols, fns, names, names_fn, comb) {
 
   # setup: cols
   data <- dplyr::cur_data()[1, ]

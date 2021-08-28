@@ -73,13 +73,13 @@ NULL
 #' @export
 show_prefix <- function(.data = NULL, .xcols = NULL, .ycols = NULL) {
 
-  if (is.null(.data) && !is.null(dplyover:::.last$value)) {
+  if (is.null(.data) && !is.null(last_err$col_info)) {
 
-    .data  <- .last$value$data
-    .xcols <- .last$value$xcols
-    .ycols <- .last$value$ycols
+    .data  <- last_err$col_info$data
+    .xcols <- last_err$col_info$xcols
+    .ycols <- last_err$col_info$ycols
 
-    rm(value, envir = .last)
+    rm(list = ls(last_err), envir = dplyover:::last_err)
 
   } else {
     .xcols <- rlang::enexpr(.xcols)
@@ -96,13 +96,13 @@ show_prefix <- function(.data = NULL, .xcols = NULL, .ycols = NULL) {
 #' @export
 show_suffix <- function(.data = NULL, .xcols = NULL, .ycols = NULL) {
 
-  if (is.null(.data) && !is.null(dplyover:::.last$value)) {
+  if (is.null(.data) && !is.null(last_err$col_info)) {
 
-    .data  <- .last$value$data
-    .xcols <- .last$value$xcols
-    .ycols <- .last$value$ycols
+    .data  <- last_err$col_info$data
+    .xcols <- last_err$col_info$xcols
+    .ycols <- last_err$col_info$ycols
 
-    rm(value, envir = .last)
+    rm(list = ls(last_err), envir = dplyover:::last_err)
 
   } else {
     .xcols <- rlang::enexpr(.xcols)

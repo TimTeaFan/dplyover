@@ -1,14 +1,17 @@
 # Internal metasetup for over-across family
 
-
 # environment where setup of dplyover calls is stored
 setup_env <- rlang::new_environment()
 
-
 # environment where last value of across2 pre/suf error is stored
 # FIXME: move to different script
-.last <- rlang::new_environment()
-
+last_err <- rlang::new_environment()
+#
+# # environment where last value of across2 pre/suf error is stored
+# # FIXME: move to different script
+# .current_col <- rlang::new_environment()
+#
+# across_env <- rlang::new_environment()
 
 # deparse call (similar to dplyr:::key_deparse)
 # this function is copied from dplyr
@@ -23,7 +26,7 @@ deparse_call <- function(call) {
 
 
 # meta setup used by all major dplyover functions
-meta_setup <- function(dep_call, setup_fn, ...) {
+meta_setup <- function(dep_call, setup_fn, ..., dplyr_env = NULL) {
 
   # check if setup for this call exists
   setup_exists <- exists(dep_call, envir = setup_env)
@@ -82,26 +85,53 @@ meta_setup <- function(dep_call, setup_fn, ...) {
     dat <- get_init_data(last_dplyr_frame)
     n_grp <- dplyr::n_groups(dat)
 
-    # check keep for all functions except over
+    # checks for all functions except over
     if (!grepl("^over", dep_call, perl = TRUE)) {
 
+      call_nm <- sub("([A-z0-9_.]+).*", "\\1()", dep_call)
+
+      # check keep
       #> get keep arg
       keep_arg <- dynGet("keep", ifnotfound = NULL)
 
       #> display warning
       if (!is.null(keep_arg) && keep_arg %in% c("used", "unused")){
-        call_nm <- sub("([A-z0-9_.]+).*", "\\1()", dep_call)
         rlang::warn(glue::glue("`{call_nm}` does not support the `.keep` argument in `dplyr::mutate()` when set to 'used' or 'unused'."))
       }
+
+    # check dplyr env
+
+    col_names <- sort(names(dplyr::cur_data_all()))
+    dplyr_env <- -1
+
+    # FIXME: put this logical in a function which can be improved gradually:
+    for (e in seq_along(sys.parents())) {
+      if (identical(sort(names(rlang::env_parent(parent.frame(e), n = 1))), col_names)) {
+        dplyr_env <- e-1
+        break
+      }
     }
+    if (dplyr_env == -1) {
+      #FIXME: Not much needed instead try looping over other nested enviroments
+      if (identical(sort(names(get_fns_env(call_nm, dots$fns))),
+                   col_names)) {
+        dplyr_env <- 0
+      } else {
+        rlang::warn("Bad performance due to improper environment handling.")
+      }
+    }
+    }
+
 
     # simple setup up unique new call (only runs once per new call)
     if (!setup_exists) {
 
       # wipe complete setup_env on.exit of overarching dplyr call:
       do.call("on.exit",
-              list(quote(rm(list  = ls(dplyover:::setup_env),
-                            envir = dplyover:::setup_env)),
+              list(quote(suppressWarnings(
+                          rm(list  = ls(dplyover:::setup_env),
+                             envir = dplyover:::setup_env))
+                         ),
                    add = TRUE),
               envir = sys.frame(last_dplyr_frame))
 
@@ -109,7 +139,7 @@ meta_setup <- function(dep_call, setup_fn, ...) {
                                                   n_grp = n_grp,
                                                   grp_no = grp_id,
                                                   setup = list(append(do.call(setup_fn, dots),
-                                                               list(frame = last_dplyr_frame))))
+                                                               list(dplyr_env = dplyr_env))))
 
       return(init_setup$setup[[1]])
 
@@ -130,7 +160,7 @@ meta_setup <- function(dep_call, setup_fn, ...) {
              grp_no = c(init_setup_old$grp_no, grp_id),
              setup = append(init_setup_old$setup,
                             list(append(do.call(setup_fn, dots),
-                                        list(frame = last_dplyr_frame)))
+                                        list(dplyr_env = dplyr_env)))
                             )
              )
 
