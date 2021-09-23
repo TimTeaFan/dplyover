@@ -92,8 +92,8 @@ control which columns are retained in the output. This works well with genuine
 {dplyr} functions like `across`:
 
 ```{r}
-diamonds %>% mutate(across(z, ~ .x + y),
-                    .keep = "used")
+# diamonds %>% mutate(across(z, ~ .x + y),
+#                     .keep = "used")
 ```
 `.keep` not only recognizes that `across` is *used* on colum 'z', it also
 registers that we *used* column 'y' in `across`'s `.fns` argument.
@@ -123,8 +123,8 @@ Example:<br>
 We can do this with `dplyr::across`:
 ```{r}
 prefix <- "lag1"
-tibble(a = 1:25) %>%
-  mutate(across(everything(), lag, 1, .names = "{.col}_{prefix}"))
+# tibble(a = 1:25) %>%
+#   mutate(across(everything(), lag, 1, .names = "{.col}_{prefix}"))
 ```
 
 In {dplyover} we would need to construct the names outside of the function call
