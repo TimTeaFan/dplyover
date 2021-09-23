@@ -36,10 +36,10 @@ well as 'Petal.Width' and 'Petal.Length'.\if{html}{\out{<div class="r">}}\prefor
 #> # A tibble: 150 x 7
 #>   Sepal.Length Sepal.Width Petal.Length Petal.Width Species Sepal Petal
 #>          <dbl>       <dbl>        <dbl>       <dbl> <fct>   <dbl> <dbl>
-#> 1          5.1         3.5          1.4         0.2 setosa    8.6  1.60
-#> 2          4.9         3            1.4         0.2 setosa    7.9  1.60
-#> 3          4.7         3.2          1.3         0.2 setosa    7.9  1.5 
-#> 4          4.6         3.1          1.5         0.2 setosa    7.7  1.7 
+#> 1          5.1         3.5          1.4         0.2 setosa    8.6   1.6
+#> 2          4.9         3            1.4         0.2 setosa    7.9   1.6
+#> 3          4.7         3.2          1.3         0.2 setosa    7.9   1.5
+#> 4          4.6         3.1          1.5         0.2 setosa    7.7   1.7
 #> # ... with 146 more rows
 }\if{html}{\out{</div>}}
 
@@ -51,10 +51,10 @@ The above syntax is equal to the more verbose:\if{html}{\out{<div class="r">}}\p
 #> # A tibble: 150 x 7
 #>   Sepal.Length Sepal.Width Petal.Length Petal.Width Species Sepal Petal
 #>          <dbl>       <dbl>        <dbl>       <dbl> <fct>   <dbl> <dbl>
-#> 1          5.1         3.5          1.4         0.2 setosa    8.6  1.60
-#> 2          4.9         3            1.4         0.2 setosa    7.9  1.60
-#> 3          4.7         3.2          1.3         0.2 setosa    7.9  1.5 
-#> 4          4.6         3.1          1.5         0.2 setosa    7.7  1.7 
+#> 1          5.1         3.5          1.4         0.2 setosa    8.6   1.6
+#> 2          4.9         3            1.4         0.2 setosa    7.9   1.6
+#> 3          4.7         3.2          1.3         0.2 setosa    7.9   1.5
+#> 4          4.6         3.1          1.5         0.2 setosa    7.7   1.7
 #> # ... with 146 more rows
 }\if{html}{\out{</div>}}
 
@@ -75,10 +75,10 @@ quotation marks \code{.("{cur_column()}.Width")}.\if{html}{\out{<div class="r">}
 #> # A tibble: 150 x 7
 #>   Sepal Sepal.Width Petal Petal.Width Species Sepal_sum Petal_sum
 #>   <dbl>       <dbl> <dbl>       <dbl> <fct>       <dbl>     <dbl>
-#> 1   5.1         3.5   1.4         0.2 setosa        8.6      1.60
-#> 2   4.9         3     1.4         0.2 setosa        7.9      1.60
-#> 3   4.7         3.2   1.3         0.2 setosa        7.9      1.5 
-#> 4   4.6         3.1   1.5         0.2 setosa        7.7      1.7 
+#> 1   5.1         3.5   1.4         0.2 setosa        8.6       1.6
+#> 2   4.9         3     1.4         0.2 setosa        7.9       1.6
+#> 3   4.7         3.2   1.3         0.2 setosa        7.9       1.5
+#> 4   4.6         3.1   1.5         0.2 setosa        7.7       1.7
 #> # ... with 146 more rows
 }\if{html}{\out{</div>}}
 
@@ -90,10 +90,10 @@ A similar approach can be achieved using \code{purrr::map} in combination with \
 #> # A tibble: 150 x 7
 #>   Sepal Sepal.Width Petal Petal.Width Species Sepal_sum Petal_sum
 #>   <dbl>       <dbl> <dbl>       <dbl> <fct>       <dbl>     <dbl>
-#> 1   5.1         3.5   1.4         0.2 setosa        8.6      1.60
-#> 2   4.9         3     1.4         0.2 setosa        7.9      1.60
-#> 3   4.7         3.2   1.3         0.2 setosa        7.9      1.5 
-#> 4   4.6         3.1   1.5         0.2 setosa        7.7      1.7 
+#> 1   5.1         3.5   1.4         0.2 setosa        8.6       1.6
+#> 2   4.9         3     1.4         0.2 setosa        7.9       1.6
+#> 3   4.7         3.2   1.3         0.2 setosa        7.9       1.5
+#> 4   4.6         3.1   1.5         0.2 setosa        7.7       1.7
 #> # ... with 146 more rows
 }\if{html}{\out{</div>}}
 }

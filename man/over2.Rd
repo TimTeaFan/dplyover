@@ -117,15 +117,15 @@ each 'product' type:\if{html}{\out{<div class="r">}}\preformatted{csat \%>\%
   glimpse
 #> Rows: 150
 #> Columns: 9
-#> $ existing_advanced   <lgl> TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, ~
-#> $ existing_premium    <lgl> FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE~
-#> $ existing_basic      <lgl> FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALS~
-#> $ reactivate_advanced <lgl> FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, FALSE,~
-#> $ reactivate_premium  <lgl> FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALS~
-#> $ reactivate_basic    <lgl> FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE~
-#> $ new_advanced        <lgl> FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALS~
-#> $ new_premium         <lgl> FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE~
-#> $ new_basic           <lgl> FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE,~
+#> $ existing_advanced   <lgl> TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FA~
+#> $ existing_premium    <lgl> FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, ~
+#> $ existing_basic      <lgl> FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,~
+#> $ reactivate_advanced <lgl> FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, ~
+#> $ reactivate_premium  <lgl> FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,~
+#> $ reactivate_basic    <lgl> FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, FALSE, ~
+#> $ new_advanced        <lgl> FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,~
+#> $ new_premium         <lgl> FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,~
+#> $ new_basic           <lgl> FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, FALSE, FALSE, F~
 }\if{html}{\out{</div>}}
 }
 
