@@ -57,5 +57,3 @@ data_mask_top <- function(env, recursive = FALSE, inherit = FALSE) {
 
   env
 }
-
-filter

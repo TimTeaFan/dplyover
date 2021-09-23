@@ -96,7 +96,7 @@ show_prefix <- function(.data = NULL, .xcols = NULL, .ycols = NULL) {
 #' @export
 show_suffix <- function(.data = NULL, .xcols = NULL, .ycols = NULL) {
 
-  if (is.null(.data) && !is.null(dplyover:::.last$value)) {
+  if (is.null(.data) && !is.null(.last$value)) {
 
     .data  <- .last$value$data
     .xcols <- .last$value$xcols
