@@ -90,7 +90,7 @@ show_suffix() lists each variable pair and the corresponding alphanumeric suffix
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dplyover</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.0.8.9001</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.0.8.9002</span>
       </span>
     </div>
 
@@ -227,11 +227,11 @@ any arguments:<div class="r"></p><pre> <span class='va'>iris</span> <span class=
                               sum <span class='op'>=</span> <span class='op'>~</span> <span class='va'>.x</span> <span class='op'>+</span> <span class='va'>.y</span><span class='op'>)</span>,
                   .names <span class='op'>=</span> <span class='st'>"{pre}_{fn}"</span><span class='op'>)</span><span class='op'>)</span>
 <span class='co'>#&gt; Error: Problem with `mutate()` input `..1`.</span>
+<span class='co'>#&gt; i `..1 = across2(...)`.</span>
 <span class='co'>#&gt; x Problem with `across2()` input `.names`.</span>
 <span class='co'>#&gt; i When `{pre}` is used inside `.names` each pair of input variables in `.xcols` and `.ycols` must share a common prefix of length &gt; 0.</span>
 <span class='co'>#&gt; x For at least one pair of variables a shared prefix could not be extracted.</span>
 <span class='co'>#&gt; i Run `show_prefix()` to see the prefixes for each variable pair.</span>
-<span class='co'>#&gt; i Input `..1` is `across2(...)`.</span>
 <span class='fu'>show_prefix</span><span class='op'>(</span><span class='op'>)</span>
 <span class='co'>#&gt; # A tibble: 2 x 3</span>
 <span class='co'>#&gt;   .xcols       .ycols      prefix</span>

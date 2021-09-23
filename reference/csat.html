@@ -85,7 +85,7 @@ set can be found here &amp;lt;csatraw&amp;gt;." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">dplyover</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.0.8.9001</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.0.8.9002</span>
       </span>
     </div>
 
@@ -192,19 +192,19 @@ How satisfied was he?</p></dd>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='va'>csat</span>
-</div><div class='output co'>#&gt; <span style='color: #949494;'># A tibble: 150 x 15</span>
-#&gt;    cust_id type   product  csat     csat_open       postal_contact postal_rating
-#&gt;    <span style='color: #949494; font-style: italic;'>&lt;chr&gt;</span>   <span style='color: #949494; font-style: italic;'>&lt;fct&gt;</span>  <span style='color: #949494; font-style: italic;'>&lt;fct&gt;</span>    <span style='color: #949494; font-style: italic;'>&lt;fct&gt;</span>    <span style='color: #949494; font-style: italic;'>&lt;chr&gt;</span>           <span style='color: #949494; font-style: italic;'>&lt;fct&gt;</span>          <span style='color: #949494; font-style: italic;'>&lt;fct&gt;</span>        
-#&gt; <span style='color: #BCBCBC;'> 1</span> 61297   exist… advanced Neutral  good service    within 1 to 3… Neutral      
-#&gt; <span style='color: #BCBCBC;'> 2</span> 07545   exist… advanced Unsatis… unfriendly      within 1 to 3… Unsatisfied  
-#&gt; <span style='color: #BCBCBC;'> 3</span> 03822   exist… premium  Unsatis… too expensive,… within 1 to 3… Very satisfi…
-#&gt; <span style='color: #BCBCBC;'> 4</span> 88219   react… basic    Satisfi… good service, … within last y… Very satisfi…
-#&gt; <span style='color: #BCBCBC;'> 5</span> 31831   new    basic    Satisfi… good service, … within last y… Unsatisfied  
-#&gt; <span style='color: #BCBCBC;'> 6</span> 63646   new    basic    Neutral  too expensive   no contact     <span style='color: #BB0000;'>NA</span>           
-#&gt; <span style='color: #BCBCBC;'> 7</span> 63600   exist… advanced Very un… no response, u… within last y… Neutral      
-#&gt; <span style='color: #BCBCBC;'> 8</span> 82048   react… advanced Neutral  great product,… within 1 to 3… Neutral      
-#&gt; <span style='color: #BCBCBC;'> 9</span> 41142   react… advanced Neutral  too expensive,… within 1 to 3… Satisfied    
-#&gt; <span style='color: #BCBCBC;'>10</span> 00803   new    premium  Unsatis… too expensive,… no contact     <span style='color: #BB0000;'>NA</span>           
+</div><div class='output co'>#&gt; <span style='color: #949494;'># A tibble: 150 × 15</span>
+#&gt;    cust_id type       product  csat             csat_open postal_contact postal_rating
+#&gt;    <span style='color: #949494; font-style: italic;'>&lt;chr&gt;</span>   <span style='color: #949494; font-style: italic;'>&lt;fct&gt;</span>      <span style='color: #949494; font-style: italic;'>&lt;fct&gt;</span>    <span style='color: #949494; font-style: italic;'>&lt;fct&gt;</span>            <span style='color: #949494; font-style: italic;'>&lt;chr&gt;</span>     <span style='color: #949494; font-style: italic;'>&lt;fct&gt;</span>          <span style='color: #949494; font-style: italic;'>&lt;fct&gt;</span>        
+#&gt; <span style='color: #BCBCBC;'> 1</span> 61297   existing   advanced Neutral          good ser… within 1 to 3… Neutral      
+#&gt; <span style='color: #BCBCBC;'> 2</span> 07545   existing   advanced Unsatisfied      unfriend… within 1 to 3… Unsatisfied  
+#&gt; <span style='color: #BCBCBC;'> 3</span> 03822   existing   premium  Unsatisfied      too expe… within 1 to 3… Very satisfi…
+#&gt; <span style='color: #BCBCBC;'> 4</span> 88219   reactivate basic    Satisfied        good ser… within last y… Very satisfi…
+#&gt; <span style='color: #BCBCBC;'> 5</span> 31831   new        basic    Satisfied        good ser… within last y… Unsatisfied  
+#&gt; <span style='color: #BCBCBC;'> 6</span> 63646   new        basic    Neutral          too expe… no contact     <span style='color: #BB0000;'>NA</span>           
+#&gt; <span style='color: #BCBCBC;'> 7</span> 63600   existing   advanced Very unsatisfied no respo… within last y… Neutral      
+#&gt; <span style='color: #BCBCBC;'> 8</span> 82048   reactivate advanced Neutral          great pr… within 1 to 3… Neutral      
+#&gt; <span style='color: #BCBCBC;'> 9</span> 41142   reactivate advanced Neutral          too expe… within 1 to 3… Satisfied    
+#&gt; <span style='color: #BCBCBC;'>10</span> 00803   new        premium  Unsatisfied      too expe… no contact     <span style='color: #BB0000;'>NA</span>           
 #&gt; <span style='color: #949494;'># … with 140 more rows, and 8 more variables: phone_contact &lt;fct&gt;,</span>
 #&gt; <span style='color: #949494;'>#   phone_rating &lt;fct&gt;, email_contact &lt;fct&gt;, email_rating &lt;fct&gt;,</span>
 #&gt; <span style='color: #949494;'>#   website_contact &lt;fct&gt;, website_rating &lt;fct&gt;, shop_contact &lt;fct&gt;,</span>
