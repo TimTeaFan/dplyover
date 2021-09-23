@@ -56,11 +56,11 @@ any arguments:\if{html}{\out{<div class="r">}}\preformatted{ iris \%>\%
                               sum = ~ .x + .y),
                   .names = "\{pre\}_\{fn\}"))
 #> Error: Problem with `mutate()` input `..1`.
+#> i `..1 = across2(...)`.
 #> x Problem with `across2()` input `.names`.
 #> i When `\{pre\}` is used inside `.names` each pair of input variables in `.xcols` and `.ycols` must share a common prefix of length > 0.
 #> x For at least one pair of variables a shared prefix could not be extracted.
 #> i Run `show_prefix()` to see the prefixes for each variable pair.
-#> i Input `..1` is `across2(...)`.
 show_prefix()
 #> # A tibble: 2 x 3
 #>   .xcols       .ycols      prefix

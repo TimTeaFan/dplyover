@@ -108,10 +108,10 @@ transform the names, in the example setting them \code{tolower} by specifying th
 #> # A tibble: 150 x 4
 #>   sepal_product sepal_sum petal_product petal_sum
 #>           <dbl>     <dbl>         <dbl>     <dbl>
-#> 1          17.8       8.6         0.280      1.60
-#> 2          14.7       7.9         0.280      1.60
-#> 3          15.0       7.9         0.26       1.5 
-#> 4          14.3       7.7         0.3        1.7 
+#> 1          17.8       8.6          0.28       1.6
+#> 2          14.7       7.9          0.28       1.6
+#> 3          15.0       7.9          0.26       1.5
+#> 4          14.3       7.7          0.3        1.7
 #> # ... with 146 more rows
 }\if{html}{\out{</div>}}
 
@@ -132,12 +132,12 @@ by setting the \code{.comb} argument to \code{"minimal"}.\if{html}{\out{<div cla
                                      gsub("Petal", "P", .),
                      .comb = "minimal"))
 #> # A tibble: 3 x 7
-#>   Species    S.Length_S.Width S.Length_P.Length S.Length_P.Width S.Width_P.Length S.Width_P.Width
-#>   <fct>                 <dbl>             <dbl>            <dbl>            <dbl>           <dbl>
-#> 1 setosa                 0.74              0.27             0.28             0.18            0.23
-#> 2 versicolor             0.53              0.75             0.55             0.56            0.66
-#> 3 virginica              0.46              0.86             0.28             0.4             0.54
-#> # ... with 1 more variable: P.Length_P.Width <dbl>
+#>   Species    S.Length_S.Width S.Length_P.Length S.Length_P.Width S.Width_P.Length
+#>   <fct>                 <dbl>             <dbl>            <dbl>            <dbl>
+#> 1 setosa                 0.74              0.27             0.28             0.18
+#> 2 versicolor             0.53              0.75             0.55             0.56
+#> 3 virginica              0.46              0.86             0.28             0.4 
+#> # ... with 2 more variables: S.Width_P.Width <dbl>, P.Length_P.Width <dbl>
 }\if{html}{\out{</div>}}
 }
 
