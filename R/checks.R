@@ -8,8 +8,15 @@ inspect_call <- function(warn = TRUE, last_verb = FALSE) {
   out <- list(warn = FALSE,
               last_verb = NULL)
   trace_bck <- rlang::trace_back()
-  call_fns <- lapply(trace_bck$calls, function(x) { `[[`(x, 1) })
 
+  if (is.null(trace_bck$calls)) {
+    call_fns <- purrr::map(purrr::transpose(trace_bck), function(trace) {
+                  paste0(trace$namespace,
+                    trace$scope,
+                    as.character(trace$call[1]))})
+  } else {
+    call_fns <- purrr::map(trace_bck$calls, function(call)  `[[`(call, 1) )
+  }
   limit <- min(which(grepl("^dplyover::", call_fns)))
   mut_id <- which(grepl("^dplyr:::mutate", call_fns[1:limit - 1]))
 
@@ -22,7 +29,7 @@ inspect_call <- function(warn = TRUE, last_verb = FALSE) {
   if (warn) {
       if (length(mut_id) > 0) {
 
-      last_mut <- as.list(trace_bck$calls[[max(mut_id) - 2]])
+      last_mut <- as.list(trace_bck$call[[max(mut_id) - 2]])
 
       keep_arg <- grepl("^\\.keep$", names(last_mut), perl = TRUE)
 
