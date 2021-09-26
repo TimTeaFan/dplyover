@@ -21,18 +21,25 @@ last_verb <- function() {
   # get trace_back info
   trace_bck <- rlang::trace_back()
 
-  # get call names
-  call_fns <- lapply(trace_bck$calls, function(x) { `[[`(x, 1) })
+  # get call names depending on rlang version
+  if (is.null(trace_bck$calls)) { # rlang version 0.4.11.9001
+    call_fns <- purrr::map(purrr::transpose(trace_bck), function(trace) {
+      paste0(trace$namespace,
+             trace$scope,
+             as.character(trace$call[1]))})
+  } else { # earlier rlang version
+    call_fns <- purrr::map(trace_bck$calls, function(call)  `[[`(call, 1) )
+  }
 
   # get last dplyr verb
   out <- max(which(grepl("^dplyr:::[mutate|summarise|summarize|filter|select|arrange|transmute]", call_fns)))
 
-  call_nm <- rlang::call_name(trace_bck$calls[[out]])
+  call_nm <- rlang::call_name(trace_bck$call[[out]])
 
   # verify that trace_back() covers all calls
   sc <- lapply(sys.calls(), function(x) `[[`(x, 1))
 
-  if(length(sc) > length(trace_bck$calls)) {
+  if(length(sc) > length(trace_bck$call)) {
     for (i in rev(seq_along(sc))) {
       if (as.character(sc[[i]])[1] == call_nm) {
         out <- i
