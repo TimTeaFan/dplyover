@@ -357,10 +357,9 @@ across2x <- function(.xcols, .ycols, .fns, ..., .names = NULL, .names_fn = NULL,
   names <- setup$names
 
   if (setup$dplyr_env > 0) {
-    data <- mget(union(xvars, yvars),
-                 envir = rlang::env_parent(parent.frame(setup$dplyr_env), n = 1))
+    data_env <- rlang::env_parent(parent.frame(setup$dplyr_env), n = 1)
   } else {
-    data <- mget(union(xvars, yvars), envir = as.environment(dplyr::cur_data()))
+    data_env <- rlang::as_data_mask(dplyr::cur_data())
   }
 
   n_xcols <- length(xvars)
@@ -373,11 +372,14 @@ across2x <- function(.xcols, .ycols, .fns, ..., .names = NULL, .names_fn = NULL,
   out <- vector("list", n_xcols * n_ycols * n_fns)
   out_check <- vector("character", n_xcols * n_ycols * n_fns)
 
+
   for (i in seq_n_xcols) {
-    xcol <- xvars[i]
+    setup_env$xcol <- xcol <- xvars[i]
+
     for(l in seq_n_ycols) {
-      ycol <- yvars[l]
+      setup_env$ycol <- ycol <- yvars[l]
       new_nm <- paste(sort(c(xcol, ycol)), collapse = "_")
+
       if ((comb == "unique" || comb == "minimal") && new_nm %in% out_check) {
         k <- k + 1L
         out_check[k] <- new_nm
@@ -388,12 +390,12 @@ across2x <- function(.xcols, .ycols, .fns, ..., .names = NULL, .names_fn = NULL,
         k <- k + 1L
         next
       }
+
       for (j in seq_fns) {
         fn <- fns[[j]]
-        out[[k]] <- fn(data[[xcol]],
-                       data[[ycol]],
+        out[[k]] <- fn(get(xcol, envir = data_env),
+                       get(ycol, envir = data_env),
                        ...)
-
         k <- k + 1L
       }
     }
@@ -401,7 +403,7 @@ across2x <- function(.xcols, .ycols, .fns, ..., .names = NULL, .names_fn = NULL,
 
   size <- vctrs::vec_size_common(!!!out)
   out <- vctrs::vec_recycle_common(!!!out, .size = size)
-  if (comb != "all" && length(.names) > 1 && setup$is_glue) { # check is is_glue is needed
+  if (comb != "all" && length(.names) > 1 && setup$is_glue) { # check if is_glue is needed
 
     out <- purrr::compact(out)
 
