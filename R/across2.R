@@ -332,7 +332,8 @@ across2_setup <- function(xcols, ycols, fns, names, names_fn) {
   value
 }
 
-
+#' @rdname across2
+#' @export
 across2x <- function(.xcols, .ycols, .fns, ..., .names = NULL, .names_fn = NULL, .comb = "all"){
 
   comb <- match.arg(.comb, c("all", "unique", "minimal"), several.ok = FALSE)
