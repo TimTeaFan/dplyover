@@ -1,34 +1,23 @@
-# crossoverx ------------------------------------------------------------------
+# crossover ------------------------------------------------------------------
 library(dplyr)
 
 # crossover examples of basic functionality from the example section
-# test_that("crossover() exmample with `.y` as function", {
-#
-#   df_crossover <- csat %>%
-#     transmute(
-#       crossover(.xcols = c(type, product, csat),
-#                 .y = dist_values,
-#                 .fns = ~ if_else(.y == .x, 1, 0),
-#                 .names_fn = ~ gsub("\\s", "_", .x) %>% tolower(.)
-#       ))
-#
-#   df_expect <- csat %>%
-#     transmute(
-#       type_new = if_else(type == "new", 1, 0),
-#       type_existing = if_else(type == "existing", 1, 0),
-#       type_reactivate = if_else(type == "reactivate", 1, 0),
-#       product_basic = if_else(product == "basic", 1, 0),
-#       product_advanced = if_else(product == "advanced", 1, 0),
-#       product_premium = if_else(product == "premium", 1, 0),
-#       csat_very_unsatisfied = if_else(csat == "Very unsatisfied", 1, 0),
-#       csat_unsatisfied = if_else(csat == "Unsatisfied", 1, 0),
-#       csat_neutral = if_else(csat == "Neutral", 1, 0),
-#       csat_satisfied = if_else(csat == "Satisfied", 1, 0),
-#       csat_very_satisfied = if_else(csat == "Very satisfied", 1, 0))
-#
-#   expect_equal(df_crossover, df_expect)
-#
-# })
+test_that("crossover() exmample with function names in `.y` ", {
+
+  df_crossover <- iris %>%
+        summarise(
+          crossover(starts_with("sepal"),
+                    c("mean", "sd"),
+                    ~ do.call(.y, list(.x)),
+                    .names = "{xcol}_{y}"))
+
+  df_expect <- iris %>%
+    summarise(Sepal.Length_mean = mean(Sepal.Length),
+              Sepal.Width_sd = sd(Sepal.Width))
+
+  expect_equal(df_crossover, df_expect)
+
+})
 
 test_that("crossoverx() exmample lagged variables", {
 
