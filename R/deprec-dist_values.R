@@ -12,9 +12,9 @@
 #' factor variables: levels) of a variable `x` which are not `NA`.
 #'
 #' @param x An atomic vector or list. For [seq_range()] x must be numeric or date.
-#' @param sep  A character vector containing regular expression(s) which are used
+#' @param .sep  A character vector containing regular expression(s) which are used
 #'   for splitting the values (works only if x is a character vector).
-#' @param sort A character string indicating which sorting scheme is to be applied
+#' @param .sort A character string indicating which sorting scheme is to be applied
 #'   to distinct values: ascending ("asc"), descending ("desc"), "none" or "levels". The
 #'   default is ascending, only if x is a factor the default is "levels".
 #'
@@ -71,35 +71,35 @@
 #'
 #' (3) As default, the output is sorted in ascending order for non-factors, and
 #' is sorted as the underyling "levels" for factors. This can be controlled by
-#' setting the `sort` argument. Compare:
+#' setting the `.sort` argument. Compare:
 #'
 #' ```{r, comment = "#>", collapse = TRUE}
 #' # non-factors
 #' unique(c(3,1,2))
 #'
 #' dist_values(c(3,1,2))
-#' dist_values(c(3,1,2), sort = "desc")
-#' dist_values(c(3,1,2), sort = "none")
+#' dist_values(c(3,1,2), .sort = "desc")
+#' dist_values(c(3,1,2), .sort = "none")
 #'
 #' # factors
 #' fctrs <- factor(c(2,1,3, NA), levels = c(3:1))
 #'
 #' dist_values(fctrs)
-#' dist_values(fctrs, sort = "levels")
-#' dist_values(fctrs, sort = "asc")
-#' dist_values(fctrs, sort = "desc")
-#' dist_values(fctrs, sort = "none")
+#' dist_values(fctrs, .sort = "levels")
+#' dist_values(fctrs, .sort = "asc")
+#' dist_values(fctrs, .sort = "desc")
+#' dist_values(fctrs, .sort = "none")
 #'
 #' ```
 #'
 #' (4) When used on a character vector `dist_values` can take a separator
-#' `sep` to split the elements accordingly:
+#' `.sep` to split the elements accordingly:
 #'
 #' ```{r, comment = "#>", collapse = TRUE}
 #' c("1, 2, 3",
 #'   "2, 4, 5",
 #'   "4, 1, 7") %>%
-#'   dist_values(., sep = ", ")
+#'   dist_values(., .sep = ", ")
 #' ```
 #'
 #' (5) When used on lists `dist_values` automatically simplifiies its input
@@ -112,7 +112,7 @@
 #' @keywords internal
 #' @export
 dist_values <- function(x, .sep = NULL, .sort = c("asc", "desc", "none", "levels")) {
-  lifecycle::deprecate_warn("0.0.9", "dist_values()", "unique_tidy()")
+  lifecycle::deprecate_warn("0.1.0", "dist_values()", "unique_tidy()")
 
   is_null <- identical(.sort, c("asc", "desc", "none", "levels"))
   sort <- match.arg(.sort)
@@ -135,7 +135,7 @@ dist_values <- function(x, .sep = NULL, .sort = c("asc", "desc", "none", "levels
     }
   } else {
     x <- levels(x)
-    if (is_null || .sort == "levels") {
+    if (is_null || sort == "levels") {
       return(x)
     } else if (sort == "asc") {
       return(sort(x))

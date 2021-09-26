@@ -6,7 +6,7 @@
 #' to be used inside all functions that accept a vector as argument (that is `over()`
 #' and `crossover()` and all their variants) to extract values of a variable.
 #'
-#' * [dist_values()] returns all distinct values (or in the case of factor variables:
+#' * [unique_tidy()] returns all distinct values (or in the case of factor variables:
 #'   levels) of a variable `x` which are not `NA`.
 #'
 #' * [seq_range()] returns the sequence between the `range()` of a variable `x`.
@@ -20,7 +20,7 @@
 #' @param .by A number (or date expression) representing the increment of the sequence.
 #'
 #' @return
-#' [dist_values()] returns a vector of the same type of x, with exception of
+#' [unique_tidy()] returns a vector of the same type of x, with exception of
 #' factors which are converted to type `"character"`.
 #'
 #' [seq_range()] returns an vector of type `"integer"` or `"double"`.
@@ -40,28 +40,28 @@
 #' iris <- as_tibble(iris)
 #' ```
 #'
-#' `dist_values()` extracts all distinct values of a column variable.
+#' `unique_tidy()` extracts all distinct values of a column variable.
 #' This is helpful when creating dummy variables in a loop using `over()`.
 #'
 #' ```{r, comment = "#>", collapse = TRUE}
 #' iris %>%
-#'   mutate(over(dist_values(Species),
+#'   mutate(over(unique_tidy(Species),
 #'               ~ if_else(Species == .x, 1, 0)
 #'               ),
 #'          .keep = "none")
 #' ```
 #'
-#' `dist_values()` is just a wrapper around unique. However, it has five
+#' `unique_tidy()` is just a wrapper around unique. However, it has five
 #' differences:
 #'
 #' (1) `NA` values are automatically stripped. Compare:
 #'
 #' ```{r, comment = "#>", collapse = TRUE}
 #' unique(c(1:3, NA))
-#' dist_values(c(1:3, NA))
+#' unique_tidy(c(1:3, NA))
 #' ```
 #'
-#' (2) Applied on factors, `dist_values()` returns all distinct `levels` as
+#' (2) Applied on factors, `unique_tidy()` returns all distinct `levels` as
 #' character. Compare the following:
 #'
 #' ```{r, comment = "#>", collapse = TRUE}
@@ -69,7 +69,7 @@
 #'
 #' fctrs %>% unique() %>% class()
 #'
-#' fctrs %>% dist_values() %>% class()
+#' fctrs %>% unique_tidy() %>% class()
 #' ```
 #'
 #' (3) As default, the output is sorted in ascending order for non-factors, and
@@ -80,37 +80,36 @@
 #' # non-factors
 #' unique(c(3,1,2))
 #'
-#' dist_values(c(3,1,2))
-#' dist_values(c(3,1,2), sort = "desc")
-#' dist_values(c(3,1,2), sort = "none")
+#' unique_tidy(c(3,1,2))
+#' unique_tidy(c(3,1,2), sort = "desc")
+#' unique_tidy(c(3,1,2), sort = "none")
 #'
 #' # factors
 #' fctrs <- factor(c(2,1,3, NA), levels = c(3:1))
 #'
-#' dist_values(fctrs)
-#' dist_values(fctrs, sort = "levels")
-#' dist_values(fctrs, sort = "asc")
-#' dist_values(fctrs, sort = "desc")
-#' dist_values(fctrs, sort = "none")
+#' unique_tidy(fctrs)
+#' unique_tidy(fctrs, sort = "asc")
+#' unique_tidy(fctrs, sort = "desc")
+#' unique_tidy(fctrs, sort = "none")
 #'
 #' ```
 #'
-#' (4) When used on a character vector `dist_values` can take a separator
+#' (4) When used on a character vector `unique_tidy` can take a separator
 #' `sep` to split the elements accordingly:
 #'
 #' ```{r, comment = "#>", collapse = TRUE}
 #' c("1, 2, 3",
 #'   "2, 4, 5",
 #'   "4, 1, 7") %>%
-#'   dist_values(., sep = ", ")
+#'   unique_tidy(., sep = ", ")
 #' ```
 #'
-#' (5) When used on lists `dist_values` automatically simplifiies its input
+#' (5) When used on lists `unique_tidy` automatically simplifies its input
 #' into a vector using `unlist`:
 #'
 #' ```{r, comment = "#>", collapse = TRUE}
 #' list(a = c(1:4), b = (4:6), c(5:10)) %>%
-#'   dist_values()
+#'   unique_tidy()
 #' ```
 #'
 #' ----------

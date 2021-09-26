@@ -2,28 +2,34 @@
 % Please edit documentation in R/select_values.R
 \name{select_values}
 \alias{select_values}
-\alias{dist_values}
+\alias{unique_tidy}
 \alias{seq_range}
 \title{Select values from variables}
 \usage{
-dist_values(x, .sep = NULL, .sort = c("asc", "desc", "none", "levels"))
+unique_tidy(
+  x,
+  sort = c("none", "asc", "desc"),
+  sep = NULL,
+  na.rm = TRUE,
+  grp_data = c("warn", "ungroup", "silent")
+)
 
 seq_range(x, .by)
 }
 \arguments{
 \item{x}{An atomic vector or list. For \code{\link[=seq_range]{seq_range()}} x must be numeric or date.}
 
-\item{.sep}{A character vector containing regular expression(s) which are used
-for splitting the values (works only if x is a character vector).}
-
-\item{.sort}{A character string indicating which sorting scheme is to be applied
+\item{sort}{A character string indicating which sorting scheme is to be applied
 to distinct values: ascending ("asc"), descending ("desc"), "none" or "levels". The
 default is ascending, only if x is a factor the default is "levels".}
+
+\item{sep}{A character vector containing regular expression(s) which are used
+for splitting the values (works only if x is a character vector).}
 
 \item{.by}{A number (or date expression) representing the increment of the sequence.}
 }
 \value{
-\code{\link[=dist_values]{dist_values()}} returns a vector of the same type of x, with exception of
+\code{\link[=unique_tidy]{unique_tidy()}} returns a vector of the same type of x, with exception of
 factors which are converted to type \code{"character"}.
 
 \code{\link[=seq_range]{seq_range()}} returns an vector of type \code{"integer"} or \code{"double"}.
@@ -33,7 +39,7 @@ These functions are \link[=selection_helpers]{selection helpers}. They are inten
 to be used inside all functions that accept a vector as argument (that is \code{over()}
 and \code{crossover()} and all their variants) to extract values of a variable.
 \itemize{
-\item \code{\link[=dist_values]{dist_values()}} returns all distinct values (or in the case of factor variables:
+\item \code{\link[=unique_tidy]{unique_tidy()}} returns all distinct values (or in the case of factor variables:
 levels) of a variable \code{x} which are not \code{NA}.
 \item \code{\link[=seq_range]{seq_range()}} returns the sequence between the \code{range()} of a variable \code{x}.
 }
@@ -48,9 +54,9 @@ used inside \code{dplyr::mutate} or \code{dplyr::summarise}. Let's first attach 
 iris <- as_tibble(iris)
 }\if{html}{\out{</div>}}
 
-\code{dist_values()} extracts all distinct values of a column variable.
+\code{unique_tidy()} extracts all distinct values of a column variable.
 This is helpful when creating dummy variables in a loop using \code{over()}.\if{html}{\out{<div class="r">}}\preformatted{iris \%>\%
-  mutate(over(dist_values(Species),
+  mutate(over(unique_tidy(Species),
               ~ if_else(Species == .x, 1, 0)
               ),
          .keep = "none")
@@ -64,64 +70,62 @@ This is helpful when creating dummy variables in a loop using \code{over()}.\if{
 #> # ... with 146 more rows
 }\if{html}{\out{</div>}}
 
-\code{dist_values()} is just a wrapper around unique. However, it has five
+\code{unique_tidy()} is just a wrapper around unique. However, it has five
 differences:
 
 (1) \code{NA} values are automatically stripped. Compare:\if{html}{\out{<div class="r">}}\preformatted{unique(c(1:3, NA))
 #> [1]  1  2  3 NA
-dist_values(c(1:3, NA))
+unique_tidy(c(1:3, NA))
 #> [1] 1 2 3
 }\if{html}{\out{</div>}}
 
-(2) Applied on factors, \code{dist_values()} returns all distinct \code{levels} as
+(2) Applied on factors, \code{unique_tidy()} returns all distinct \code{levels} as
 character. Compare the following:\if{html}{\out{<div class="r">}}\preformatted{fctrs <- factor(c(1:3, NA), levels = c(3:1))
 
 fctrs \%>\% unique() \%>\% class()
 #> [1] "factor"
 
-fctrs \%>\% dist_values() \%>\% class()
+fctrs \%>\% unique_tidy() \%>\% class()
 #> [1] "character"
 }\if{html}{\out{</div>}}
 
 (3) As default, the output is sorted in ascending order for non-factors, and
 is sorted as the underyling "levels" for factors. This can be controlled by
-setting the \code{.sort} argument. Compare:\if{html}{\out{<div class="r">}}\preformatted{# non-factors
+setting the \code{sort} argument. Compare:\if{html}{\out{<div class="r">}}\preformatted{# non-factors
 unique(c(3,1,2))
 #> [1] 3 1 2
 
-dist_values(c(3,1,2))
-#> [1] 1 2 3
-dist_values(c(3,1,2), .sort = "desc")
+unique_tidy(c(3,1,2))
+#> [1] 3 1 2
+unique_tidy(c(3,1,2), sort = "desc")
 #> [1] 3 2 1
-dist_values(c(3,1,2), .sort = "none")
+unique_tidy(c(3,1,2), sort = "none")
 #> [1] 3 1 2
 
 # factors
 fctrs <- factor(c(2,1,3, NA), levels = c(3:1))
 
-dist_values(fctrs)
+unique_tidy(fctrs)
 #> [1] "3" "2" "1"
-dist_values(fctrs, .sort = "levels")
-#> [1] "3" "2" "1"
-dist_values(fctrs, .sort = "asc")
+unique_tidy(fctrs, sort = "asc")
 #> [1] "1" "2" "3"
-dist_values(fctrs, .sort = "desc")
+unique_tidy(fctrs, sort = "desc")
 #> [1] "3" "2" "1"
-dist_values(fctrs, .sort = "none")
-#> [1] "2" "1" "3"
+unique_tidy(fctrs, sort = "none")
+#> [1] "3" "2" "1"
 }\if{html}{\out{</div>}}
 
-(4) When used on a character vector \code{dist_values} can take a separator
-\code{.sep} to split the elements accordingly:\if{html}{\out{<div class="r">}}\preformatted{c("1, 2, 3",
+(4) When used on a character vector \code{unique_tidy} can take a separator
+\code{sep} to split the elements accordingly:\if{html}{\out{<div class="r">}}\preformatted{c("1, 2, 3",
   "2, 4, 5",
   "4, 1, 7") \%>\%
-  dist_values(., .sep = ", ")
+  unique_tidy(., sep = ", ")
 #> [1] "1" "2" "3" "4" "5" "7"
 }\if{html}{\out{</div>}}
 
-(5) When used on lists \code{dist_values} automatically simplifiies its input
+(5) When used on lists \code{unique_tidy} automatically simplifies its input
 into a vector using \code{unlist}:\if{html}{\out{<div class="r">}}\preformatted{list(a = c(1:4), b = (4:6), c(5:10)) \%>\%
-  dist_values()
+  unique_tidy()
 #>  [1]  1  2  3  4  5  6  7  8  9 10
 }\if{html}{\out{</div>}}
 
@@ -162,14 +166,6 @@ example above:\if{html}{\out{<div class="r">}}\preformatted{iris \%>\%
 #> # ... with 146 more rows
 }\if{html}{\out{</div>}}
 
-\code{seq_range()} also works on dates:\if{html}{\out{<div class="r">}}\preformatted{some_dates <- c(as.Date("2020-01-02"),
-                as.Date("2020-05-02"),
-                as.Date("2020-03-02"))
-
-
-some_dates \%>\%
-  seq_range(., "1 month")
-#> [1] "2020-01-02" "2020-02-02" "2020-03-02" "2020-04-02" "2020-05-02"
-}\if{html}{\out{</div>}}
+\code{seq_range()} also works on dates:
 }
 
