@@ -46,7 +46,8 @@ one or several functions to:
  - `over2x()` two vectors (nested^+^)
  - `across2()` two sets of columns (sequentially^#^)
  - `across2x()` two sets of columns (nested^+^)
- - `crossover()` a set of columns and a vector (nested^+^)
+ - `crossover()` a set of columns and a vector (sequentially^#^)
+ - `crossoverx()` a set of columns and a vector (nested^+^)
 
 <small># "sequentially" means that the function is sequentially applied to the
 first two elements of `x[[1]]` and `y[[1]]`, then to the second pair of elements

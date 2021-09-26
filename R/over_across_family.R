@@ -19,10 +19,11 @@
 #'  - [over()]: a vector (list or atomic vector)
 #'
 #' ### variants
-#'  - [over2()] two vectors of the same length (pairwise)
+#'  - [over2()] two vectors of the same length (pairwise sequentially)
 #'  - [over2x()] two vectors (nested)
-#'  - [across2()] two sets of columns (pairwise)
+#'  - [across2()] two sets of columns (pairwise sequentially)
 #'  - [across2x()] two sets of columns (nested)
+#'  - [crossover()] a set of columns and a vector (pairwise sequentially)
 #'  - [crossoverx()] a set of columns and a vector (nested)
 #'
 #' @name over_across_family

@@ -12,7 +12,7 @@
 #'  - [extract_names()] extracts a specified pattern.
 #'
 #' Helpers which select **values** of a variable:
-#'  - [dist_values()] returns all distinct values.
+#'  - [unique_tidy()] returns all unique values without `NA`.
 #'  - [seq_range()] returns the sequence between the `range()` of a variable.
 #'
 #' A helper function that evaluates a glue specification as variable
