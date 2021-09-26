@@ -181,7 +181,7 @@ crossoverx_setup <- function(cols, y1, fns, names, names_fn) {
 
       lifecycle::deprecate_stop(
         when = "0.1.0",
-        what = "add_two(.y)",
+        what = "crossoverx(.y)",
         details = "The ability to supply a function as argument to `.y` is dropped. Please use `crossfun()` instead."
       )
     }
