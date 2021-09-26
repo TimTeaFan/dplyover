@@ -143,13 +143,13 @@
 #' `seq_range()` also works on dates:
 #'
 #' ```{r, comment = "#>", collapse = TRUE}
-# some_dates <- c(as.Date("2020-01-02"),
-#                 as.Date("2020-05-02"),
-#                 as.Date("2020-03-02"))
-#
-#
-# some_dates %>%
-#   seq_range(., "1 month")
+#' some_dates <- c(as.Date("2020-01-02"),
+#'                 as.Date("2020-05-02"),
+#'                 as.Date("2020-03-02"))
+#'
+#'
+#' some_dates %>%
+#'   seq_range(., "1 month")
 #' ```
 #'
 #' @name select_values
@@ -162,11 +162,10 @@ unique_tidy <- function(x, sort = c("none", "asc", "desc"),
 
   # setup
   x <- rlang::enquo(x)
-  # input_cols <- !rlang::quo_is_null(cols)
   grp_data <- match.arg(grp_data)
   sort <- match.arg(sort)
 
-  # check if in dplyr
+  # check if in dplyover
   dplyr_call <- dynGet("last_dplyr_frame", ifnotfound = NULL)
 
   if (!is.null(dplyr_call)) {
@@ -246,23 +245,30 @@ unique_tidy <- function(x, sort = c("none", "asc", "desc"),
 
 #' @rdname select_values
 #' @export
-seq_range <- function(x, .by) {
+seq_range <- function(x, by, .by = lifecycle::deprecated()) {
 
+  if (lifecycle::is_present(.by)) {
+      lifecycle::deprecate_stop(
+        when = "0.1.0",
+        what = "seq_rang(.by)",
+        details = "The `.by` argument has been renamed to `by` as of version 0.1.0"
+      )
+  }
   if (!class(x) %in% c("numeric", "integer", "Date")) {
     rlang::abort(
       c("Problem with `seq_range()` input `x`.",
-        i = "`x` must be a numeric vector.",
+        i = "`x` must be a numeric or date vector.",
         x = paste0("`x` is of class: ", class(x), "."))
       )
   }
 
   .range <- range(x)
 
-  if (!is.date(x) && identical(.by, round(.by, 0))) {
+  if (!is.date(x) && identical(by, round(by, 0))) {
     .range[1] <- ceiling(.range[1])
     .range[2] <- floor(.range[2])
   }
 
-  seq(.range[1], .range[2], by = .by)
+  seq(.range[1], .range[2], by = by)
 
 }
