@@ -1,9 +1,9 @@
 #' Apply functions to a set of columns and a vector simultaniously in 'dplyr'
 #'
 #' @description
-#' `crossover()` combines the functionality of [dplyr::across()] with [over()]
+#' `crossoverx()` combines the functionality of [dplyr::across()] with [over()]
 #' by iterating simultaneously over (i) a set of columns (`.xcols`) and (ii)
-#' a vector or list (`.y`). `crossover()` *always* applies the functions in
+#' a vector or list (`.y`). `crossoverx()` *always* applies the functions in
 #' `.fns` in a *nested* way to a combination of both inputs. There are, however,
 #' two different ways in which the functions in `.fns` are applied.
 #'
@@ -11,35 +11,11 @@
 #' *all pairwise combinations* between columns in `.xcols` and elements in
 #' `.y` (this resembles the behavior of `over2x()` and `across2x()`).
 #'
-#' `crossover()` has one trick up it's sleeves, which sets it apart from the other
-#' functions in the <[`over-across family`][over_across_family]>: Its second input
-#' (`.y`) can be a function. This changes the originial behavior slightly: First
-#' the function in `.y` is applied to all columns in `.xcols` to *generate* an
-#' input object which will be used as `.y` in the function calls in `.fns`.
-#' In this case each function is applied to all pairs between (i) columns in
-#' `.xcols` with (ii) the output elements that they generated through the
-#' function that was originally supplied to `.y`. Note that the underyling
-#' data must not be grouped, if a function is supplied to `.y`. For examples see
-#' the example section below.
-#'
 #' @param .xcols <[`tidy-select`][dplyr_tidy_select]> Columns to transform.
-#'   Because `crossover()` is used within functions like `summarise()` and
+#'   Because `crossoverx()` is used within functions like `summarise()` and
 #'   `mutate()`, you can't select or compute upon grouping variables.
 #'
-#' @param .y An atomic vector or list to apply functions to. `crossover()` also
-#'   accepts a function as `.y` argument. In this case each column in `.xcols`
-#'   is looped over all the outputs that it generated with the function supplied
-#'   to `.y`. Note: the underyling data must not be grouped, if a function
-#'   is supplied to `.y`.
-#'
-#'   If a function is supplied, the following values are possible:
-#'
-#'   - A bare function name, e.g. `unique`
-#'   - An anonymous function, e.g. `function(x) unique(x)`
-#'   - A purrr-style lambda, e.g. `~ unique(.x, fromLast = TRUE)`
-#'
-#'   Note that additional arguments can only be specified with an anonymous
-#'   function, a purrr-style lamba or with a pre-filled custom function.
+#' @param .y An atomic vector or list to apply functions to.
 #'
 #' @param .fns Functions to apply to each column in `.xcols` and element in `.y`.
 #'
@@ -86,12 +62,8 @@
 #'   in case the resulting names need to be further cleaned or trimmed.
 #'
 #' @returns
-#' `crossover()` returns a tibble with one column for each combination of
+#' `crossoverx()` returns a tibble with one column for each combination of
 #' columns in `.xcols`, elements in `.y` and functions in `.fns`.
-#'
-#' If a function is supplied as `.y` argument, `crossover()` returns a tibble with
-#' one column for each pair of output elements of `.y` and the column in `.xcols`
-#' that generated the output combined with each function in `.fns`.
 #'
 #' @seealso
 #' Other members of the <[`over-across function family`][over_across_family]>.
@@ -112,7 +84,7 @@
 #' ```
 #'
 #' ## Creating many similar variables for mulitple columns
-#' If `.y` is a vector or list, `crossover()` loops every combination between
+#' If `.y` is a vector or list, `crossoverx()` loops every combination between
 #' columns in `.xcols` and elements in `.y` over the functions in `.fns`. This
 #' is helpful in cases where we want to create a batch of similar variables with
 #' only slightly changes in the arguments of the calling function. A good example
@@ -123,42 +95,20 @@
 #' ```{r, comment = "#>", collapse = TRUE}
 #'  iris %>%
 #'    transmute(
-#'      crossover(starts_with("sepal"),
+#'      crossoverx(starts_with("sepal"),
 #'                1:5,
 #'                list(lag = ~ lag(.x, .y)),
 #'                .names = "{xcol}_{fn}{y}")) %>%
 #'    glimpse
 #' ```
 #'
-#' ## Creating dummy variables for multiple varialbes (columns)
-#' The `.y` argument of `crossover()` can take a function instead of list or vector.
-#' In the example below we select the columns 'type', 'product', 'csat' in `.xcols`.
-#' We supply the function [dist_values()] to `.y`, which is a cleaner variant of
-#' base R's `unique()`. This generates all distinct values for all three selected
-#' variables. Now, the function in `.fns`, `~ if_else(.y == .x, 1, 0)`, is applied
-#' to each pair of distinct value in `.y` and the column in `.xcols` that generated
-#' this value. This basically creates a dummy variable for each value of each
-#' variable. Since some of the values contain whitespace characters, we can use the
-#' `.names_fn` argument to supply a *third* function that cleans the output names
-#' by replacing spaces with an underscore and setting all characters `tolower()`.
-#'
-#' ```{r, comment = "#>", collapse = TRUE}
-#'  csat %>%
-#'    transmute(
-#'      crossover(.xcols = c(type, product, csat),
-#'                .y = dist_values,
-#'                .fns = ~ if_else(.y == .x, 1, 0),
-#'                .names_fn = ~ gsub("\\s", "_", .x) %>% tolower(.)
-#'                )) %>%
-#'    glimpse
-#' ```
 #'
 #'
 #' @export
-crossover <- function(.xcols = dplyr::everything(), .y, .fns, ..., .names = NULL, .names_fn = NULL){
+crossoverx <- function(.xcols = dplyr::everything(), .y, .fns, ..., .names = NULL, .names_fn = NULL){
 
   setup <- meta_setup(dep_call = deparse_call(sys.call()),
-                      setup_fn = "crossover_setup",
+                      setup_fn = "crossoverx_setup",
                       cols = rlang::enquo(.xcols),
                       y1 = .y,
                       fns = .fns,
@@ -175,50 +125,33 @@ crossover <- function(.xcols = dplyr::everything(), .y, .fns, ..., .names = NULL
   fns <- setup$fns
   names <- setup$names
 
-  data <- dplyr::cur_data()
-
-  if (setup$each) {
-    data <- data[unique(vars)]
-    data_ls <- as.list(data)[vars]
-    data <- tibble::new_tibble(data_ls, nrow = nrow(data))
+  if (setup$dplyr_env > 0) {
+    data_env <- rlang::env_parent(parent.frame(setup$dplyr_env), n = 1)
   } else {
-    data <- data[vars]
+    data_env <- rlang::as_data_mask(dplyr::cur_data())
   }
 
-  n_cols <- length(data)
+  n_cols <- length(vars)
   n_fns <- length(fns)
   seq_n_cols <- seq_len(n_cols)
   seq_fns <- seq_len(n_fns)
 
   k <- 1L
 
-  if (setup$each) {
-  out <- vector("list", n_cols * n_fns)
+  n_y <- length(y)
+  seq_n_y <- seq_len(n_y)
+  out <- vector("list", n_cols * n_y * n_fns)
 
   for (i in seq_n_cols) {
-    col <- data[[i]]
-    yi <- y[[i]]
-    for (j in seq_fns) {
-      fn <- fns[[j]]
-      out[[k]] <- fn(col, yi, ...)
-      k <- k + 1L
-    }
-  }
+    setup_env$xcol <- col <- vars[i]
 
-  } else {
-    n_y <- length(y)
-    seq_n_y <- seq_len(n_y)
-    out <- vector("list", n_cols * n_y * n_fns)
+    for(l in seq_n_y) {
+      yl <- y[[l]]
 
-    for (i in seq_n_cols) {
-      col <- data[[i]]
-      for(l in seq_n_y) {
-        yl <- y[[l]]
-        for (j in seq_fns) {
-          fn <- fns[[j]]
-          out[[k]] <- fn(col, yl, ...)
-          k <- k + 1L
-        }
+      for (j in seq_fns) {
+        fn <- fns[[j]]
+        out[[k]] <- fn(get(col, envir = data_env), yl, ...)
+        k <- k + 1L
       }
     }
   }
@@ -230,7 +163,7 @@ crossover <- function(.xcols = dplyr::everything(), .y, .fns, ..., .names = NULL
   }
 
 
-crossover_setup <- function(cols, y1, fns, names, names_fn, each = FALSE) {
+crossoverx_setup <- function(cols, y1, fns, names, names_fn) {
 
   # setup: cols
   data <- dplyr::cur_data()
@@ -246,23 +179,12 @@ crossover_setup <- function(cols, y1, fns, names, names_fn, each = FALSE) {
   # if .y is function:
   if (is.function(y1) || rlang::is_formula(y1)) {
 
-    if (length(dplyr::cur_group()) > 0) {
-      rlang::abort(c("Problem with `crossover()` input `.y`.",
-                     i = "If `.y` is a function the underlying data must not be grouped.",
-                     x = "`crossover()` was used on a grouped data.frame."))
+      lifecycle::deprecate_stop(
+        when = "0.1.0",
+        what = "add_two(.y)",
+        details = "The ability to supply a function as argument to `.y` is dropped. Please use `crossfun()` instead."
+      )
     }
-
-    # set flag `each`
-    each <- TRUE
-
-    # expand vars
-    y1 <- rlang::as_function(y1)
-    y1 <- purrr::map(dplyr::select(data, !! cols), y1) # replace with: data[[, vars]]
-    vars <- unlist(purrr::imap(y1, ~ rep(.y, length(.x))))
-    y1 <- unlist(y1, recursive = FALSE)
-
-    if (!is.list(y1)) y1 <- unname(y1)
-  }
 
   y1_nm <- names(y1)
   y1_idx <- as.character(seq_along(y1))
@@ -293,8 +215,6 @@ crossover_setup <- function(cols, y1, fns, names, names_fn, each = FALSE) {
     names(y1) <- y1_idx
   }
 
-  # TODO: Default needed when function in .y returns values?
-
   # handle formulas
   fns <- purrr::map(fns, rlang::as_function)
 
@@ -310,7 +230,7 @@ crossover_setup <- function(cols, y1, fns, names, names_fn, each = FALSE) {
   }
 
   # setup control flow:
-  vars_no <- length(y1) * length(fns) * if (!each) length(y1) else 1
+  vars_no <- length(y1) * length(fns) * length(y1)
   maybe_glue <- any(grepl("{.*}", names, perl = TRUE))
   is_glue <- any(grepl("{(xcol|y|y_val|y_nm|y_idx|fn)}", names, perl = TRUE))
 
@@ -332,16 +252,6 @@ crossover_setup <- function(cols, y1, fns, names, names_fn, each = FALSE) {
       rlang::warn("in `crossover()` `.names`: used 'y_idx' instead of 'y_nm', since the input object is unnamed.")
     }
 
-    if (each) {
-    names <- vctrs::vec_as_names(glue::glue(names,
-                                            xcol = rep(vars, each = length(fns)),
-                                            y = rep(names(y1) %||% y1, each = length(fns)),
-                                            y_val = rep(y1_val %||% y1_idx, each = length(fns)),
-                                            y_nm = rep(y1_nm %||% y1_idx, each = length(fns)),
-                                            y_idx = rep(y1_idx, each = length(fns)),
-                                            fn = rep(names_fns, length(y1))),
-                                 repair = "check_unique")
-    } else {
       n_cols <- length(vars)
       n_y1 <- length(y1)
       n_nm_fns <- length(names_fns)
@@ -366,14 +276,12 @@ crossover_setup <- function(cols, y1, fns, names, names_fn, each = FALSE) {
         }
       }
       names <- vctrs::vec_as_names(out, repair = "check_unique")
-    }
-
 
     # no correct glue syntax detected
   } else {
     # glue syntax might be wrong
     if (maybe_glue && length(names) == 1 && vars_no > 1) {
-      rlang::abort(c("Problem with `crossover()`  input `.names`.",
+      rlang::abort(c("Problem with `crossover()` input `.names`.",
                      x = "Unrecognized glue specification `{...}` detected in `.names`.",
                      i = "`.names` only supports the following expressions: '{xcol}'. '{y}', '{y_val}', '{y_nm}', '{y_idx}' or '{fn}'."
       ))
@@ -395,7 +303,7 @@ crossover_setup <- function(cols, y1, fns, names, names_fn, each = FALSE) {
     names <- purrr::map_chr(names, nm_f)
   }
 
-  value <- list(vars = vars, y = y1, fns = fns, names = names, each = each)
+  value <- list(vars = vars, y = y1, fns = fns, names = names)
   value
 }
 
