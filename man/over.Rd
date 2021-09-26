@@ -247,12 +247,12 @@ using a separator:\if{html}{\out{<div class="r">}}\preformatted{csat \%>\%
               .keep = "none") \%>\% glimpse
 #> Rows: 150
 #> Columns: 6
-#> $ rsp_friendly_staff <int> 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1,~
-#> $ rsp_good_service   <int> 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 1,~
-#> $ rsp_great_product  <int> 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1,~
-#> $ rsp_no_response    <int> 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0,~
-#> $ rsp_too_expensive  <int> 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0,~
-#> $ rsp_unfriendly     <int> 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0,~
+#> $ rsp_friendly_staff <int> 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0,~
+#> $ rsp_good_service   <int> 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0,~
+#> $ rsp_great_product  <int> 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0,~
+#> $ rsp_no_response    <int> 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1,~
+#> $ rsp_too_expensive  <int> 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0,~
+#> $ rsp_unfriendly     <int> 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1,~
 }\if{html}{\out{</div>}}
 }
 
@@ -278,10 +278,10 @@ Consider the following example of a purrr-style formula in \code{.fns} using \co
 #> # A tibble: 150 x 7
 #>   Sepal.Length Sepal.Width Petal.Length Petal.Width Species Sepal Petal
 #>          <dbl>       <dbl>        <dbl>       <dbl> <fct>   <dbl> <dbl>
-#> 1          5.1         3.5          1.4         0.2 setosa    8.6  1.60
-#> 2          4.9         3            1.4         0.2 setosa    7.9  1.60
-#> 3          4.7         3.2          1.3         0.2 setosa    7.9  1.5 
-#> 4          4.6         3.1          1.5         0.2 setosa    7.7  1.7 
+#> 1          5.1         3.5          1.4         0.2 setosa    8.6   1.6
+#> 2          4.9         3            1.4         0.2 setosa    7.9   1.6
+#> 3          4.7         3.2          1.3         0.2 setosa    7.9   1.5
+#> 4          4.6         3.1          1.5         0.2 setosa    7.7   1.7
 #> # ... with 146 more rows
 }\if{html}{\out{</div>}}
 
@@ -293,10 +293,10 @@ The above syntax is equal to the more verbose:\if{html}{\out{<div class="r">}}\p
 #> # A tibble: 150 x 7
 #>   Sepal.Length Sepal.Width Petal.Length Petal.Width Species Sepal Petal
 #>          <dbl>       <dbl>        <dbl>       <dbl> <fct>   <dbl> <dbl>
-#> 1          5.1         3.5          1.4         0.2 setosa    8.6  1.60
-#> 2          4.9         3            1.4         0.2 setosa    7.9  1.60
-#> 3          4.7         3.2          1.3         0.2 setosa    7.9  1.5 
-#> 4          4.6         3.1          1.5         0.2 setosa    7.7  1.7 
+#> 1          5.1         3.5          1.4         0.2 setosa    8.6   1.6
+#> 2          4.9         3            1.4         0.2 setosa    7.9   1.6
+#> 3          4.7         3.2          1.3         0.2 setosa    7.9   1.5
+#> 4          4.6         3.1          1.5         0.2 setosa    7.7   1.7
 #> # ... with 146 more rows
 }\if{html}{\out{</div>}}
 
@@ -319,10 +319,10 @@ A named list of functions:\if{html}{\out{<div class="r">}}\preformatted{iris \%>
 #> # A tibble: 150 x 4
 #>   Sepal_product Sepal_sum Petal_product Petal_sum
 #>           <dbl>     <dbl>         <dbl>     <dbl>
-#> 1          17.8       8.6         0.280      1.60
-#> 2          14.7       7.9         0.280      1.60
-#> 3          15.0       7.9         0.26       1.5 
-#> 4          14.3       7.7         0.3        1.7 
+#> 1          17.8       8.6          0.28       1.6
+#> 2          14.7       7.9          0.28       1.6
+#> 3          15.0       7.9          0.26       1.5
+#> 4          14.3       7.7          0.3        1.7
 #> # ... with 146 more rows
 }\if{html}{\out{</div>}}
 
@@ -335,10 +335,10 @@ Again, use the \code{.names} argument to control the output names:\if{html}{\out
 #> # A tibble: 150 x 4
 #>   product_Sepal sum_Sepal product_Petal sum_Petal
 #>           <dbl>     <dbl>         <dbl>     <dbl>
-#> 1          17.8       8.6         0.280      1.60
-#> 2          14.7       7.9         0.280      1.60
-#> 3          15.0       7.9         0.26       1.5 
-#> 4          14.3       7.7         0.3        1.7 
+#> 1          17.8       8.6          0.28       1.6
+#> 2          14.7       7.9          0.28       1.6
+#> 3          15.0       7.9          0.26       1.5
+#> 4          14.3       7.7          0.3        1.7
 #> # ... with 146 more rows
 }\if{html}{\out{</div>}}
 }
