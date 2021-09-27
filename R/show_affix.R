@@ -79,7 +79,7 @@ show_prefix <- function(.data = NULL, .xcols = NULL, .ycols = NULL) {
     .xcols <- last_err$col_info$xcols
     .ycols <- last_err$col_info$ycols
 
-    rm(list = ls(last_err), envir = dplyover:::last_err)
+    rm(list = ls(last_err), envir = last_err)
 
   } else {
     .xcols <- rlang::enexpr(.xcols)
@@ -102,7 +102,7 @@ show_suffix <- function(.data = NULL, .xcols = NULL, .ycols = NULL) {
     .xcols <- last_err$col_info$xcols
     .ycols <- last_err$col_info$ycols
 
-    rm(list = ls(last_err), envir = dplyover:::last_err)
+    rm(list = ls(last_err), envir = last_err)
 
   } else {
     .xcols <- rlang::enexpr(.xcols)
@@ -174,11 +174,11 @@ get_affix <- function(x, type = c("prefix", "suffix")) {
   if (side == "right" && x_rle$values[1] == 1) {
     res <- stringr::str_sub(x[[1]],
                             start = 1L,
-                            end = x_rle$length[1])
+                            end = x_rle$lengths[1])
 
   } else if (side == "left" && x_rle$values[length(x_rle$values)] == 1) {
-    res_start <- sum(x_rle$length[-length(x_rle$length)]) + 1
-    res_length <- x_rle$length[length(x_rle$length)]
+    res_start <- sum(x_rle$lengths[-length(x_rle$lengths)]) + 1
+    res_length <- x_rle$lengths[length(x_rle$lengths)]
     res_end <- res_start + res_length
 
     res <- stringr::str_sub(x[[1]],

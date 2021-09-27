@@ -34,12 +34,12 @@ last_verb <- function() {
   # get last dplyr verb
   out <- max(which(grepl("^dplyr:::[mutate|summarise|summarize|filter|select|arrange|transmute]", call_fns)))
 
-  call_nm <- rlang::call_name(trace_bck$call[[out]])
+  call_nm <- rlang::call_name(trace_bck[["call", exact = FALSE]][[out]])
 
   # verify that trace_back() covers all calls
   sc <- lapply(sys.calls(), function(x) `[[`(x, 1))
 
-  if(length(sc) > length(trace_bck$call)) {
+  if(length(sc) > length(trace_bck[["call", exact = FALSE]])) {
     for (i in rev(seq_along(sc))) {
       if (as.character(sc[[i]])[1] == call_nm) {
         out <- i
