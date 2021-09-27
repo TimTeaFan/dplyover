@@ -350,11 +350,11 @@ diamonds %>%
                     .names = "{xcol}_{fn}{y}"))
 
 # across and map_dfc
-diamonds %>% 
+diamonds %>%
   mutate(across(c(x,y,z),
                 ~ map_dfc(set_names(1:5, paste0("lag", 1:5)),
                           function(y) lag(.x, y))
-                )) %>% 
+                )) %>%
   do.call(data.frame, .)
 
 # custom function with reduce
@@ -390,8 +390,10 @@ lagged_vars <- bench::mark(iterations = 50L, check = FALSE,
   across_map_dfc = {
     diamonds %>%
       mutate(across(c(x,y,z),
-                    ~ map_dfc(set_names(1:5, paste0("lag", 1:5)),
-                              function(y) lag(.x, y)))) %>%
+                    function(x) {
+                      map_dfc(set_names(1:5, paste0("lag", 1:5)),
+                              function(y) lag(x, y))})
+             ) %>%
     do.call(data.frame, .)
   },
 

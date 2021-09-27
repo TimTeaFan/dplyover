@@ -96,7 +96,7 @@ show_prefix <- function(.data = NULL, .xcols = NULL, .ycols = NULL) {
 #' @export
 show_suffix <- function(.data = NULL, .xcols = NULL, .ycols = NULL) {
 
-  if (is.null(.data) && !is.null(last_err$col_info)) {
+  if (is.null(.data) && !is.null(.last$value)) {
 
     .data  <- last_err$col_info$data
     .xcols <- last_err$col_info$xcols

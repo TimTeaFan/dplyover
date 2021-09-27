@@ -2,4 +2,3 @@
 is.date <- function(x) {
   inherits(x, c("Date", "POSIXt"))
 }
-

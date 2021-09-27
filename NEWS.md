@@ -1,3 +1,7 @@
+# dplyover 0.0.8.9002
+
+* fix `inspect_call` so that it work with dev version of rlang::trace_back()
+
 # dplyover 0.0.8.9001
 
 * hotfix which fixed a bug preventing {dplyover} to run on R versions <= 4.0
